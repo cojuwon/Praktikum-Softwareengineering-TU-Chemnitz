@@ -1,8 +1,19 @@
 # Volere Requirements Specification
 
 ## 1. Project Drivers
-- Zweck des Systems
-- Stakeholder
+### Zweck des Systems
+- Vereeinfachung der Datenerfassung
+- Automatisierung der Datenauswertung
+  
+### Stakeholder
+- Mitarbeiter*innen Fachberatungsstelle für queere Betroffene von sexualisierter
+Gewalt in der Stadt Leipzig
+- Mitarbeiter*innen Fachberatung gegen sexualisierte Gewalt im Landkreis
+Nordsachsen
+- Mitarbeiter*innen Fachberatung gegen sexualisierte Gewalt im Landkreis Leipzig
+- Client*innen
+- Vereinsmitglieder Bellis e.V.
+  
 
 ## 2. Project Constraints
 Welche (gesetzlichen) Rahmenbedingungen müssen eingehalten werden?
