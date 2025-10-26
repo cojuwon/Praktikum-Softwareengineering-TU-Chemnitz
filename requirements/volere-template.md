@@ -1,8 +1,9 @@
 # Volere Requirements Specification
 
 ## 1. Project Drivers
+
 ### Zweck des Systems
-- Vereeinfachung der Datenerfassung
+- Vereinfachung der Datenerfassung
 - Automatisierung der Datenauswertung
   
 ### Stakeholder
@@ -16,28 +17,84 @@ Nordsachsen
   
 
 ## 2. Project Constraints
-Welche (gesetzlichen) Rahmenbedingungen müssen eingehalten werden?
-– Einschränkungen
-– Namenskonventionen und Terminologie
-– Relevante Fakten und Annahmen
+--> Welche (gesetzlichen) Rahmenbedingungen müssen eingehalten werden?
+
+### Einschränkungen
+### Namenskonventionen und Terminologie
+### Relevante Fakten und Annahmen
+- Vertraulichkeit und auf Wunsch anonyme Nutzung des Beratungsangebotes
 
 
 ## 3. Funktional Requirements
-Was ist der Sinn des Systems?
-– Rahmen der Arbeit
-– Datenmodell und Data-dictionary
-– Rahmen des Produkts
-– Funktionelle Anforderungen und Anforderungen an Daten
+--> Was ist der Sinn des Systems?
+
+### Rahmen der Arbeit
+
+### Datenmodell und Data-dictionary
+Das System verwaltet die folgenden zentralen Datentypen:
+- **Anfrage**: Enthält Informationen über Erstkontakte (Telefon, E-Mail usw.)
+- **Beratungsfall**: Enthält Informationen über laufende Beratungen
+- **Klientin**: Person, die beraten wird
+- **Preset**: Gespeicherte Filtereinstellungen für Statistiken
+- **Benutzerkonto**: Zugangsdaten und Rollen (Basis, Erweiterung, Admin)
+
+Zwischen den Datentypen bestehen folgende Beziehungen:
+- eine Klientin kann mehrere Beratungsfälle haben
+- jeder Beratungsfall kann aus einer Anfrage entstehen
+- ein Benutzerkonto ist einer Mitarbeiterin zugeordnet
+  
+### Rahmen des Produkts
+
+### Funktionelle Anforderungen und Anforderungen an Daten
+
+#### 3.1 Eingabe
+- es gibt zwei Arten von Datensätzen: **Anfragen** und **Beratungsfälle**
+- für jede Art müssen **Eingabemasken** zur Verfügung stehen
+- beim Speichern wird geprüft, ob alle Pflichtfelder ausgefüllt sind
+  - falls nicht: Meldung --> Option, fehlende Felder nachzutragen oder unvollständige Daten zu speichern
+
+#### 3.2 Daten bearbeiten
+- alle Mitarbeiter*innen können bestehende Datensätze suchen und aktualisieren
+  - Anfrage nach Tag suchen und bearbeiten
+  - Fall suchen (Suchkriterium?)
+- neue Informationen ergänzen und speichern
+- nach Beratungstermin vermerken, dass Termin stattgefunden hat und in welcher Form
+
+#### 3.3 Eingabemaske erweitern
+- Name des neuen Feldes
+- Art der Eingabe
+  - Textfeld
+  - Zahlenfeld
+  - Datum
+
+#### 3.4 Ausgabe von Statistiken
+- Filter setzen mit Zeitraum und Merkmal 
+- Filter als "preset" speichern
+  - persönliches "preset"
+  - geteiltes "preset"
+- drei Standard-Presets sind mitgeliefert
+- Daten sollen exportiert werden können (PDF, XLSX, CSV)
+
+#### 3.5 Berechtigungen und Nutzerverwaltung
+- Das System benötigt passwortgeschützte Konten mit abgestuften Rechten:  
+  - **Basiskonto**: Datensätze erfassen/bearbeiten, Statistiken abrufen, Presets speichern/löschen 
+  - **Erweiterungskonto**: Zusätzlich neue Formularfelder und geteilte Presets verwalten
+  - **Administrationskonto**: Zusätzlich Benutzerkonten verwalten (anlegen, Rechte zuweisen/entziehen, löschen)
+- Es muss immer mindestens ein Konto mit Administrationsrechten existieren (empfohlen zwei)
 
 ## 4. Non-functional Requirements
-Was sind (selbstverständliche) Erwartungen an das System?
-– Look and feel
-– Usability and humanity
-– Performance
-– Wartbarkeit- und Support
-– Sicherheit
-– Kulturell und politisch
-– Gesetzliche
+--> Was sind (selbstverständliche) Erwartungen an das System?
+### Look and feel
+- sinnvolle Benuzterführung
+- Fehlermeldungen
+- optische Hinweise
+- Benutzer*innenhandbuch
+### Usability and humanity
+### Performance
+### Wartbarkeit- und Support
+### Sicherheit
+### Kulturell und politisch
+### Gesetzliche
 
 ## 5. Project Issues
 
