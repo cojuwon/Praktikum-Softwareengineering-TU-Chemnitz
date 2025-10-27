@@ -20,10 +20,30 @@ Nordsachsen
 --> Welche (gesetzlichen) Rahmenbedingungen müssen eingehalten werden?
 
 ### Einschränkungen
+- Datenschutz (DSGVO)
+  - passwortgeschütztes Konto
+  - abgestufte Berechtigungen (Basis, Erweiterung, Administration)
+  - Welche Daten dürfen gespeichert werden? Anonymisierung? Wer hat Zugriff auf Daten?
+  - Ab wann werden Daten gelöscht? (z.B. automatische Löschung nach 2 Jahren)
+- Client-Server-Architektur mit zentraler Serverinstanz
+- auf Serverinstanz läuft Microservice, der die Anfragen der Nutzer*innen verarbeitet und mit Datenbank kommuniziert
+- Abgabe mit Docker Image, die Einrichtung auf eigenem Server erleichtert
+- ReadMe-Datei mit Installationsanleitung
+  
 ### Namenskonventionen und Terminologie
+- **Anfrage**: Beratungsstelle wurde zwecks kurzer Frage oder zur Terminvereinbarung kontaktiert
+- **Beratungsfall (Fall)**: Dokumentation einer oder mehrerer Beratungssitzungen
+- **Klient*in**: Person, die Beratung in Anspruch nimmt
+- **Preset**: gespeicherte Filterkonfiguration für die statistische Auswertung
+- **Mitarbeiter*in**: Nutzer*in des Systems mit Basis- oder erweiterten Rechten  
+- **Administrator*in**: Nutzerin mit administrativen Rechten zur Benutzerverwaltung.  
+
 ### Relevante Fakten und Annahmen
 - Vertraulichkeit und auf Wunsch anonyme Nutzung des Beratungsangebotes
-
+- Bellis e.V. ist gemeinnütziger Verein -->
+- Nutzung von mehreren Fachberatungsstellen
+- bisher Erfassung mit Excel-Tabellen --> Arbeit mit Software ggf. Neuland --> Benutzerfreundlichkeit
+- Software muss erweiterbar sein (ggf. Gesetzesänderungen)
 
 ## 3. Funktional Requirements
 --> Was ist der Sinn des Systems?
