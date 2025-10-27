@@ -64,6 +64,11 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
 - ein Benutzerkonto ist einer Mitarbeiterin zugeordnet
   
 ### Rahmen des Produkts
+- Eingabemasken für Anfragen und Fälle
+- Suchfunktion
+- Bearbeitungsfunktion
+- Erweiterbarkeit der Eingabemaske
+- Ausgabe von Statistiken
 
 ### Funktionelle Anforderungen und Anforderungen an Daten
 
@@ -109,12 +114,21 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
 - Fehlermeldungen
 - optische Hinweise
 - Benutzer*innenhandbuch
+  
 ### Usability and humanity
+- intuitive Bedienung
+- Barrierefreiheit (z.B. Anpassung der Schriftgröße)
+  
 ### Performance
 ### Wartbarkeit- und Support
 ### Sicherheit
+
 ### Kulturell und politisch
+- Geschlechtergerechte Sprache
+- Gestaltung nach traumasensiblen, feministischen und intersektionalen Selbsverständnisses
+  
 ### Gesetzliche
+- DSGVO-konform
 
 ## 5. Project Issues
 
