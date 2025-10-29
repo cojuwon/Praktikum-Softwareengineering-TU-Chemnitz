@@ -62,6 +62,7 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
 - eine Klientin kann mehrere Beratungsfälle haben
 - jeder Beratungsfall kann aus einer Anfrage entstehen
 - ein Benutzerkonto ist einer Mitarbeiterin zugeordnet
+- ein Preset kann einem oder allen Benutzerkonten zugeordnet sein 
   
 ### Rahmen des Produkts
 - Eingabemasken für Anfragen und Fälle
@@ -92,6 +93,8 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
   - Textfeld
   - Zahlenfeld
   - Datum
+  - anpassbare Auswahlmöglichkeiten/ Dropdownlisten
+  - Kontrollkästchen?
 
 #### 3.4 Ausgabe von Statistiken
 - Filter setzen mit Zeitraum und Merkmal 
@@ -103,7 +106,7 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
 
 #### 3.5 Berechtigungen und Nutzerverwaltung
 - Das System benötigt passwortgeschützte Konten mit abgestuften Rechten:  
-  - **Basiskonto**: Datensätze erfassen/bearbeiten, Statistiken abrufen, Presets speichern/löschen 
+  - **Basiskonto**: Datensätze erfassen/bearbeiten, Statistiken abrufen, (selbsterstellte?) Presets speichern/löschen 
   - **Erweiterungskonto**: Zusätzlich neue Formularfelder und geteilte Presets verwalten
   - **Administrationskonto**: Zusätzlich Benutzerkonten verwalten (anlegen, Rechte zuweisen/entziehen, löschen)
 - Es muss immer mindestens ein Konto mit Administrationsrechten existieren (empfohlen zwei)
@@ -111,7 +114,7 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
 ## 4. Non-functional Requirements
 --> Was sind (selbstverständliche) Erwartungen an das System?
 ### Look and feel
-- sinnvolle Benuzterführung
+- sinnvolle Benutzerführung
 - Fehlermeldungen
 - optische Hinweise
 - Benutzer*innenhandbuch
@@ -119,6 +122,7 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
 ### Usability and humanity
 - intuitive Bedienung
 - Barrierefreiheit (z.B. Anpassung der Schriftgröße, Kontrast)
+- light- und darkmode?
   
 ### Performance
 ### Wartbarkeit- und Support
