@@ -56,7 +56,7 @@ Das System verwaltet die folgenden zentralen Datentypen:
 - **Beratungsfall**: Enthält Informationen über laufende Beratungen
 - **Klientin**: Person, die beraten wird
 - **Preset**: Gespeicherte Filtereinstellungen für Statistiken
-- **Benutzerkonto**: Zugangsdaten und Rollen (Basis, Erweiterung, Admin)
+- **Benutzerkonto**: Zugangsdaten und Rollen (Basis, Erweiterung, Admin), gespeichert sind Email und Namen
 
 Zwischen den Datentypen bestehen folgende Beziehungen:
 - eine Klientin kann mehrere Beratungsfälle haben
@@ -69,6 +69,7 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
 - Bearbeitungsfunktion
 - Erweiterbarkeit der Eingabemaske
 - Ausgabe von Statistiken
+- Nutzerverwaltung über Admin-Zugang
 
 ### Funktionelle Anforderungen und Anforderungen an Daten
 
@@ -117,7 +118,7 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
   
 ### Usability and humanity
 - intuitive Bedienung
-- Barrierefreiheit (z.B. Anpassung der Schriftgröße)
+- Barrierefreiheit (z.B. Anpassung der Schriftgröße, Kontrast)
   
 ### Performance
 ### Wartbarkeit- und Support
