@@ -125,9 +125,17 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
 - light- und darkmode?
   
 ### Performance
+- kurze Reaktionszeiten
+- mehrere Nutzer*innen können gleichzeitig ohne Performanceeinbußen darauf zugreifen
+- 
 ### Wartbarkeit- und Support
-### Sicherheit
+-Cleane/übersichtliche Codestruktur und Dokumentation
 
+### Sicherheit
+- Multifaktorauthentifizierung
+-Automatische Abmeldung nach gewisser Zeitspanne der Inaktivität
+-Passwortrichtlinien (bestimmte Anzahl + Inklusive Sonderzeichen)
+  
 ### Kulturell und politisch
 - Geschlechtergerechte Sprache
 - Gestaltung nach traumasensiblen, feministischen und intersektionalen Selbsverständnisses
