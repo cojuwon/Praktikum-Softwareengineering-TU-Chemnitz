@@ -4,7 +4,7 @@
 
 ### Zweck des Systems
 - Vereinfachung der Datenerfassung
-- Automatisierung der Datenauswertung
+- Automatisierung der Datenauswertung 
   
 ### Stakeholder
 - Mitarbeiter*innen Fachberatungsstelle für queere Betroffene von sexualisierter
@@ -12,8 +12,9 @@ Gewalt in der Stadt Leipzig
 - Mitarbeiter*innen Fachberatung gegen sexualisierte Gewalt im Landkreis
 Nordsachsen
 - Mitarbeiter*innen Fachberatung gegen sexualisierte Gewalt im Landkreis Leipzig
-- Client*innen
-- Vereinsmitglieder Bellis e.V.
+- Klient*innen
+- Vereinsmitglieder Bellis e.V. *(bedeutet das Mitarbeiter*innen oder meint das andere Personen? Wenn ja, wen?)*
+- Land Sachsen?
   
 
 ## 2. Project Constraints
@@ -27,28 +28,33 @@ Nordsachsen
   - Ab wann werden Daten gelöscht? (z.B. automatische Löschung nach 2 Jahren)
 - Client-Server-Architektur mit zentraler Serverinstanz
 - auf Serverinstanz läuft Microservice, der die Anfragen der Nutzer*innen verarbeitet und mit Datenbank kommuniziert
-- Abgabe mit Docker Image, die Einrichtung auf eigenem Server erleichtert
-- ReadMe-Datei mit Installationsanleitung
+- Abgabe mit Docker Image, die Einrichtung auf eigenem Server erleichtert (Einschränkung?)
+- ReadMe-Datei mit Installationsanleitung (keine Einschränkung? Genau wie Benutzerhandbuch aber wo kommt das hin?)
+
   
 ### Namenskonventionen und Terminologie
 - **Anfrage**: Beratungsstelle wurde zwecks kurzer Frage oder zur Terminvereinbarung kontaktiert
-- **Beratungsfall (Fall)**: Dokumentation einer oder mehrerer Beratungssitzungen
+- **Beratungsfall (Fall)**: Dokumentation einer oder mehrerer Beratungssitzungen und/oder Begleitungen (z.B. zur Polizei)
 - **Klient*in**: Person, die Beratung in Anspruch nimmt
 - **Preset**: gespeicherte Filterkonfiguration für die statistische Auswertung
-- **Mitarbeiter*in**: Nutzer*in des Systems mit Basis- oder erweiterten Rechten  
-- **Administrator*in**: Nutzerin mit administrativen Rechten zur Benutzerverwaltung.  
+- **Mitarbeiter*in**: Nutzer:in des Systems mit Basis-, erweiterten oder admninistrativen Berechtigungen 
+- **Administrator*in**: Nutzer:in mit administrativen Rechten zur Benutzerverwaltung.  
 
 ### Relevante Fakten und Annahmen
 - Vertraulichkeit und auf Wunsch anonyme Nutzung des Beratungsangebotes
 - Bellis e.V. ist gemeinnütziger Verein -->
-- Nutzung von mehreren Fachberatungsstellen
+- Nutzung von drei Fachberatungsstellen: Eingabe der Daten in Software nur jeweils am entsprechenden Computer  
 - bisher Erfassung mit Excel-Tabellen --> Arbeit mit Software ggf. Neuland --> Benutzerfreundlichkeit
 - Software muss erweiterbar sein (ggf. Gesetzesänderungen)
+- Accessability (besonders in Hinsicht auf visuelle Einschränkungen)
+- Zugriff auf alle Datensätze durch alle Mitarbeiter:innen möglich
 
-## 3. Funktional Requirements
+## 3. Functional Requirements
 --> Was ist der Sinn des Systems?
 
 ### Rahmen der Arbeit
+- Vereinfachung der Datenerfassung
+- Automatisierung der Datenauswertung 
 
 ### Datenmodell und Data-dictionary
 Das System verwaltet die folgenden zentralen Datentypen:
@@ -106,45 +112,51 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
 
 #### 3.5 Berechtigungen und Nutzerverwaltung
 - Das System benötigt passwortgeschützte Konten mit abgestuften Rechten:  
-  - **Basiskonto**: Datensätze erfassen/bearbeiten, Statistiken abrufen, (selbsterstellte?) Presets speichern/löschen 
+  - **Basiskonto**: Datensätze erfassen/bearbeiten, Statistiken abrufen, selbsterstellte Presets speichern/löschen 
   - **Erweiterungskonto**: Zusätzlich neue Formularfelder und geteilte Presets verwalten
   - **Administrationskonto**: Zusätzlich Benutzerkonten verwalten (anlegen, Rechte zuweisen/entziehen, löschen)
 - Es muss immer mindestens ein Konto mit Administrationsrechten existieren (empfohlen zwei)
 
 ## 4. Non-functional Requirements
 --> Was sind (selbstverständliche) Erwartungen an das System?
+
 ### Look and feel
 - sinnvolle Benutzerführung
 - Fehlermeldungen
 - optische Hinweise
-- Benutzer*innenhandbuch
+- blau und gelb als Vereinsfarben 
   
 ### Usability and humanity
 - intuitive Bedienung
-- Barrierefreiheit (z.B. Anpassung der Schriftgröße, Kontrast)
+- Barrierefreiheit (z.B. Anpassung der Schriftgröße, Kontrast) besonders in Hinblick auf visuelle Einschränkungen
 - light- und darkmode?
+- Benutzer*innenhandbuch
   
 ### Performance
-- kurze Reaktionszeiten
-- mehrere Nutzer*innen können gleichzeitig ohne Performanceeinbußen darauf zugreifen
+- kurze Reaktionszeiten (z. B. für Öffnung von Dropdown-Menü x sek, für Laden von Daten bei Filter y sek --> ist Zeiteinsparung für unser Projekt überhaupt eine sinnvolle Anforderung?)
+- mehrere Nutzer*innen können gleichzeitig ohne Performanceeinbußen darauf zugreifen (da nur 1 Computer pro Beratungsstelle eher vernachlässigbar)
 - 
+
 ### Wartbarkeit- und Support
--Cleane/übersichtliche Codestruktur und Dokumentation
+- Cleane/übersichtliche Codestruktur und Dokumentation
+- Übergabe der Verantwortung für Wartung muss sichergestellt werden
 
 ### Sicherheit
-- Multifaktorauthentifizierung
--Automatische Abmeldung nach gewisser Zeitspanne der Inaktivität
--Passwortrichtlinien (bestimmte Anzahl + Inklusive Sonderzeichen)
+- Multifaktorauthentifizierung (eher nicht, oder?)
+- Automatische Abmeldung nach gewisser Zeitspanne der Inaktivität
+- Passwortrichtlinien (bestimmte Anzahl + Inklusive Sonderzeichen)
+- Zurücksetzung des Passworts muss möglich sein
   
 ### Kulturell und politisch
 - Geschlechtergerechte Sprache
 - Gestaltung nach traumasensiblen, feministischen und intersektionalen Selbsverständnisses
-  
+- breite Definition des Gewaltbegriffs
+
 ### Gesetzliche
 - DSGVO-konform
+- Datensicherheit
 
 ## 5. Project Issues
-
 Sonstige Eigenschaften:
 – Offene Probleme
 – Off-the-Shelf Lösungen
