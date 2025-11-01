@@ -53,8 +53,27 @@ Nordsachsen
 --> Was ist der Sinn des Systems?
 
 ### Rahmen der Arbeit
-- Vereinfachung der Datenerfassung
-- Automatisierung der Datenauswertung 
+- gemeinnütziger Verein Bellis e.V. Leipzig setzt sich für Frauen, trans*, inter* und nicht-binäre Menschen ein, die sexualisierte Gewalt erlebt haben
+- Ziele: Betroffene stärken, Selbstbestimmung fördern, Begleitung
+- Unterstützungsangebot:
+  - psychosoziale Beratung
+  - Krisenintervention
+  - längerfristige Begleitung
+  - ermittlung an weiterführende Hilfen
+- kostenloses, vertrauliches, ggf. anonym nutzbares Angebot
+- Verein ist in mehrere Projektbereiche gegliedert
+  - Fachberatungsstelle für queere Betroffene von sexualisierter Gewalt in der Stadt Leipzig
+  - Fachberatung gegen sexualisierte Gewalt im Landkreis Nordsachsen
+  - Fachberatung gegen sexualisierte Gewalt im Landkreis Leipzig
+- Beratungsstellen müssen Statistiken führen (gesetzliche Vorgabe)
+- Mitarbeiter*innen müssen dazu Daten erfassen und auswerten
+- bisher: 
+  - händische Datenerfassung
+  - Übertragung der Notizen in Excel Tabellen
+- Ziel: Softwarelösung für Mitarbeiter*innen von Bellis e.V. welche den Prozess automatisiert
+  - Datenerfassung mithilfe eines Webformulars
+  - Berechnung und Export von Statistiken aus gespeicherten Daten
+- nicht im Aufgabenbereich liegt Koordination zwischen Beratungsstellen, Zuweisung der Fälle, interne Organisation (wie Finanzen, Personalverwaltung) oder externe Kommunikation (Website, E-Mail-System)
 
 ### Datenmodell und Data-dictionary
 Das System verwaltet die folgenden zentralen Datentypen:
@@ -71,12 +90,22 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
 - ein Preset kann einem oder allen Benutzerkonten zugeordnet sein 
   
 ### Rahmen des Produkts
-- Eingabemasken für Anfragen und Fälle
-- Suchfunktion
-- Bearbeitungsfunktion
-- Erweiterbarkeit der Eingabemaske
-- Ausgabe von Statistiken
-- Nutzerverwaltung über Admin-Zugang
+Das Produkt umfasst eine Softwarelösung zur digitalen Erfassung, Verwaltung und Auswertung von Anfragen und Beratungsfällen.
+Hauptfunktionen sind:
+- Eingabe und Verwaltung von Daten
+  - Eingabemasken für Anfragen und Beratungsfälle
+  - Such- und Bearbeitungsfunktionen
+  - Erweiterbarkeit der Eingabemasken
+- Auswertung und Analyse
+  - Ausgabe von Statistiken auf Basis gespeicherter Daten
+  - Filter- und Exportfunktionen (z. B. PDF, XLSX, CSV)
+- Benutzerverwaltung und Rollenrechte
+  - Konten mit abgestuften Berechtigungen (Basis, Erweiterung, Administration)
+  - Verwaltung von Nutzer*innen durch Administratorinnen
+Nicht Bestandteil des Produkts sind:
+- Bereitstellung von Hardware (z. B. Server oder Endgeräte)
+- Externe Schnittstellen zu Drittsystemen (z. B. Bundesamt für Statistik)
+- Datenarchivierung außerhalb der Anwendung
 
 ### Funktionelle Anforderungen und Anforderungen an Daten
 
