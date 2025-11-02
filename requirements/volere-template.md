@@ -131,8 +131,16 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
 | beratungs_id | int      | Wenn ein Termin vereinbart wurde, wird eine Beratung mit ID, Datum und Ort angelegt                                                                                                                                                                                                                                                 |
 | user_id      | int      | Mitarbeiter*in, der/die die Anfrage bearbeitet                                                                                                                                                                                                                                                                                      |
 
-   
-  
+
+##### Fall
+##### Klient*in
+##### Beratung
+##### Gewalttat
+##### Gewaltfolgen
+##### Begleitungen
+##### Konto
+##### Preset
+
 ### Rahmen des Produkts
 Das Produkt umfasst eine Softwarelösung zur digitalen Erfassung, Verwaltung und Auswertung von Anfragen und Beratungsfällen.
 Hauptfunktionen sind:
