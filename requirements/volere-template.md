@@ -119,7 +119,7 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
 #### Datadictionary
 
 ##### Anfrage
-| *Attribut*   | *Datentyp* | *Beschreibung*                                                                                                                                                                                                                                                                                                                      |
+| *Attribut*   | *Datentyp* | *Beschreibung* |
 | ------------ | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | anfrage_id   | int        | Eindeutige ID der Anfrage                                                                                                                                                                                                                                                                                                           |
 | wie          | string     | Beschreibung, wie die Anfrage erfolgt ist (z. B. Telefon, E-Mail etc.)                                                                                                                                                                                                                                                              |
@@ -132,8 +132,6 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
 
 ##### Fall
 
-| *Attribut*     | *Datentyp* | *Beschreibung*                                            |
-| -------------- | ---------- | --------------------------------------------------------- |
 | fall_id        | int        | Automatisch generierte ID zur Identifizierung eines Falls |
 | client_id      | int        | Zugeordnete Klient*in                                     |
 | beratungs_id   | int        | Zugeordnete Beratungen                                    |
