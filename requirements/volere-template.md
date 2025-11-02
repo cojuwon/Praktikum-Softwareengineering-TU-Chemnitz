@@ -132,6 +132,7 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
 
 ##### Fall
 
+| -------------- | ---------- | --------------------------------------------------------- |
 | fall_id        | int        | Automatisch generierte ID zur Identifizierung eines Falls |
 | client_id      | int        | Zugeordnete Klient*in                                     |
 | beratungs_id   | int        | Zugeordnete Beratungen                                    |
