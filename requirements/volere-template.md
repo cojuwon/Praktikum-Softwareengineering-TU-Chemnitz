@@ -76,19 +76,161 @@ Nordsachsen
 - nicht im Aufgabenbereich liegt Koordination zwischen Beratungsstellen, Zuweisung der Fälle, interne Organisation (wie Finanzen, Personalverwaltung) oder externe Kommunikation (Website, E-Mail-System)
 
 ### Datenmodell und Data-dictionary
-Das System verwaltet die folgenden zentralen Datentypen:
-- **Anfrage**: Enthält Informationen über Erstkontakte (Telefon, E-Mail usw.)
-- **Beratungsfall**: Enthält Informationen über laufende Beratungen
-- **Klientin**: Person, die beraten wird
-- **Preset**: Gespeicherte Filtereinstellungen für Statistiken
-- **Benutzerkonto**: Zugangsdaten und Rollen (Basis, Erweiterung, Admin), gespeichert sind Email und Namen
+#### Datenmodell
+- Anfrage
+  - enthält Informationen über Erstkontakte (Telefon, E-Mail usw.) 
+  - kann zu einem Fall führen
+  - 1 Anfrage → 0..1 Fall
+- Fall
+  - entsteht aus Anfrage oder wird direkt angelegt
+  - enthält Informationen über laufende Beratungen 
+  - gehört zu einer Klient*in
+  - umfasst mehrere Beratungstermine, Gewaltvorfälle, Begleitungen/Verweise, Folgen der Gewalt
+- Klient*in
+  - Person, die beraten wird 
+  - kann mehrere Fälle haben
+  - enthält personenbezogene Daten
+- Beratung
+  - enthält Informationen wann und wo Beratung stattgefunden hat
+  - gehört zu genau einem Fall
+- Gewaltttat
+- Gewaltfolgen
+- Begleitung
+- Preset
+  - gespeicherte Filtereinstellungen für Statistiken 
+  - kann einem oder mehreren Konten gehören
+- Konto
+  - authentifizierte Person mit zugewiesener Rolle (Basis, Erweiterung, Admin)
+  - Zugangsdaten (Name, E-Mail und Passwort)
+  - hat zugewiesene Fälle und Anfragen
 
 Zwischen den Datentypen bestehen folgende Beziehungen:
-- eine Klientin kann mehrere Beratungsfälle haben
-- jeder Beratungsfall kann aus einer Anfrage entstehen
-- ein Benutzerkonto ist einer Mitarbeiterin zugeordnet
-- ein Preset kann einem oder allen Benutzerkonten zugeordnet sein 
-  
+- eine Klient*in kann mehrere Beratungsfälle haben 
+- jeder Fall kann aus einer Anfrage entstehen
+- jeder Fall ist einer Klient*in und Mitarbeiter*in zugordnet
+- eine Beratung ist einer Mitarbeiter*in ud Klient*in zugeordnet
+- Gewalttaten und Gewaltfolgen können einander zugeordnet sein aber auch unabhängig voneinander registriert werden
+- Gewalttaten und Gewaltfolgen sind einer Klient*in zugeordnet
+- Begleitungen werden einer Mitarbeiter*in und einer Klient*in zugeordnet
+- ein Konto ist einer Mitarbeiter*in zugeordnet 
+- jedem Konto ist eine Rolle zugeordnet (Basis, Erweiterung, Admin)
+- ein Preset kann einem, mehreren oder allen Benutzerkonten zugeordnet sein
+
+#### Datadictionary
+
+##### Anfrage
+| *Attribut*   | *Datentyp* | *Beschreibung*                                                                                                                                                                                                                                                                                                                      |
+| ------------ | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| anfrage_id   | int        | Eindeutige ID der Anfrage                                                                                                                                                                                                                                                                                                           |
+| wie          | string     | Beschreibung, wie die Anfrage erfolgt ist (z. B. Telefon, E-Mail etc.)                                                                                                                                                                                                                                                              |
+| datum        | date       | Datum der Anfrage                                                                                                                                                                                                                                                                                                                   |
+| ort          | enum       | Anfrage aus: Leipzig Stadt / Leipzig Land / Nordsachsen / Sachsen / andere                                                                                                                                                                                                                                                          |
+| wer          | enum       | Wer hat angefragt: Fachkraft (F) / Angehörige:r (A) / Betroffene:r (B) / anonym / queer Betroffene:r (qB) / queer Fachkraft (qF) / queer Angehörige:r (qA) / queer anonym / Fachkraft für Betroffene (FfB) / Angehörige:r für Betroffene (AfB) / Fachkraft für queere Betroffene (FFqB) / Angehörige:r für queere Betroffene (AfqB) |
+| art          | enum       | Art der Anfrage: medizinische Soforthilfe / vertrauliche Spurensicherung / Beratungsbedarf / rechtliche Fragen / Sonstiges                                                                                                                                                                                                          |
+| beratungs_id | int        | Wenn ein Termin vereinbart wurde, wird eine Beratung mit ID, Datum und Ort angelegt                                                                                                                                                                                                                                                 |
+| user_id      | int        | Mitarbeiter*in, der*die Anfrage zugewiesen bekommen hat                                                                                                                                                                                                                                                                             |
+
+##### Fall
+
+| *Attribut*     | *Datentyp* | *Beschreibung*                                            |
+| -------------- | ---------- | --------------------------------------------------------- |
+| fall_id        | int        | Automatisch generierte ID zur Identifizierung eines Falls |
+| client_id      | int        | Zugeordnete Klient*in                                     |
+| beratungs_id   | int        | Zugeordnete Beratungen                                    |
+| tat_id         | int        | Zugehörige Gewalttaten                                    |
+| begleitungs_id | int        | Zugeordnete Begleitungen                                  |
+| user_id        | int        | Zuständige Mitarbeiter*in                                 |
+
+
+
+##### Klient*in
+| *Attribut*           | *Datentyp* | *Beschreibung*                                                                                                                            |
+| -------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| client_id            | int        | Automatisch generierte numerische ID                                                                                                      |
+| client_rolle         | enum       | Rolle der ratsuchenden Person: Betroffene:r / Angehörige:r / Fachkraft                                                                    |
+| alter                | int        | Alter in Jahren oder 0 bei keiner Angabe                                                                                                  |
+| geschlechtsidentität | enum       | cis weiblich / cis männlich / trans weiblich / trans männlich / trans nicht-binär / inter / agender / divers / keine Angabe               |
+| sexualität           | enum       | lesbisch / schwul / bisexuell / asexuell / heterosexuell / keine Angabe                                                                   |
+| wohnort              | enum       | Leipzig Stadt / Leipzig Land / Nordsachsen / Sachsen / Deutschland / andere / keine Angabe – Freitextfeld bei „Deutschland“ oder „andere“ |
+| staatsangehörigkeit  | enum       | deutsch / nicht deutsch – falls „nicht deutsch“, Textfeld oder Auswahl des Landes                                                         |
+| beruf                | string     | arbeitslos / studierend / berufstätig / berentet / Azubi / berufsunfähig / keine Angabe                                                   |
+| schwerbehinderung    | enum       | Liegt eine Schwerbehinderung vor? Ja / Nein – bei Ja: Form (kognitiv/körperlich) und Grad der Behinderung                                 |
+| kontaktpunkt         | enum       | Quelle, woher die Person von der Beratungsstelle erfahren hat (z. B. Polizei, Internet, Ämter etc.) – Freitextfeld bei „andere“           |
+| dolmetschung         | int        | Anzahl in Anspruch genommener Dolmetschungen (in Stunden); Freitextfeld für Sprache(n)                                                    |
+| notizen              | string     | Freifeld für Notizen                                                                                                                      |
+
+##### Beratung
+| *Attribut*      | *Datentyp* | *Beschreibung*                                                                                  |
+| --------------- | ---------- | ----------------------------------------------------------------------------------------------- |
+| beratungs_id    | int        | Eindeutige ID zur Identifikation einer Beratung                                                 |
+| beratungsstelle | enum       | Zuständige Beratungsstelle (z. B. Fachberatung Leipzig Stadt / Nordsachsen / Landkreis Leipzig) |
+| anzahl          | int        | Gesamtanzahl der Beratungen                                                                     |
+| datum           | date       | Datum des Beratungstermins                                                                      |
+| art             | enum       | Durchführungsart: persönlich / Video / Telefon / aufsuchend / schriftlich                       |
+| ort             | enum       | Durchführungsort: Leipzig Stadt / Leipzig Land / Nordsachsen                                    |
+| notizen         | string     | Freifeld für Notizen                                                                            |
+
+##### Gewalttat
+| *Attribut*              | *Datentyp* | *Beschreibung*                                                                                                            |
+| ----------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------- |
+| tat_id                  | int        | Eindeutige ID der Gewalttat                                                                                               |
+| alter                   | enum       | Alter zum Tatzeitpunkt oder keine Angabe                                                                                  |
+| zeitraum                | enum       | Angabe eines Zeitraums oder keine Angabe                                                                                  |
+| anzahl_vorfälle         | enum       | einmalig / mehrere / genaue Zahl / keine Angabe                                                                           |
+| anzahl_täter_innen      | enum       | 1 / mehrere / genaue Zahl / keine Angabe                                                                                  |
+| art                     | enum       | Art der Gewalt (Mehrfachauswahl möglich, z. B. sexuelle Belästigung, Vergewaltigung, Spiking, digitale Gewalt etc.)       |
+| tatort                  | enum       | Leipzig / Leipzig Land / Nordsachsen / Sachsen / Deutschland / Ausland / auf der Flucht / im Herkunftsland / keine Angabe |
+| anzeige                 | enum       | Ja / Nein / noch nicht entschieden / keine Angabe                                                                         |
+| medizinische_versorgung | enum       | Ja / Nein / keine Angabe                                                                                                  |
+| spurensicherung         | enum       | Vertrauliche Spurensicherung: Ja / Nein / keine Angabe                                                                    |
+| mitbetroffene_kinder    | int        | Zahl der mitbetroffenen Kinder                                                                                            |
+| direktbetroffene_kinder | int        | Zahl der direkt betroffenen Kinder unter den mitbetroffenen                                                               |
+| notizen                 | string     | Freifeld für Notizen                                                                                                      |
+
+##### Gewaltfolgen
+| *Attribut*            | *Datentyp* | *Beschreibung*                                                                                                                                               |
+| --------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| tat_id                | int        | Ordnet die Gewaltfolgen einer oder mehreren Gewalttaten zu                                                                                                   |
+| psychische_folgen     | enum       | Depression / Angststörung / PTBS / Burn-out / Schlafstörungen / Sucht / Kommunikationsschwierigkeiten / Vernachlässigung alltäglicher Dinge / keine / andere |
+| körperliche_folgen    | enum       | Schmerzen / Lähmungen / Krankheit / keine / andere                                                                                                           |
+| beeinträchtigungen    | string     | Freifeld für dauerhafte körperliche Beeinträchtigungen                                                                                                       |
+| finanzielle_folgen    | enum       | Ja / Nein – ggf. Freitextfeld                                                                                                                                |
+| arbeitseinschränkung  | enum       | Ja / Nein – ggf. Freitextfeld                                                                                                                                |
+| verlust_arbeitsstelle | enum       | Ja / Nein – ggf. Freitextfeld                                                                                                                                |
+| soziale_isolation     | enum       | Ja / Nein – ggf. Freitextfeld                                                                                                                                |
+| suizidalität          | enum       | Ja / Nein – ggf. Freitextfeld                                                                                                                                |
+| weiteres              | string     | Freifeld für zusätzliche Informationen                                                                                                                       |
+| keine_angabe          | enum       | Falls zuvor kein Feld ausgefüllt wurde                                                                                                                       |
+| notiz                 | string     | Freifeld für Notizen                                                                                                                                         |
+
+##### Begleitungen
+| *Attribut*          | *Datentyp* | *Beschreibung*                                                                                                                                                                                                                                                                           |
+| ------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| begleitungs_id      | int        | Eindeutige ID zur Identifikation einer Begleitung                                                                                                                                                                                                                                        |
+| anzahl_begleitungen | int        | Gesamtanzahl der Begleitungen                                                                                                                                                                                                                                                            |
+| art_begleitung      | enum       | Begleitung bei: Gerichte / Polizei / Rechtsanwält:innen / Ärzt:innen / Rechtsmedizin / Jugendamt / Sozialamt / Jobcenter / Beratungsstellen / Frauen- und Kinderschutzeinrichtungen / spezialisierte Schutzeinrichtungen / Interventionsstellen / sonstige – Freitextfeld bei „sonstige“ |
+| anzahl_verweisungen | int        | Gesamtanzahl der Verweisungen                                                                                                                                                                                                                                                            |
+| art_verweisungen    | enum       | Verweis an: Gerichte / Polizei / Rechtsanwält:innen / Ärzt:innen / Rechtsmedizin / Jugendamt / Sozialamt / Jobcenter / Beratungsstellen / Frauen- und Kinderschutzeinrichtungen / spezialisierte Schutzeinrichtungen / Interventionsstellen / sonstige – Freitextfeld bei „sonstige“     |
+
+##### Konto
+| *Attribut* | *Datentyp* | *Beschreibung*                                    |
+| ---------- | ---------- | ------------------------------------------------- |
+| user_id    | int        | Eindeutige ID des Benutzerkontos                  |
+| vorname    | string     | Vorname der Mitarbeiter*in                        |
+| nachname   | string     | Nachname der Mitarbeiter*in                       |
+| mail       | string     | E-Mail-Adresse der Mitarbeiter*in                 |
+| position   | enum       | Zugriffsberechtigung: Basis / Erweiterung / Admin |
+| preset_id  | int        | Zugeordnete Filtereinstellungen                   |
+| anfrage_id | int        | Anfragen, die von diesem Konto bearbeitet wurden  |
+| fall_id    | int        | Fälle, die von diesem Konto bearbeitet wurden     |
+
+##### Preset
+| *Attribut* | *Datentyp* | *Beschreibung*                                                                              |
+| ---------- | ---------- | ------------------------------------------------------------------------------------------- |
+| preset_id  | int        | Eindeutige ID der Filtereinstellung                                                         |
+| daten      | enum       | Auswahlmöglichkeiten an Daten, die für die statistische Auswertung ausgegeben werden sollen |
+
+
 ### Rahmen des Produkts
 Das Produkt umfasst eine Softwarelösung zur digitalen Erfassung, Verwaltung und Auswertung von Anfragen und Beratungsfällen.
 Hauptfunktionen sind:
