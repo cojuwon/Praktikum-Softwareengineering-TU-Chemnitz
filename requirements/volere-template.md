@@ -120,8 +120,8 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
 
 ##### Anfrage
 
-| *Attribut*   | *Datentyp* | *Beschreibung*                                                                                                                                                                                                                                                                                                                    |
-| ------------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| *Attribut*   | *Datentyp* | *Beschreibung*                                                                                                                                                                           |
+
 | anfrage_id   | int        | Jede Anfrage erhält eine eindeutige ID                                                                                                                                                                                                                                                                                            |
 | wie          | string     | Beschreibung, wie die Anfrage erfolgt ist (z. B. Telefon, E-Mail etc.)                                                                                                                                                                                                                                                            |
 | datum        | date       | Datum der Anfrage                                                                                                                                                                                                                                                                                                                 |
