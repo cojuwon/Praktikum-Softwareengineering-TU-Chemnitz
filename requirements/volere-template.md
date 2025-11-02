@@ -76,7 +76,7 @@ Nordsachsen
 - nicht im Aufgabenbereich liegt Koordination zwischen Beratungsstellen, Zuweisung der Fälle, interne Organisation (wie Finanzen, Personalverwaltung) oder externe Kommunikation (Website, E-Mail-System)
 
 ### Datenmodell und Data-dictionary
-#### Datemodell
+#### Datenmodell
 - Anfrage
   - enthält Informationen über Erstkontakte (Telefon, E-Mail usw.) 
   - kann zu einem Fall führen
@@ -120,19 +120,20 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
 
 ##### Anfrage
 
-| Attribut     | Datentyp | Beschreibung                                                                                                                                                                                                                                                                                                                        |
-| ------------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| anfrage_id   | int      | Eindeutige ID zur Identifikation der Anfrage                                                                                                                                                                                                                                                                                        |
-| wie          | string   | Beschreibung, wie die Anfrage erfolgt ist (z. B. Telefon, E-Mail etc.)                                                                                                                                                                                                                                                              |
-| datum        | date     | Datum der Anfrage                                                                                                                                                                                                                                                                                                                   |
-| ort          | enum     | Anfrage aus: Leipzig Stadt / Leipzig Land / Nordsachsen / Sachsen / andere                                                                                                                                                                                                                                                          |
-| wer          | enum     | Wer hat angefragt: Fachkraft (F) / Angehörige:r (A) / Betroffene:r (B) / anonym / queer Betroffene:r (qB) / queer Fachkraft (qF) / queer Angehörige:r (qA) / queer anonym / Fachkraft für Betroffene (FfB) / Angehörige:r für Betroffene (AfB) / Fachkraft für queere Betroffene (FFqB) / Angehörige:r für queere Betroffene (AfqB) |
-| art          | enum     | Art der Anfrage: medizinische Soforthilfe / Vertrauliche Spurensicherung / Beratungsbedarf / zu Rechtlichem / Sonstiges                                                                                                                                                                                                             |
-| beratungs_id | int      | Wenn ein Termin vereinbart wurde, wird eine Beratung mit ID, Datum und Ort angelegt                                                                                                                                                                                                                                                 |
-| user_id      | int      | Mitarbeiter*in, der/die die Anfrage bearbeitet                                                                                                                                                                                                                                                                                      |
-
+| *Attribut*   | *Datentyp* | *Beschreibung*                                                                                                                                                                                                                                                                                                                    |
+| ------------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| anfrage_id   | int        | Jede Anfrage erhält eine eindeutige ID                                                                                                                                                                                                                                                                                            |
+| wie          | string     | Beschreibung, wie die Anfrage erfolgt ist (z. B. Telefon, E-Mail etc.)                                                                                                                                                                                                                                                            |
+| datum        | date       | Datum der Anfrage                                                                                                                                                                                                                                                                                                                 |
+| ort          | enum       | Anfrage aus: Leipzig Stadt / Leipzig Land / Nordsachsen / Sachsen / andere                                                                                                                                                                                                                                                        |
+| wer          | enum       | Wer hat angefragt: Fachkraft (F) / Angehörige:r (A) / Betroffene:r (B) / anonym / queer Betroffene:r (qB) / queer Fachkraft (qF) / queer Angehörige:r (qA) / queer anonym / Fachkraft für Betroffene (FfB) / Angehörige:r für Betroffene (AfB) / Fachkraft für queere Betroffene (FFqB) / Angehörige für queere Betroffene (AfqB) |
+| art          | enum       | Art der Anfrage: medizinische Soforthilfe / vertrauliche Spurensicherung / Beratungsbedarf / rechtliche Fragen / Sonstiges                                                                                                                                                                                                        |
+| beratungs_id | int        | Wenn ein Termin vereinbart wurde, wird eine Beratung mit ID, Datum und Ort angelegt                                                                                                                                                                                                                                               |
+| user_id      | int        | Mitarbeiter*in, der*die Anfrage zugewiesen bekommen hat                                                                                                                                                                                                                                                                           |
 
 ##### Fall
+
+
 ##### Klient*in
 ##### Beratung
 ##### Gewalttat
