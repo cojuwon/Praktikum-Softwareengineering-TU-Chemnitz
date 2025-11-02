@@ -76,18 +76,48 @@ Nordsachsen
 - nicht im Aufgabenbereich liegt Koordination zwischen Beratungsstellen, Zuweisung der Fälle, interne Organisation (wie Finanzen, Personalverwaltung) oder externe Kommunikation (Website, E-Mail-System)
 
 ### Datenmodell und Data-dictionary
-Das System verwaltet die folgenden zentralen Datentypen:
-- **Anfrage**: Enthält Informationen über Erstkontakte (Telefon, E-Mail usw.)
-- **Beratungsfall**: Enthält Informationen über laufende Beratungen
-- **Klientin**: Person, die beraten wird
-- **Preset**: Gespeicherte Filtereinstellungen für Statistiken
-- **Benutzerkonto**: Zugangsdaten und Rollen (Basis, Erweiterung, Admin), gespeichert sind Email und Namen
+#### Datemodell
+- Anfrage
+  - enthält Informationen über Erstkontakte (Telefon, E-Mail usw.) 
+  - kann zu einem Fall führen
+  - 1 Anfrage → 0..1 Fall
+- Fall
+  - entsteht aus Anfrage oder wird direkt angelegt
+  - enthält Informationen über laufende Beratungen 
+  - gehört zu einer Klient*in
+  - umfasst mehrere Beratungstermine, Gewaltvorfälle, Begleitungen/Verweise, Folgen der Gewalt
+- Klient*in
+  - Person, die beraten wird 
+  - kann mehrere Fälle haben
+  - enthält personenbezogene Daten
+- Beratung
+  - enthält Informationen wann und wo Beratung stattgefunden hat
+  - gehört zu genau einem Fall
+- Gewaltttat
+- Gewaltfolgen
+- Begleitung
+- Preset
+  - gespeicherte Filtereinstellungen für Statistiken 
+  - kann einem oder mehreren Konten gehören
+- Konto
+  - authentifizierte Person mit zugewiesener Rolle (Basis, Erweiterung, Admin)
+  - Zugangsdaten (Name, E-Mail und Passwort)
+  - hat zugewiesene Fälle und Anfragen
 
 Zwischen den Datentypen bestehen folgende Beziehungen:
-- eine Klientin kann mehrere Beratungsfälle haben
-- jeder Beratungsfall kann aus einer Anfrage entstehen
-- ein Benutzerkonto ist einer Mitarbeiterin zugeordnet
-- ein Preset kann einem oder allen Benutzerkonten zugeordnet sein 
+- eine Klient*in kann mehrere Beratungsfälle haben 
+- jeder Fall kann aus einer Anfrage entstehen
+- jeder Fall ist einer Klient*in und Mitarbeiter*in zugordnet
+- eine Beratung ist einer Mitarbeiter*in ud Klient*in zugeordnet
+- Gewalttaten und Gewaltfolgen können einander zugeordnet sein aber auch unabhängig voneinander registriert werden
+- Gewalttaten und Gewaltfolgen sind einer Klient*in zugeordnet
+- Begleitungen werden einer Mitarbeiter*in und einer Klient*in zugeordnet
+- ein Konto ist einer Mitarbeiter*in zugeordnet 
+- jedem Konto ist eine Rolle zugeordnet (Basis, Erweiterung, Admin)
+- ein Preset kann einem, mehreren oder allen Benutzerkonten zugeordnet sein
+
+#### Datadictionary
+   
   
 ### Rahmen des Produkts
 Das Produkt umfasst eine Softwarelösung zur digitalen Erfassung, Verwaltung und Auswertung von Anfragen und Beratungsfällen.
