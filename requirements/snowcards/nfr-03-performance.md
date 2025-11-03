@@ -33,5 +33,4 @@
 - Projektbeschreibung
 
 # History:
-- Erstellt am 03.11.2025, letzte Bearbeitung von Pia
-
+Erstellt am 03.11., bearbeitet: 03.10., letzte:r Bearbeiter:in Pia
