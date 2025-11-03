@@ -6,12 +6,12 @@
 -
 
 # Description:
--Die Software liefert verständliche und klare Fehlermeldungen bei Eingabefehlern. 
--Nutzer*innen werden darauf hingewiesen, welche Informationen fehlen oder korrigiert werden müssen.
+-verständliche und klare Fehlermeldungen bei Eingabefehlern
+-Nutzer*innen werden darauf hingewiesen, welche Informationen fehlen oder korrigiert werden müssen
 
 # Rationale:
 -Reduziert Fehler bei der Dateneingabe und
-unterstützt alle Mitarbeiter*innen bei der fehlerfreien Nutzung des Systems.
+unterstützt alle Mitarbeiter*innen bei der fehlerfreien Nutzung des Systems
 
 # Originator:
 -Bellis e.V. Leipzig
@@ -21,10 +21,10 @@ unterstützt alle Mitarbeiter*innen bei der fehlerfreien Nutzung des Systems.
 Lösungsmöglichkeiten anbieten
 
 # Customer Satisfaction:
--Nutzer*innen können effizient und fehlerfrei arbeiten, ohne Frustration durch unklare Meldungen.
+-Nutzer*innen können effizient und fehlerfrei arbeiten, ohne Frustration durch unklare Meldungen
 
 # Customer Dissatisfaction:
--Unklare Fehlermeldungen könnten zu häufigen Eingabefehlern und Zeitverlust führen.
+-Unklare Fehlermeldungen könnten zu häufigen Eingabefehlern und Zeitverlust führen
 
 # Priority:
 -Mittel
