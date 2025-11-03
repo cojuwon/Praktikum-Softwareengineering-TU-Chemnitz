@@ -292,13 +292,13 @@ Hauptfunktionen sind:
 ## 4. Non-functional Requirements
 --> Was sind (selbstverständliche) Erwartungen an das System?
 
-### Look and feel [Snow Card NFR-01: Look and Feel]
+### Look and feel [Snow Card NFR-01: Look]
 - Einheitliche, sinnvolle Benutzerführung mit klaren Navigationswegen
 - verständliche und konsistente Fehlermeldungen 
 - Optische Hinweise zur Orientierung (z. B. Farbmarkierungen bei Pflichtfeldern)
 - Verwendung der Vereinsfarben blau und gelb  
   
-### Usability and humanity [Snow Card NFR-02: Usability and Humanity]
+### Usability and humanity [Snow Card NFR-02: Usability]
 - Intuitive Bedienbarkeit: System ist für Nutzer*innen ohne technische Vorkenntnisse nach 2 Übungsstunden erlernbar
 - Barrierefreiheit durch anpassbare Schriftgröße, Kontrast und Screenreader-Kompatibilität  
 - ggf. Option für light- und darkmode (TBC)
@@ -327,7 +327,7 @@ Hauptfunktionen sind:
   - Statistiken sollen keine Rückschlüsse auf Einzelpersonen zulassen (z.B. erst exportierbar ab 10 gespeicherten Datensätzen?)
 - Datenspeicherung verschlüsselt (unsere Verantwortung?)
   
-### Kulturell und politisch [Snow Card NFR-06: Kulturell und Politisch]
+### Kulturell und politisch [Snow Card NFR-06: Kulturell]
 - Verwendung gendergerechter Sprache
 - Gestaltung nach traumasensiblen, feministischen und intersektionalen Selbsverständnisses 
 - breite Definition des Gewaltbegriffs
