@@ -39,6 +39,5 @@
 - Verweis auf Volere Template Abschnitt *"Wartbarkeit und Support"*
 
 # History:
-- Erstellt von [Hanna], 03.11.2025 
-- Überarbeitet am [03.11.2025]
+- Erstellt am 03.11., bearbeitet: 03.10., letzte:r Bearbeiter:in Pia
 
