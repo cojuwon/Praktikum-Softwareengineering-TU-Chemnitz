@@ -251,20 +251,20 @@ Hauptfunktionen sind:
 
 ### Funktionelle Anforderungen und Anforderungen an Daten
 
-#### 3.1 Eingabe
+#### 3.1 Eingabe [Snow Card FR-01: Eingabe]
 - es gibt zwei Arten von Datensätzen: **Anfragen** und **Beratungsfälle**
 - für jede Art müssen **Eingabemasken** zur Verfügung stehen
 - beim Speichern wird geprüft, ob alle Pflichtfelder ausgefüllt sind
   - falls nicht: Meldung --> Option, fehlende Felder nachzutragen oder unvollständige Daten zu speichern
 
-#### 3.2 Daten bearbeiten
+#### 3.2 Daten bearbeiten [Snow Card FR-02: Datenbearbeitung]
 - alle Mitarbeiter*innen können bestehende Datensätze suchen und aktualisieren
   - Anfrage nach Tag suchen und bearbeiten
   - Fall suchen (Suchkriterium?)
 - neue Informationen ergänzen und speichern
 - nach Beratungstermin vermerken, dass Termin stattgefunden hat und in welcher Form
 
-#### 3.3 Eingabemaske erweitern (Erweiterung + Admin)
+#### 3.3 Eingabemaske erweitern (Erweiterung + Admin) [Snow Card FR-03: Eingabeerweiterung]
 - Name des neuen Feldes
 - Art der Eingabe
   - Textfeld
@@ -273,7 +273,7 @@ Hauptfunktionen sind:
   - anpassbare Auswahlmöglichkeiten/ Dropdownlisten
   - Kontrollkästchen?
 
-#### 3.4 Ausgabe von Statistiken
+#### 3.4 Ausgabe von Statistiken [Snow Card FR-04: Statistikausgabe]
 - Filter setzen mit Zeitraum und Merkmal 
 - Filter als "preset" speichern
   - persönliches "preset" erstellen und löschen
@@ -282,7 +282,7 @@ Hauptfunktionen sind:
 - drei Standard-Presets sind mitgeliefert
 - Daten sollen exportiert werden können (PDF, XLSX, CSV)
 
-#### 3.5 Berechtigungen und Nutzerverwaltung
+#### 3.5 Berechtigungen und Nutzerverwaltung [Snow Card FR-05: Kontoverwaltung]
 - Das System benötigt passwortgeschützte Konten mit abgestuften Rechten:  
   - **Basiskonto**: Datensätze erfassen/bearbeiten, Statistiken abrufen, selbsterstellte Presets speichern/löschen 
   - **Erweiterungskonto**: Zusätzlich neue Formularfelder und geteilte Presets verwalten
