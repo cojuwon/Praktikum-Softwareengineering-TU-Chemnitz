@@ -35,5 +35,5 @@ Schriftgröße und Kontrast sind einstellbar.
 - Projektbeschreibung
 
 # History:
-- Erstellt am 01.11.2025 von Pia, letzte Bearbeitung von Pia 03.11.
+- Erstellt am 01.11., bearbeitet: 03.10., letzte:r Bearbeiter:in Pia
 
