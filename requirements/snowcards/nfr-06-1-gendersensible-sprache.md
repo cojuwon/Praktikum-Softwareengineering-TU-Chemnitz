@@ -6,20 +6,17 @@
 -
 
 # Description:
-- Alle Texte, Labels und Hinweise verwenden gendersensible Formulierungen, die alle Personen unabhängig von Gender ansprechen.
-
+- Alle Texte, Labels und Hinweise verwenden gendersensible Formulierungen, die alle Personen unabhängig von ihrem Gender ansprechen.
 
 # Rationale:
- - Entspricht dem Leitbild von Bellis e.V. und fördert respektvolle Kommunikation gegenüber Mitarbeiter:innen und Klient:innen.
-
+ - Entspricht dem Leitbild von Bellis e.V.
+ - fördert respektvolle Kommunikation gegenüber Mitarbeiter:innen und Klient:innen.
 
 # Originator:
 - Bellis e.V. Leipzig 
 
 # Fit Criterion:
-- Jede Benutzer:innenoberfläche, Fehlermeldung und jeder Text wird überprüft, ob gendersensible Formulierungen verwendet werden. 
-- Keine Meldungen enthalten nur männliche oder weibliche Formen.
-
+- Keine Inhalte (Benutzer:innenoberfläche, Fehlermeldungen, andere Texte) enthalten nur männliche oder weibliche Formen.
 
 # Customer Satisfaction:
 - 4
@@ -37,4 +34,4 @@
 - Anforderungsbeschreibung
 
 # History:
-- Erstellt 03.11.2025, bearbeitet: 03.11.2025, letzte:r Bearbeiter:in : Anton
+- Erstellt 03.11.2025, bearbeitet: 03.11.2025, letzte:r Bearbeiter:in : Anton, Miriam
