@@ -10,13 +10,13 @@
   - Basiskonto: Datensätze erfassen/bearbeiten, Statistiken abrufen, selbsterstellte Presets speichern/löschen 
   - Erweiterungskonto: Zusätzlich neue Formularfelder und geteilte Presets verwalten
   - Administrationskonto: Zusätzlich Benutzerkonten verwalten (anlegen, Rechte zuweisen/entziehen, löschen)
-- Es muss immer mindestens ein Konto mit Administrationsrechten existieren (empfohlen zwei)
+- Es muss immer mindestens ein Konto mit Administrationsrechten existieren (empfohlen zwei).
 
 # Rationale:
 - Sicherheit der Daten und Vermeidung von Überforderung durch unnötig viele Optionen. Principle of least required privilege.
 
 # Originator:
-- Mitarbeiter*innen des Bellis e.V.
+- Mitarbeiter:innen des Bellis e.V.
 
 # Fit Criterion:
 - Die Konten sind passwortgeschützt und mit den entsprechenden Berechtigungen ausgestattet. Es gibt mindestens ein Administrationskonto.
