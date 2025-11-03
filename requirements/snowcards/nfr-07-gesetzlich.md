@@ -33,5 +33,5 @@
 - Projektbeschreibung
 
 # History:
-- Erstellt 02.11.2025, bearbeitet: -, letzte:r Bearbeiter:in Anton Schmierer
+- Erstellt 02.11.2025 von Anton Schmierer, bearbeitet: 03.11.2025, letzte:r Bearbeiter:in : Miriam Rettelbach 
 
