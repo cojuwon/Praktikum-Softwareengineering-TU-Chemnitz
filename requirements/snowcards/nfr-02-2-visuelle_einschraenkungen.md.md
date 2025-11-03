@@ -11,7 +11,7 @@
 - Alle Mitarbeiter:innen sollen die Oberfläche nutzen können, auch wenn visuelle Einschränkungen vorhanden sind. ​
 
 # Originator:
-- Mitarbeiter*innen des Bellis e.V.​
+- Mitarbeiter:innen des Bellis e.V.​
 
 # Fit Criterion:
 - Die Schriftgröße kann angepasst, der Kontrast erhöht und ein Blaufilter eingestellt werden.​
