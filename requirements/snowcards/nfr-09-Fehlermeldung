@@ -1,1 +1,41 @@
+# Requirement #: NFR-09
+
+# Requirement Type: Non-functional
+
+# Event/BUC/PUC #:
+-
+
+# Description:
+-Die Software liefert verständliche und klare Fehlermeldungen bei Eingabefehlern. 
+-Nutzer*innen werden darauf hingewiesen, welche Informationen fehlen oder korrigiert werden müssen.
+
+# Rationale:
+-Reduziert Fehler bei der Dateneingabe und
+unterstützt alle Mitarbeiter*innen bei der fehlerfreien Nutzung des Systems.
+
+# Originator:
+-Bellis e.V. Leipzig
+
+# Fit Criterion:
+-Jede Eingabeprüfung gibt klare Meldungen aus, die fehlende oder fehlerhafte Eingaben genau beschreiben und 
+Lösungsmöglichkeiten anbieten
+
+# Customer Satisfaction:
+-
+
+# Customer Dissatisfaction:
+-
+
+# Priority:
+-Mittel
+
+# Conflicts:
+-
+
+# Supporting Materials:
+-
+
+# History:
+-3.11
+
 
