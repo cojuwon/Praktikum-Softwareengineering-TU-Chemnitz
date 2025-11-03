@@ -35,4 +35,4 @@
 - Projektbeschreibung
 
 # History:
-- Erstellt: 01.11, bearbeitet von Pia: 03.11.
+- Erstellt: 01.11, bearbeitet von Hanna: 03.11., letzte Bearbeitung von Pia
