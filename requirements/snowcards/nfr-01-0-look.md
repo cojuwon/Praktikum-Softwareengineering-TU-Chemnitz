@@ -1,4 +1,4 @@
-# Requirement #: NFR-01-2-farben
+# Requirement #: NFR-01
 
 # Requirement Type: Non-functional
 
