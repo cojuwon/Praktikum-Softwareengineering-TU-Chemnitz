@@ -1,4 +1,4 @@
-# Requirement #: NFR-02
+# Requirement #: NFR-02-01
 
 # Requirement Type: Non-functional
 
@@ -6,32 +6,32 @@
 -
 
 # Description:
--
+- Das System soll eine barrierearme Benutzeroberfläche bereitstellen- Diese soll ohne technische Vorkenntnisse bedienbar sein. Nutzer*innen sollen Funktionen wie Datenerfassung, Bearbeitung und Statistikausgabe Leicht verstehen können. 
 
 # Rationale:
--
+- Eine einfache Bedienung ist entscheidend, um fehlerfreie Nutzung zu gewährleisten. 
 
 # Originator:
--
+- Mitarbeiter*innen des Bellis e.V.
 
 # Fit Criterion:
--
+- Eine neue Nutzer*in kann innerhalb von wenigen Minuten eine Anfrage vollständig erfassen. Die Oberfläche soll als intuitiv und verständlich wahrgenommen werden. Schriftgröße und Kontrast sind einstellbar.
 
 # Customer Satisfaction:
--
+- 4
 
 # Customer Dissatisfaction:
--
+- 3
 
 # Priority:
--
+- Hoch
 
 # Conflicts:
 -
 
 # Supporting Materials:
--
+- Projektbeschreibung
 
 # History:
--
+- Erstellt am 01.11.2025 von Pia Scheffelmaier, bearbeitet
 
