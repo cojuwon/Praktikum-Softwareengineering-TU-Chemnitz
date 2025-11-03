@@ -5,7 +5,7 @@
 # Event/BUC/PUC #:
 - Event: Eine Anpassung (z. B. neues Eingabefeld oder Fehlerbehebung) soll vorgenommen werden.
 - BUC: Das System wird langfristig von einer externen Person oder Organisation gewartet.
-- PUC: Entwickler*in führt Änderungen am Code oder an der Systemkonfiguration durch. 
+- PUC: Entwickler:in führt Änderungen am Code oder an der Systemkonfiguration durch. 
 
 # Description:
 - Saubere und dokumentierte Codestruktur (Kommentare, modulare Architektur, Namenskonventionen) ermöglicht externe Wartung
