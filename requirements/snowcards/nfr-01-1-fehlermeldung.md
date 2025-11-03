@@ -36,6 +36,6 @@ Lösungsmöglichkeiten anbieten
 -
 
 # History:
--erstellt 03.11 von Kimi, letzte Bearbeitung von Pia
+-Erstellt am 03.11., bearbeitet: 03.10., letzte:r Bearbeiter:in Pia
 
 
