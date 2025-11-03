@@ -12,7 +12,7 @@
 - Die Oberfläche wirkt vertrauter und passt sich an das Schema des Vereins an.
 
 # Originator:
-- Mitarbeiter*innen des Bellis e.V.
+- Mitarbeiter:innen des Bellis e.V.
 
 # Fit Criterion:
 - Die Oberfläche beinhaltet die Farben blau und gelb.
