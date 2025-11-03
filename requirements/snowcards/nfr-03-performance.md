@@ -6,13 +6,13 @@
 -
 
 # Description:
-- System reagiert auf mit akzeptabler Verzögerung (z. B. < 1 Sekunde beim Öffnen von Dropdowns, < 3 Sekunden beim Laden von Filterergebnissen)
+- Das System reagiert mit akzeptabler Verzögerung (z. B. < 1 Sekunde beim Öffnen von Dropdowns, < 3 Sekunden beim Laden von Filterergebnissen).
 
 # Rationale:
 - Lange Verzögerungen sind schädlich für eine angenehme Benutzung der Software. 
 
 # Originator:
-- Mitarbeiter*innen des Bellis e.V.
+- Mitarbeiter:innen des Bellis e.V.
 
 # Fit Criterion:
 - < 1 Sekunde beim Öffnen von Dropdowns, < 3 Sekunden beim Laden von Filterergebnissen 
@@ -33,5 +33,5 @@
 - Projektbeschreibung
 
 # History:
-- Erstellt am 03.11.2025
+- Erstellt am 03.11.2025, letzte Bearbeitung von Pia
 
