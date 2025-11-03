@@ -264,7 +264,7 @@ Hauptfunktionen sind:
 - neue Informationen ergänzen und speichern
 - nach Beratungstermin vermerken, dass Termin stattgefunden hat und in welcher Form
 
-#### 3.3 Eingabemaske erweitern
+#### 3.3 Eingabemaske erweitern (Erweiterung + Admin)
 - Name des neuen Feldes
 - Art der Eingabe
   - Textfeld
@@ -276,8 +276,9 @@ Hauptfunktionen sind:
 #### 3.4 Ausgabe von Statistiken
 - Filter setzen mit Zeitraum und Merkmal 
 - Filter als "preset" speichern
-  - persönliches "preset"
-  - geteiltes "preset"
+  - persönliches "preset" erstellen und löschen
+  - geteiltes "preset" erstellen (und löschen?)
+  - Erweiterung + Admin können außerdem geteilte presets verwalten und löschen
 - drei Standard-Presets sind mitgeliefert
 - Daten sollen exportiert werden können (PDF, XLSX, CSV)
 
@@ -293,7 +294,7 @@ Hauptfunktionen sind:
 
 ### Look and feel
 - Einheitliche, sinnvolle Benutzerführung mit klaren Navigationswegen
-- erständliche und konsistente Fehlermeldungen 
+- verständliche und konsistente Fehlermeldungen 
 - Optische Hinweise zur Orientierung (z. B. Farbmarkierungen bei Pflichtfeldern)
 - Verwendung der Vereinsfarben blau und gelb  
   
