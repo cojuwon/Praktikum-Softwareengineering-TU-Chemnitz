@@ -3,7 +3,6 @@
 # Requirement Type: Functional
 
 # Event/BUC/PUC #:
-- BUC-01-Datenerfassung
 
 # Description:
 - Das System soll Mitarbeiter:innen ermöglichen, neue Anfragen und Beratungsfälle über eine benutzerfreundliche Eingabemaske zu erfassen. - Es gibt zwei Arten von Datensätzem:  Anfrage (Erstkontakt bzw. Terminvereinbarung) und Beratungsfall (laufende Beratung).
@@ -35,4 +34,4 @@
 - Projektbeschreibung
 
 # History:
-- Erstellt: 01.11, bearbeitet von Hanna: 03.11., letzte Bearbeitung von Pia
+- Erstellt am 03.11., bearbeitet: 03.10., letzte:r Bearbeiter:in Pia
