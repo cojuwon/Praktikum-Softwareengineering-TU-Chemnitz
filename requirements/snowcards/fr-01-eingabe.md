@@ -6,11 +6,11 @@
 - BUC-01-Datenerfassung
 
 # Description:
-- Das System soll Mitarbeiter*innen ermöglichen, neue Anfragen und Beratungsfälle über eine benutzerfreundliche Eingabemaske zu erfassen. - Es gibt zwei Arten von Datensätzem:  Anfrage (Erstkontakt bzw. Terminvereinbarung) und Beratungsfall (laufende Beratung).
+- Das System soll Mitarbeiter:innen ermöglichen, neue Anfragen und Beratungsfälle über eine benutzerfreundliche Eingabemaske zu erfassen. - Es gibt zwei Arten von Datensätzem:  Anfrage (Erstkontakt bzw. Terminvereinbarung) und Beratungsfall (laufende Beratung).
 - Beim Speichern werden Pflichtfelder überprüft: fehlende Angaben werden mit Fehlermeldung angezeigt
   
 # Rationale:
-- Der Kernprozess des Systems ist die Datenerfassung. Die Erfassung soll digital und strukturiert erfolgen. Das reduziert den Arbeitsaufwand der Mitglieder*innen
+- Der Kernprozess des Systems ist die Datenerfassung. Die Erfassung soll digital und strukturiert erfolgen. Das reduziert den Arbeitsaufwand der Mitglieder:innen
 
 # Originator:
 - Mitarbeiter:innen des Bellis e.V.
@@ -20,10 +20,10 @@
 - Alle Pflichtfelder werden überprüft und Fehlermeldungen sind verständlich formuliert.
 
 # Customer Satisfaction:
--  Schnellere Dokumentation & schnellere Eingabe
+- 5
 
 # Customer Dissatisfaction:
-- Ohne diese Funktion bleibt der Erfassungsprozess unübersichtlich und die Fehleranfälligkeit bleibt hoch
+- 5
 
 # Priority:
 - Hoch
@@ -35,4 +35,4 @@
 - Projektbeschreibung
 
 # History:
-- 03.11.
+- Erstellt: 01.11, bearbeitet von Pia: 03.11.
