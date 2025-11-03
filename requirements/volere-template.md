@@ -299,7 +299,7 @@ Hauptfunktionen sind:
 - Verwendung der Vereinsfarben blau und gelb  
   
 ### Usability and humanity
-- Intuitive Bedienbarkeit: System ist für Nutzer*innen ohne technische Vorkenntnisse nach 12 Übungsstunden erlernbar
+- Intuitive Bedienbarkeit: System ist für Nutzer*innen ohne technische Vorkenntnisse nach 2 Übungsstunden erlernbar
 - Barrierefreiheit durch anpassbare Schriftgröße, Kontrast und Screenreader-Kompatibilität  
 - ggf. Option für light- und darkmode (TBC)
 - Bereitstellung eines Benutzer*innenhandbuchs
