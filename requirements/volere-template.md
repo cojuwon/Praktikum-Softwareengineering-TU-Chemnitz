@@ -244,10 +244,10 @@ Hauptfunktionen sind:
 - Benutzerverwaltung und Rollenrechte
   - Konten mit abgestuften Berechtigungen (Basis, Erweiterung, Administration)
   - Verwaltung von Nutzer*innen durch Administratorinnen
-Nicht Bestandteil des Produkts sind:
-- Bereitstellung von Hardware (z. B. Server oder Endgeräte)
-- Externe Schnittstellen zu Drittsystemen (z. B. Staatsministerium der Justiz, Bundesamt für Statistik)
-- Datenarchivierung außerhalb der Anwendung
+- Nicht Bestandteil des Produkts sind:
+  - Bereitstellung von Hardware (z. B. Server oder Endgeräte)
+  - Externe Schnittstellen zu Drittsystemen (z. B. Staatsministerium der Justiz, Bundesamt für Statistik)
+  - Datenarchivierung außerhalb der Anwendung
 
 ### Funktionelle Anforderungen und Anforderungen an Daten
 
