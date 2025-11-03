@@ -6,25 +6,25 @@
 -
 
 # Description:
--verständliche und klare Fehlermeldungen bei Eingabefehlern
--Nutzer*innen werden darauf hingewiesen, welche Informationen fehlen oder korrigiert werden müssen
+Das System soll verständliche und klare Fehlermeldungen bei Eingabefehlern anzeigen.
+Nutzer:innen werden gezielt darauf hingewiesen, welche Informationen fehlen oder korrigiert werden müssen, um die Eingabe erfolgreich abschließen zu können.
 
 # Rationale:
 -Reduziert Fehler bei der Dateneingabe und
 unterstützt alle Mitarbeiter*innen bei der fehlerfreien Nutzung des Systems
 
 # Originator:
--Bellis e.V. Leipzig
+Mitarbeiter:innen des Bellis e.V.
 
 # Fit Criterion:
 -Jede Eingabeprüfung gibt klare Meldungen aus, die fehlende oder fehlerhafte Eingaben genau beschreiben und 
 Lösungsmöglichkeiten anbieten
 
 # Customer Satisfaction:
--Nutzer*innen können effizient und fehlerfrei arbeiten, ohne Frustration durch unklare Meldungen
+-3
 
 # Customer Dissatisfaction:
--Unklare Fehlermeldungen könnten zu häufigen Eingabefehlern und Zeitverlust führen
+-3
 
 # Priority:
 -Mittel
@@ -36,6 +36,6 @@ Lösungsmöglichkeiten anbieten
 -
 
 # History:
--3.11
+-erstellt 03.11 von Kimi, letzte Bearbeitung von Pia
 
 
