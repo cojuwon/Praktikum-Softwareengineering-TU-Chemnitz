@@ -6,16 +6,18 @@
 -
 
 # Description:
-- Das System soll eine barrierearme Benutzeroberfläche bereitstellen- Diese soll ohne technische Vorkenntnisse bedienbar sein. Nutzer*innen sollen Funktionen wie Datenerfassung, Bearbeitung und Statistikausgabe Leicht verstehen können. 
+- Das System soll eine barrierearme Benutzer:innenoberfläche bereitstellen. Diese soll ohne technische Vorkenntnisse bedienbar sein. 
+Nutzer:innen sollen Funktionen wie Datenerfassung, Bearbeitung und Statistikausgabe leicht verstehen können. 
 
 # Rationale:
 - Eine einfache Bedienung ist entscheidend, um fehlerfreie Nutzung zu gewährleisten. 
 
 # Originator:
-- Mitarbeiter*innen des Bellis e.V.
+- Mitarbeiter:innen des Bellis e.V.
 
 # Fit Criterion:
-- Eine neue Nutzer*in kann innerhalb von wenigen Minuten eine Anfrage vollständig erfassen. Die Oberfläche soll als intuitiv und verständlich wahrgenommen werden. Schriftgröße und Kontrast sind einstellbar.
+- Eine neue Nutzer:in kann innerhalb von wenigen Minuten eine Anfrage vollständig erfassen. Die Oberfläche soll als intuitiv und verständlich wahrgenommen werden.
+Schriftgröße und Kontrast sind einstellbar.
 
 # Customer Satisfaction:
 - 4
@@ -33,5 +35,5 @@
 - Projektbeschreibung
 
 # History:
-- Erstellt am 01.11.2025 von Pia Scheffelmaier, bearbeitet
+- Erstellt am 01.11.2025 von Pia, letzte Bearbeitung von Pia 03.11.
 
