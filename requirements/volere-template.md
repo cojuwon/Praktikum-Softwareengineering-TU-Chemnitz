@@ -7,13 +7,13 @@
 - Automatisierung der Datenauswertung 
   
 ### Stakeholder
-- Mitarbeiter*innen Fachberatungsstelle für queere Betroffene von sexualisierter
+- Mitarbeiter:innen Fachberatungsstelle für queere Betroffene von sexualisierter
 Gewalt in der Stadt Leipzig
-- Mitarbeiter*innen Fachberatung gegen sexualisierte Gewalt im Landkreis
+- Mitarbeiter:innen Fachberatung gegen sexualisierte Gewalt im Landkreis
 Nordsachsen
-- Mitarbeiter*innen Fachberatung gegen sexualisierte Gewalt im Landkreis Leipzig
-- Klient*innen
-- Vereinsmitglieder Bellis e.V. *(bedeutet das Mitarbeiter*innen oder meint das andere Personen? Wenn ja, wen?)*
+- Mitarbeiter:innen Fachberatung gegen sexualisierte Gewalt im Landkreis Leipzig
+- Klient:innen
+- Vereinsmitglieder Bellis e.V. *(bedeutet das Mitarbeiter:innen oder meint das andere Personen? Wenn ja, wen?)*
 - Land Sachsen?
   
 
@@ -27,7 +27,7 @@ Nordsachsen
   - Welche Daten dürfen gespeichert werden? Anonymisierung? Wer hat Zugriff auf Daten?
   - Ab wann werden Daten gelöscht? (z.B. automatische Löschung nach 2 Jahren)
 - Client-Server-Architektur mit zentraler Serverinstanz
-- auf Serverinstanz läuft Microservice, der die Anfragen der Nutzer*innen verarbeitet und mit Datenbank kommuniziert
+- auf Serverinstanz läuft Microservice, der die Anfragen der Nutzer:innen verarbeitet und mit Datenbank kommuniziert
 - Abgabe mit Docker Image, die Einrichtung auf eigenem Server erleichtert (Einschränkung?)
 - ReadMe-Datei mit Installationsanleitung (keine Einschränkung? Genau wie Benutzerhandbuch aber wo kommt das hin?)
 
@@ -35,10 +35,10 @@ Nordsachsen
 ### Namenskonventionen und Terminologie
 - **Anfrage**: Beratungsstelle wurde zwecks kurzer Frage oder zur Terminvereinbarung kontaktiert
 - **Beratungsfall (Fall)**: Dokumentation einer oder mehrerer Beratungssitzungen und/oder Begleitungen (z.B. zur Polizei)
-- **Klient*in**: Person, die Beratung in Anspruch nimmt
+- **Klient:in**: Person, die Beratung in Anspruch nimmt
 - **Preset**: gespeicherte Filterkonfiguration für die statistische Auswertung
-- **Mitarbeiter*in**: Nutzer:in des Systems mit Basis-, erweiterten oder admninistrativen Berechtigungen 
-- **Administrator*in**: Nutzer:in mit administrativen Rechten zur Benutzerverwaltung.  
+- **Mitarbeiter:in**: Nutzer:in des Systems mit Basis-, erweiterten oder admninistrativen Berechtigungen 
+- **Administrator:in**: Nutzer:in mit administrativen Rechten zur Benutzerverwaltung.  
 
 ### Relevante Fakten und Annahmen
 - Vertraulichkeit und auf Wunsch anonyme Nutzung des Beratungsangebotes
@@ -66,11 +66,11 @@ Nordsachsen
   - Fachberatung gegen sexualisierte Gewalt im Landkreis Nordsachsen
   - Fachberatung gegen sexualisierte Gewalt im Landkreis Leipzig
 - Beratungsstellen müssen Statistiken führen (gesetzliche Vorgabe)
-- Mitarbeiter*innen müssen dazu Daten erfassen und auswerten
+- Mitarbeiter:innen müssen dazu Daten erfassen und auswerten
 - bisher: 
   - händische Datenerfassung
   - Übertragung der Notizen in Excel Tabellen
-- Ziel: Softwarelösung für Mitarbeiter*innen von Bellis e.V. welche den Prozess automatisiert
+- Ziel: Softwarelösung für Mitarbeiter:innen von Bellis e.V. welche den Prozess automatisiert
   - Datenerfassung mithilfe eines Webformulars
   - Berechnung und Export von Statistiken aus gespeicherten Daten
 - nicht im Aufgabenbereich liegt Koordination zwischen Beratungsstellen, Zuweisung der Fälle, interne Organisation (wie Finanzen, Personalverwaltung) oder externe Kommunikation (Website, E-Mail-System)
@@ -84,9 +84,9 @@ Nordsachsen
 - Fall
   - entsteht aus Anfrage oder wird direkt angelegt
   - enthält Informationen über laufende Beratungen 
-  - gehört zu einer Klient*in
+  - gehört zu einer Klient:in
   - umfasst mehrere Beratungstermine, Gewaltvorfälle, Begleitungen/Verweise, Folgen der Gewalt
-- Klient*in
+- Klient:in
   - Person, die beraten wird 
   - kann mehrere Fälle haben
   - enthält personenbezogene Daten
@@ -105,14 +105,14 @@ Nordsachsen
   - hat zugewiesene Fälle und Anfragen
 
 Zwischen den Datentypen bestehen folgende Beziehungen:
-- eine Klient*in kann mehrere Beratungsfälle haben 
+- eine Klient:in kann mehrere Beratungsfälle haben 
 - jeder Fall kann aus einer Anfrage entstehen
-- jeder Fall ist einer Klient*in und Mitarbeiter*in zugordnet
-- eine Beratung ist einer Mitarbeiter*in ud Klient*in zugeordnet
+- jeder Fall ist einer Klient:in und Mitarbeiter:in zugordnet
+- eine Beratung ist einer Mitarbeiter:in ud Klient:in zugeordnet
 - Gewalttaten und Gewaltfolgen können einander zugeordnet sein aber auch unabhängig voneinander registriert werden
-- Gewalttaten und Gewaltfolgen sind einer Klient*in zugeordnet
-- Begleitungen werden einer Mitarbeiter*in und einer Klient*in zugeordnet
-- ein Konto ist einer Mitarbeiter*in zugeordnet 
+- Gewalttaten und Gewaltfolgen sind einer Klient:in zugeordnet
+- Begleitungen werden einer Mitarbeiter:in und einer Klient:in zugeordnet
+- ein Konto ist einer Mitarbeiter:in zugeordnet 
 - jedem Konto ist eine Rolle zugeordnet (Basis, Erweiterung, Admin)
 - ein Preset kann einem, mehreren oder allen Benutzerkonten zugeordnet sein
 
@@ -128,18 +128,18 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
 | wer          | enum       | Wer hat angefragt: Fachkraft (F) / Angehörige:r (A) / Betroffene:r (B) / anonym / queer Betroffene:r (qB)                               / queer Fachkraft (qF) / queer Angehörige:r (qA) / queer anonym / Fachkraft für Betroffene (FfB) /                                       Angehörige:r für Betroffene (AfB) / Fachkraft für queere Betroffene (FFqB) / Angehörige:r für queere                                     Betroffene (AfqB) |
 | art          | enum       | Art der Anfrage: medizinische Soforthilfe / vertrauliche Spurensicherung / Beratungsbedarf / rechtliche                                 Fragen / Sonstiges |
 | beratungs_id | int        | Wenn ein Termin vereinbart wurde, wird eine Beratung mit ID, Datum und Ort angelegt  |
-| user_id      | int        | Mitarbeiter*in, welche Anfrage zugewiesen bekommen hat |
+| user_id      | int        | Mitarbeiter:in, welche Anfrage zugewiesen bekommen hat |
 
 ##### Fall
 
 | *Attribut*     | *Datentyp* | *Beschreibung*                                            |
 | -------------- | ---------- | --------------------------------------------------------- |
 | fall_id        | int        | Automatisch generierte ID zur Identifizierung eines Falls |
-| client_id      | int        | Zugeordnete Klient*in                                     |
+| client_id      | int        | Zugeordnete Klient:in                                     |
 | beratungs_id   | int        | Zugeordnete Beratungen                                    |
 | tat_id         | int        | Zugehörige Gewalttaten                                    |
 | begleitungs_id | int        | Zugeordnete Begleitungen                                  |
-| user_id        | int        | Zuständige Mitarbeiter*in                                 |
+| user_id        | int        | Zuständige Mitarbeiter:in                                 |
 
 
 
@@ -216,9 +216,9 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
 | *Attribut* | *Datentyp* | *Beschreibung*                                    |
 | ---------- | ---------- | ------------------------------------------------- |
 | user_id    | int        | Eindeutige ID des Benutzerkontos                  |
-| vorname    | String     | Vorname der Mitarbeiter*in                        |
-| nachname   | String     | Nachname der Mitarbeiter*in                       |
-| mail       | String     | E-Mail-Adresse der Mitarbeiter*in                 |
+| vorname    | String     | Vorname der Mitarbeiter:in                        |
+| nachname   | String     | Nachname der Mitarbeiter:in                       |
+| mail       | String     | E-Mail-Adresse der Mitarbeiter:in                 |
 | position   | enum       | Zugriffsberechtigung: Basis / Erweiterung / Admin |
 | preset_id  | int        | Zugeordnete Filtereinstellungen                   |
 | anfrage_id | int        | Anfragen, die von diesem Konto bearbeitet wurden  |
@@ -243,7 +243,7 @@ Hauptfunktionen sind:
   - Filter- und Exportfunktionen (z. B. PDF, XLSX, CSV)
 - Benutzerverwaltung und Rollenrechte
   - Konten mit abgestuften Berechtigungen (Basis, Erweiterung, Administration)
-  - Verwaltung von Nutzer*innen durch Administratorinnen
+  - Verwaltung von Nutzer:innen durch Administratorinnen
 - Nicht Bestandteil des Produkts sind:
   - Bereitstellung von Hardware (z. B. Server oder Endgeräte)
   - Externe Schnittstellen zu Drittsystemen (z. B. Staatsministerium der Justiz, Bundesamt für Statistik)
@@ -258,7 +258,7 @@ Hauptfunktionen sind:
   - falls nicht: Meldung --> Option, fehlende Felder nachzutragen oder unvollständige Daten zu speichern
 
 #### 3.2 Daten bearbeiten [Snow Card FR-02: Datenbearbeitung]
-- alle Mitarbeiter*innen können bestehende Datensätze suchen und aktualisieren
+- alle Mitarbeiter:innen können bestehende Datensätze suchen und aktualisieren
   - Anfrage nach Tag suchen und bearbeiten
   - Fall suchen (Suchkriterium?)
 - neue Informationen ergänzen und speichern
@@ -299,15 +299,15 @@ Hauptfunktionen sind:
 - Verwendung der Vereinsfarben blau und gelb  
   
 ### Usability and humanity [Snow Card NFR-02: Usability]
-- Intuitive Bedienbarkeit: System ist für Nutzer*innen ohne technische Vorkenntnisse nach 2 Übungsstunden erlernbar
+- Intuitive Bedienbarkeit: System ist für Nutzer:innen ohne technische Vorkenntnisse nach 2 Übungsstunden erlernbar
 - Barrierefreiheit durch anpassbare Schriftgröße, Kontrast und Screenreader-Kompatibilität  
 - ggf. Option für light- und darkmode (TBC)
-- Bereitstellung eines Benutzer*innenhandbuchs
+- Bereitstellung eines Benutzer:innenhandbuchs
 - ReadMe Datei mit Installationsanleitung 
   
 ### Performance [Snow Card NFR-03: Performance]
 - System reagiert ohne wahrnehmbare Verzögerung (z. B. < 1 Sekunde beim Öffnen von Dropdowns, < 3 Sekunden beim Laden von Filterergebnissen)  
-- mehrere Nutzer*innen können gleichzeitig ohne Performanceeinbußen darauf zugreifen (da nur 1 Computer pro Beratungsstelle eher vernachlässigbar)
+- mehrere Nutzer:innen können gleichzeitig ohne Performanceeinbußen darauf zugreifen (da nur 1 Computer pro Beratungsstelle eher vernachlässigbar)
 - Das System (ohne Datenbank und externe Abhängigkeiten) benötigt weniger als 500 MB Speicherplatz.
 - Der jährliche Speicherzuwachs durch Nutzungsdaten liegt unter 50 MB.
 - Das Gesamtsystem (inkl. aller Anwendungsdaten, Logs und Konfigurationen) bleibt unter 1 GB bei einer Betriebsdauer von 10 Jahren.
