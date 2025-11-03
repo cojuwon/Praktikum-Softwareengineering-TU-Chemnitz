@@ -19,10 +19,10 @@ Nicht-triggernde Sprache ist vonnöten, um eine optimale Benutzung zu gewährlei
 -  Mitarbeiter:innen sowie Nutzer:innen können das System problemlos nutzen, ohne sich vor den Kopf gestoßen zu fühlen.
 
 # Customer Satisfaction:
-- 5
+- 3
 
 # Customer Dissatisfaction:
-- 5
+- 3
 
 # Priority:
 - Middle
