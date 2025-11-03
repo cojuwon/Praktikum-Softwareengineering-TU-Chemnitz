@@ -33,5 +33,5 @@
 - Webseite: https://bellis-leipzig.de/
 
 # History:
-- erstellt am 03.11., letzte:r Bearbeiter:in Miriam
+- Erstellt am 03.11., bearbeitet: 03.10., letzte:r Bearbeiter:in Miriam
 
