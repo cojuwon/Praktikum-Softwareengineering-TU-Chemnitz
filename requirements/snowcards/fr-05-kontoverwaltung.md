@@ -36,4 +36,4 @@
 - Anforderungsbeschreibung
 
 # History:
-- Erstellt 02.11.2025, bearbeitet: -, letzte:r Bearbeiter:in Anton Schmierer
+- Erstellt am 03.11., bearbeitet: 03.10., letzte:r Bearbeiter:in Anton
