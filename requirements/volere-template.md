@@ -126,9 +126,9 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
 | datum        | date       | Datum der Anfrage  |
 | ort          | enum       | Anfrage aus: Leipzig Stadt / Leipzig Land / Nordsachsen / Sachsen / andere  |
 | wer          | enum       | Wer hat angefragt: Fachkraft (F) / Angehörige:r (A) / Betroffene:r (B) / anonym / queer Betroffene:r (qB)                               / queer Fachkraft (qF) / queer Angehörige:r (qA) / queer anonym / Fachkraft für Betroffene (FfB) /                                       Angehörige:r für Betroffene (AfB) / Fachkraft für queere Betroffene (FFqB) / Angehörige:r für queere                                     Betroffene (AfqB) |
-| art          | enum       | Art der Anfrage: medizinische Soforthilfe / vertrauliche Spurensicherung / Beratungsbedarf / rechtliche Fragen / Sonstiges |
+| art          | enum       | Art der Anfrage: medizinische Soforthilfe / vertrauliche Spurensicherung / Beratungsbedarf / rechtliche                                 Fragen / Sonstiges |
 | beratungs_id | int        | Wenn ein Termin vereinbart wurde, wird eine Beratung mit ID, Datum und Ort angelegt  |
-| user_id      | int        | Mitarbeiter*in, der*die Anfrage zugewiesen bekommen hat |
+| user_id      | int        | Mitarbeiter*in, welche Anfrage zugewiesen bekommen hat |
 
 ##### Fall
 
@@ -148,16 +148,17 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
 | -------------------- | ---------- | ------------ |
 | client_id            | int        | Automatisch generierte numerische ID     |
 | client_rolle         | enum       | Rolle der ratsuchenden Person: Betroffene:r / Angehörige:r / Fachkraft       |
-| alter                | int        | Alter in Jahren oder 0 bei keiner Angabe   |
-| geschlechtsidentität | enum       | cis weiblich / cis männlich / trans weiblich / trans männlich / trans nicht-binär / inter / agender / divers / keine Angabe               |
+| alter                | int        | Alter in Jahren oder keine Angabe   |
+| geschlechtsidentität | enum       | cis weiblich / cis männlich / trans weiblich / trans männlich / trans nicht-binär / inter /                                             agender / divers / keine Angabe               |
 | sexualität           | enum       | lesbisch / schwul / bisexuell / asexuell / heterosexuell / keine Angabe     |
-| wohnort              | enum       | Leipzig Stadt / Leipzig Land / Nordsachsen / Sachsen / Deutschland / andere / keine Angabe – Freitextfeld bei „Deutschland“ oder „andere“ |
+| wohnort              | enum       | Leipzig Stadt / Leipzig Land / Nordsachsen / Sachsen / Deutschland / andere / keine Angabe –                                             Freitextfeld bei „Deutschland“ oder „andere“ |
 | staatsangehörigkeit  | enum       | deutsch / nicht deutsch – falls „nicht deutsch“, Textfeld oder Auswahl des Landes   |
-| beruf                | string     | arbeitslos / studierend / berufstätig / berentet / Azubi / berufsunfähig / keine Angabe   |
-| schwerbehinderung    | enum       | Liegt eine Schwerbehinderung vor? Ja / Nein – bei Ja: Form (kognitiv/körperlich) und Grad der Behinderung                                 |
-| kontaktpunkt         | enum       | Quelle, woher die Person von der Beratungsstelle erfahren hat (z. B. Polizei, Internet, Ämter etc.) – Freitextfeld bei „andere“           |
-| dolmetschung         | int        | Anzahl in Anspruch genommener Dolmetschungen (in Stunden); Freitextfeld für Sprache(n)  |
-| notizen              | string     | Freifeld für Notizen       |
+| beruf                | String     | arbeitslos / studierend / berufstätig / berentet / Azubi / berufsunfähig / keine Angabe   |
+| schwerbehinderung    | enum       | Liegt eine Schwerbehinderung vor? Ja / Nein – bei Ja: Form (kognitiv/körperlich) und Grad der                                            Behinderung                                 |
+| kontaktpunkt         | enum       | Quelle, woher die Person von der Beratungsstelle erfahren hat (z. B. Polizei, Internet, Ämter                                            etc.) – Freitextfeld bei „andere“           |
+| dolmetschungsstunden | int        | Anzahl in Anspruch genommener Dolmetschungen (in Stunden) |
+| dolmetschungssprachen| String     | Freitextfeld für Sprache(n)  |
+| notizen              | String     | Freifeld für Notizen       |
 
 ##### Beratung
 | *Attribut*      | *Datentyp* | *Beschreibung*                                                                                  |
@@ -168,7 +169,7 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
 | datum           | date       | Datum des Beratungstermins                                                                      |
 | art             | enum       | Durchführungsart: persönlich / Video / Telefon / aufsuchend / schriftlich                       |
 | ort             | enum       | Durchführungsort: Leipzig Stadt / Leipzig Land / Nordsachsen                                    |
-| notizen         | string     | Freifeld für Notizen                                                                            |
+| notizen         | String     | Freifeld für Notizen                                                                            |
 
 ##### Gewalttat
 | *Attribut*              | *Datentyp* | *Beschreibung*     |
@@ -178,46 +179,46 @@ Zwischen den Datentypen bestehen folgende Beziehungen:
 | zeitraum                | enum       | Angabe eines Zeitraums oder keine Angabe     |
 | anzahl_vorfälle         | enum       | einmalig / mehrere / genaue Zahl / keine Angabe                |
 | anzahl_täter_innen      | enum       | 1 / mehrere / genaue Zahl / keine Angabe        |
-| art                     | enum       | Art der Gewalt (Mehrfachauswahl möglich, z. B. sexuelle Belästigung, Vergewaltigung, Spiking, digitale Gewalt etc.)       |
-| tatort                  | enum       | Leipzig / Leipzig Land / Nordsachsen / Sachsen / Deutschland / Ausland / auf der Flucht / im Herkunftsland / keine Angabe |
+| art                     | enum       | Art der Gewalt (Mehrfachauswahl möglich, z. B. sexuelle Belästigung, Vergewaltigung, Spiking,                                             digitale Gewalt etc.)       |
+| tatort                  | enum       | Leipzig / Leipzig Land / Nordsachsen / Sachsen / Deutschland / Ausland / auf der Flucht / im                                             Herkunftsland / keine Angabe |
 | anzeige                 | enum       | Ja / Nein / noch nicht entschieden / keine Angabe             |
 | medizinische_versorgung | enum       | Ja / Nein / keine Angabe          |
 | spurensicherung         | enum       | Vertrauliche Spurensicherung: Ja / Nein / keine Angabe        |
 | mitbetroffene_kinder    | int        | Zahl der mitbetroffenen Kinder                            |
 | direktbetroffene_kinder | int        | Zahl der direkt betroffenen Kinder unter den mitbetroffenen     |
-| notizen                 | string     | Freifeld für Notizen           |
+| notizen                 | String     | Freifeld für Notizen           |
 
 ##### Gewaltfolgen
 | *Attribut*            | *Datentyp* | *Beschreibung*  |
 | --------------------- | ---------- | -------------------------------- |           
-| psychische_folgen     | enum       | Depression / Angststörung / PTBS / Burn-out / Schlafstörungen / Sucht / Kommunikationsschwierigkeiten / Vernachlässigung alltäglicher Dinge / keine / andere |
+| psychische_folgen     | enum       | Depression / Angststörung / PTBS / Burn-out / Schlafstörungen / Sucht /                                                                 Kommunikationsschwierigkeiten / Vernachlässigung alltäglicher Dinge / keine / andere |
 | körperliche_folgen    | enum       | Schmerzen / Lähmungen / Krankheit / keine / andere          |
-| beeinträchtigungen    | string     | Freifeld für dauerhafte körperliche Beeinträchtigungen                     |
+| beeinträchtigungen    | String     | Freifeld für dauerhafte körperliche Beeinträchtigungen                     |
 | finanzielle_folgen    | enum       | Ja / Nein – ggf. Freitextfeld               |
 | arbeitseinschränkung  | enum       | Ja / Nein – ggf. Freitextfeld         |
 | verlust_arbeitsstelle | enum       | Ja / Nein – ggf. Freitextfeld         |
 | soziale_isolation     | enum       | Ja / Nein – ggf. Freitextfeld               |
 | suizidalität          | enum       | Ja / Nein – ggf. Freitextfeld              |
-| weiteres              | string     | Freifeld für zusätzliche Informationen      |
+| weiteres              | String     | Freifeld für zusätzliche Informationen      |
 | keine_angabe          | enum       | Falls zuvor kein Feld ausgefüllt wurde                  |
-| notiz                 | string     | Freifeld für Notizen           |
+| notiz                 | String     | Freifeld für Notizen           |
 
 ##### Begleitungen
 | *Attribut*          | *Datentyp* | *Beschreibung*        |
 | ------------------- | ---------- | --------------------------------------------- |
 | begleitungs_id      | int        | Eindeutige ID zur Identifikation einer Begleitung          |
 | anzahl_begleitungen | int        | Gesamtanzahl der Begleitungen         |
-| art_begleitung      | enum       | Begleitung bei: Gerichte / Polizei / Rechtsanwält:innen / Ärzt:innen / Rechtsmedizin / Jugendamt / Sozialamt / Jobcenter / Beratungsstellen / Frauen- und Kinderschutzeinrichtungen / spezialisierte Schutzeinrichtungen / Interventionsstellen / sonstige – Freitextfeld bei „sonstige“ |
+| art_begleitung      | enum       | Begleitung bei: Gerichte / Polizei / Rechtsanwält:innen / Ärzt:innen / Rechtsmedizin / Jugendamt /                                       Sozialamt / Jobcenter / Beratungsstellen / Frauen- und Kinderschutzeinrichtungen / spezialisierte                                        Schutzeinrichtungen / Interventionsstellen / sonstige – Freitextfeld bei „sonstige“ |
 | anzahl_verweisungen | int        | Gesamtanzahl der Verweisungen       |
-| art_verweisungen    | enum       | Verweis an: Gerichte / Polizei / Rechtsanwält:innen / Ärzt:innen / Rechtsmedizin / Jugendamt / Sozialamt / Jobcenter / Beratungsstellen / Frauen- und Kinderschutzeinrichtungen / spezialisierte Schutzeinrichtungen / Interventionsstellen / sonstige – Freitextfeld bei „sonstige“     |
+| art_verweisungen    | enum       | Verweis an: Gerichte / Polizei / Rechtsanwält:innen / Ärzt:innen / Rechtsmedizin / Jugendamt /                                           Sozialamt / Jobcenter / Beratungsstellen / Frauen- und Kinderschutzeinrichtungen / spezialisierte                                        Schutzeinrichtungen / Interventionsstellen / sonstige – Freitextfeld bei „sonstige“     |
 
 ##### Konto
 | *Attribut* | *Datentyp* | *Beschreibung*                                    |
 | ---------- | ---------- | ------------------------------------------------- |
 | user_id    | int        | Eindeutige ID des Benutzerkontos                  |
-| vorname    | string     | Vorname der Mitarbeiter*in                        |
-| nachname   | string     | Nachname der Mitarbeiter*in                       |
-| mail       | string     | E-Mail-Adresse der Mitarbeiter*in                 |
+| vorname    | String     | Vorname der Mitarbeiter*in                        |
+| nachname   | String     | Nachname der Mitarbeiter*in                       |
+| mail       | String     | E-Mail-Adresse der Mitarbeiter*in                 |
 | position   | enum       | Zugriffsberechtigung: Basis / Erweiterung / Admin |
 | preset_id  | int        | Zugeordnete Filtereinstellungen                   |
 | anfrage_id | int        | Anfragen, die von diesem Konto bearbeitet wurden  |
@@ -245,7 +246,7 @@ Hauptfunktionen sind:
   - Verwaltung von Nutzer*innen durch Administratorinnen
 Nicht Bestandteil des Produkts sind:
 - Bereitstellung von Hardware (z. B. Server oder Endgeräte)
-- Externe Schnittstellen zu Drittsystemen (z. B. Bundesamt für Statistik)
+- Externe Schnittstellen zu Drittsystemen (z. B. Staatsministerium der Justiz, Bundesamt für Statistik)
 - Datenarchivierung außerhalb der Anwendung
 
 ### Funktionelle Anforderungen und Anforderungen an Daten
@@ -291,41 +292,48 @@ Nicht Bestandteil des Produkts sind:
 --> Was sind (selbstverständliche) Erwartungen an das System?
 
 ### Look and feel
-- sinnvolle Benutzerführung
-- Fehlermeldungen
-- optische Hinweise
-- blau und gelb als Vereinsfarben 
+- Einheitliche, sinnvolle Benutzerführung mit klaren Navigationswegen
+- erständliche und konsistente Fehlermeldungen 
+- Optische Hinweise zur Orientierung (z. B. Farbmarkierungen bei Pflichtfeldern)
+- Verwendung der Vereinsfarben blau und gelb  
   
 ### Usability and humanity
-- intuitive Bedienung
-- Barrierefreiheit (z.B. Anpassung der Schriftgröße, Kontrast) besonders in Hinblick auf visuelle Einschränkungen
-- light- und darkmode?
-- Benutzer*innenhandbuch
+- Intuitive Bedienbarkeit: System ist für Nutzer*innen ohne technische Vorkenntnisse nach 12 Übungsstunden erlernbar
+- Barrierefreiheit durch anpassbare Schriftgröße, Kontrast und Screenreader-Kompatibilität  
+- ggf. Option für light- und darkmode (TBC)
+- Bereitstellung eines Benutzer*innenhandbuchs
+- ReadMe Datei mit Installationsanleitung 
   
 ### Performance
-- kurze Reaktionszeiten (z. B. für Öffnung von Dropdown-Menü x sek, für Laden von Daten bei Filter y sek --> ist Zeiteinsparung für unser Projekt überhaupt eine sinnvolle Anforderung?)
+- System reagiert ohne wahrnehmbare Verzögerung (z. B. < 1 Sekunde beim Öffnen von Dropdowns, < 3 Sekunden beim Laden von Filterergebnissen)  
 - mehrere Nutzer*innen können gleichzeitig ohne Performanceeinbußen darauf zugreifen (da nur 1 Computer pro Beratungsstelle eher vernachlässigbar)
-- 
+- Speicherumfang
 
 ### Wartbarkeit- und Support
-- Cleane/übersichtliche Codestruktur und Dokumentation
-- Übergabe der Verantwortung für Wartung muss sichergestellt werden
+- Saubere und dokumentierte Codestruktur (Kommentare, modulare Architektur, Namenskonventionen)
+- Übergabeprozess zur Sicherstellung langfristiger Wartung ist dokumentiert und nachvollziehbar (TBC)
+- Änderungen am System sind ohne tiefgreifende Eingriffe möglich
 
 ### Sicherheit
-- Multifaktorauthentifizierung (eher nicht, oder?)
-- Automatische Abmeldung nach gewisser Zeitspanne der Inaktivität
-- Passwortrichtlinien (bestimmte Anzahl + Inklusive Sonderzeichen)
-- Zurücksetzung des Passworts muss möglich sein
+- Automatische Abmeldung nach definierter Inaktivitätszeit (z. B. 10 Minuten)
+- ggf. Multifaktorauthentifizierung (TBC, geringe Priorität)
+- Passwortschutz nach klaren Richtlinien (Mindestlänge, Sonderzeichen, regelmäßige Erneuerung)  
+- Passwort-Zurücksetzung durch autorisierte Admins möglich
+- Vertraulichkeit der Daten
+  - Speicherung erfolgt pseudonymisiert/anonymisiert 
+  - Statistiken sollen keine Rückschlüsse auf Einzelpersonen zulassen (z.B. erst exportierbar ab 10 gespeicherten Datensätzen?)
+- Datenspeicherung auf verschlüsseltem Server (technische Umsetzung ggf. extern geregelt))
   
 ### Kulturell und politisch
-- Geschlechtergerechte Sprache
-- Gestaltung nach traumasensiblen, feministischen und intersektionalen Selbsverständnisses
+- Verwendung gendergerechter Sprache
+- Gestaltung nach traumasensiblen, feministischen und intersektionalen Selbsverständnisses 
 - breite Definition des Gewaltbegriffs
+- Parteilichkeit für Betroffene als Leitprinzip
 
 ### Gesetzliche
-- DSGVO-konform
-- Datensicherheit
-
+- Einhaltung der DSGVO und anderer datenschutzrechtlicher Vorgaben  
+- Gewährleistung von Datensicherheit, insbesondere bei personenbezogenen Informationen
+  
 ## 5. Project Issues
 Sonstige Eigenschaften:
 – Offene Probleme
