@@ -298,14 +298,14 @@ Hauptfunktionen sind:
 - Optische Hinweise zur Orientierung (z. B. Farbmarkierungen bei Pflichtfeldern)
 - Verwendung der Vereinsfarben blau und gelb  
   
-### Usability and humanity [Snow Card FR-02: Usability and Humanity]
+### Usability and humanity [Snow Card NFR-02: Usability and Humanity]
 - Intuitive Bedienbarkeit: System ist für Nutzer*innen ohne technische Vorkenntnisse nach 2 Übungsstunden erlernbar
 - Barrierefreiheit durch anpassbare Schriftgröße, Kontrast und Screenreader-Kompatibilität  
 - ggf. Option für light- und darkmode (TBC)
 - Bereitstellung eines Benutzer*innenhandbuchs
 - ReadMe Datei mit Installationsanleitung 
   
-### Performance [Snow Card FR-03: Performance]
+### Performance [Snow Card NFR-03: Performance]
 - System reagiert ohne wahrnehmbare Verzögerung (z. B. < 1 Sekunde beim Öffnen von Dropdowns, < 3 Sekunden beim Laden von Filterergebnissen)  
 - mehrere Nutzer*innen können gleichzeitig ohne Performanceeinbußen darauf zugreifen (da nur 1 Computer pro Beratungsstelle eher vernachlässigbar)
 - Das System (ohne Datenbank und externe Abhängigkeiten) benötigt weniger als 500 MB Speicherplatz.
@@ -313,11 +313,11 @@ Hauptfunktionen sind:
 - Das Gesamtsystem (inkl. aller Anwendungsdaten, Logs und Konfigurationen) bleibt unter 1 GB bei einer Betriebsdauer von 10 Jahren.
 
 
-### Wartbarkeit- und Support [Snow Card FR-04: Wartbarkeit]
+### Wartbarkeit- und Support [Snow Card NFR-04: Wartbarkeit]
 - Saubere und dokumentierte Codestruktur (Kommentare, modulare Architektur, Namenskonventionen) ermöglicht externe Wartung
 - Änderungen am System sind ohne tiefgreifende Eingriffe möglich (modularer Aufbau?)
 
-### Sicherheit [Snow Card FR-05: Sicherheit]
+### Sicherheit [Snow Card NFR-05: Sicherheit]
 - Automatische Abmeldung nach definierter Inaktivitätszeit (z. B. 10 Minuten)
 - ggf. Multifaktorauthentifizierung (TBC, geringe Priorität)
 - Passwortschutz nach klaren Richtlinien (Mindestlänge, Sonderzeichen, regelmäßige Erneuerung)  
@@ -327,13 +327,13 @@ Hauptfunktionen sind:
   - Statistiken sollen keine Rückschlüsse auf Einzelpersonen zulassen (z.B. erst exportierbar ab 10 gespeicherten Datensätzen?)
 - Datenspeicherung verschlüsselt (unsere Verantwortung?)
   
-### Kulturell und politisch [Snow Card FR-06: Kulturell und Politisch]
+### Kulturell und politisch [Snow Card NFR-06: Kulturell und Politisch]
 - Verwendung gendergerechter Sprache
 - Gestaltung nach traumasensiblen, feministischen und intersektionalen Selbsverständnisses 
 - breite Definition des Gewaltbegriffs
 - Parteilichkeit für Betroffene als Leitprinzip
 
-### Gesetzliche [Snow Card FR-07: Gesetzlich]
+### Gesetzliche [Snow Card NFR-07: Gesetzlich]
 - Einhaltung der DSGVO und anderer datenschutzrechtlicher Vorgaben  
 - Gewährleistung von Datensicherheit, insbesondere bei personenbezogenen Informationen
   
