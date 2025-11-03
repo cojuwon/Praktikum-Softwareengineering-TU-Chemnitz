@@ -308,12 +308,14 @@ Hauptfunktionen sind:
 ### Performance
 - System reagiert ohne wahrnehmbare Verzögerung (z. B. < 1 Sekunde beim Öffnen von Dropdowns, < 3 Sekunden beim Laden von Filterergebnissen)  
 - mehrere Nutzer*innen können gleichzeitig ohne Performanceeinbußen darauf zugreifen (da nur 1 Computer pro Beratungsstelle eher vernachlässigbar)
-- Speicherumfang
+- Das System (ohne Datenbank und externe Abhängigkeiten) benötigt weniger als 500 MB Speicherplatz.
+- Der jährliche Speicherzuwachs durch Nutzungsdaten liegt unter 50 MB.
+- Das Gesamtsystem (inkl. aller Anwendungsdaten, Logs und Konfigurationen) bleibt unter 1 GB bei einer Betriebsdauer von 10 Jahren.
+
 
 ### Wartbarkeit- und Support
-- Saubere und dokumentierte Codestruktur (Kommentare, modulare Architektur, Namenskonventionen)
-- Übergabeprozess zur Sicherstellung langfristiger Wartung ist dokumentiert und nachvollziehbar (TBC)
-- Änderungen am System sind ohne tiefgreifende Eingriffe möglich
+- Saubere und dokumentierte Codestruktur (Kommentare, modulare Architektur, Namenskonventionen) ermöglicht externe Wartung
+- Änderungen am System sind ohne tiefgreifende Eingriffe möglich (modularer Aufbau?)
 
 ### Sicherheit
 - Automatische Abmeldung nach definierter Inaktivitätszeit (z. B. 10 Minuten)
@@ -323,7 +325,7 @@ Hauptfunktionen sind:
 - Vertraulichkeit der Daten
   - Speicherung erfolgt pseudonymisiert/anonymisiert 
   - Statistiken sollen keine Rückschlüsse auf Einzelpersonen zulassen (z.B. erst exportierbar ab 10 gespeicherten Datensätzen?)
-- Datenspeicherung auf verschlüsseltem Server (technische Umsetzung ggf. extern geregelt))
+- Datenspeicherung verschlüsselt (unsere Verantwortung?)
   
 ### Kulturell und politisch
 - Verwendung gendergerechter Sprache
@@ -336,7 +338,7 @@ Hauptfunktionen sind:
 - Gewährleistung von Datensicherheit, insbesondere bei personenbezogenen Informationen
   
 ## 5. Project Issues
-Sonstige Eigenschaften:
+--> Sonstige Eigenschaften:
 – Offene Probleme
 – Off-the-Shelf Lösungen
 – Neue Probleme
