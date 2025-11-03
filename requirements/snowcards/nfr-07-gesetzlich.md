@@ -33,5 +33,5 @@
 - Projektbeschreibung
 
 # History:
-- Erstellt 02.11.2025, bearbeitet: 03.11.2025, letzte:r Bearbeiter:in : Miriam 
+- Erstellt: 02.11.2025, bearbeitet: 03.11.2025, letzte:r Bearbeiter:in : Miriam 
 
