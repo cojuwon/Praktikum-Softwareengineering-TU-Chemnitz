@@ -59,7 +59,7 @@ Nordsachsen
   - psychosoziale Beratung
   - Krisenintervention
   - längerfristige Begleitung
-  - ermittlung an weiterführende Hilfen
+  - Vermittlung an weiterführende Hilfen
 - kostenloses, vertrauliches, ggf. anonym nutzbares Angebot
 - Verein ist in mehrere Projektbereiche gegliedert
   - Fachberatungsstelle für queere Betroffene von sexualisierter Gewalt in der Stadt Leipzig
