@@ -34,6 +34,6 @@ Nicht-triggernde Sprache ist vonnöten, um eine optimale Benutzung zu gewährlei
 - Projektbeschreibung
 
 # History:
-- Erstellt 03.11.2025, bearbeitet: 03.11.2025, letzte:r Bearbeiter:in : Miriam
+- Erstellt 03.11.2025, bearbeitet: 03.11.2025, letzte:r Bearbeiter:in : 
 
 
