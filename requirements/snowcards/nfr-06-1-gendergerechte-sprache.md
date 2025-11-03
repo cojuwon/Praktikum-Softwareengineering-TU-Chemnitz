@@ -6,18 +6,19 @@
 -
 
 # Description:
--Alle Texte, Labels und Hinweise in der Software verwenden geschlechtergerechte Formulierungen, die alle Personen unabhängig von Geschlecht ansprechen.
+-Alle Texte, Labels und Hinweise verwenden geschlechtergerechte Formulierungen, die alle Personen unabhängig von Geschlecht ansprechen
 
 
 # Rationale:
--Dies entspricht dem Leitbild von Bellis e.V. und fördert eine respektvolle, inklusive Kommunikation gegenüber Mitarbeiter:innen und Klient:innen.
+ - entspricht dem Leitbild von Bellis e.V. und fördert respektvolle Kommunikation gegenüber Mitarbeiter*innen und Klient*innen.
 
 
 # Originator:
 -Bellis e.V. Leipzig 
 
 # Fit Criterion:
--Jede Benutzeroberfläche, Fehlermeldung und jeder Text wird überprüft, ob geschlechtergerechte Formulierungen verwendet werden. Keine Meldungen enthalten ausschließlich männliche oder weibliche Formen.
+-Jede Benutzeroberfläche, Fehlermeldung und jeder Text wird überprüft, ob geschlechtergerechte Formulierungen verwendet werden. 
+- Keine Meldungen enthalten nur männliche oder weibliche Formen
 
 
 # Customer Satisfaction:
