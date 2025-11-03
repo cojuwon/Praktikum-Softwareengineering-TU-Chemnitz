@@ -3,13 +3,10 @@
 # Requirement Type: Non-functional
 
 # Event/BUC/PUC #:
-- Event: Eine Anpassung (z. B. neues Eingabefeld oder Fehlerbehebung) soll vorgenommen werden.
-- BUC: Das System wird langfristig von einer externen Person oder Organisation gewartet.
-- PUC: Entwickler:in führt Änderungen am Code oder an der Systemkonfiguration durch. 
 
 # Description:
-- Saubere und dokumentierte Codestruktur (Kommentare, modulare Architektur, Namenskonventionen) ermöglicht externe Wartung
-- Änderungen am System sind ohne tiefgreifende Eingriffe möglich (modularer Aufbau)
+- Das System benötigt eine saubere und dokumentierte Codestruktur (Kommentare, modulare Architektur, Namenskonventionen), die externe Wartung ermöglicht. 
+- Die Änderungen am System sind ohne tiefgreifende Eingriffe möglich (modularer Aufbau).
 - Einheitliche Namenskonventionen, Kommentare und nachvollziehbare Verzeichnisstrukturen sind gegeben.
 
 # Rationale:
@@ -26,10 +23,10 @@
 - Änderungen an einer Komponente erfordern keine Anpassungen in mehr als zwei weiteren Modulen.
 
 # Customer Satisfaction:
-- erleichtert langfristige Nutzung und Vertrauen in die Software
+- 4
 
 # Customer Dissatisfaction:
-- fehlende Wartbarkeit führt zu Abhängigkeit vom Entwicklungsteam und erhöhten Kosten
+- 4
 
 # Priority:
 - hoch
