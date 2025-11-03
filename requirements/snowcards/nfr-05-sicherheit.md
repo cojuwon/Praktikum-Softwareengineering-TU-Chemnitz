@@ -20,16 +20,17 @@
 - Unautorisierte Zugriffe werden verhindert
 
 # Customer Satisfaction:
--
+-Nutzer*innen fühlen sich sicher beim Umgang mit sensiblen Daten und können die Software vertrauensvoll nutzen
 
 # Customer Dissatisfaction:
--
+-Unzureichender Schutz der Daten könnte zu Datenschutzverletzungen führen und das Vertrauen in das System  mindern
 
 # Priority:
 -Hoch
 
 # Conflicts:
--
+-Hohe Sicherheit erfordert Verschlüsselung, was die Bedienerfreundlichkeit verkomplizieren kann
+-> schränkt Nutzerfreundlichkeit ein
 
 # Supporting Materials:
 -
