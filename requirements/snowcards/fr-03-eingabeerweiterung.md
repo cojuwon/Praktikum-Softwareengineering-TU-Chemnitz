@@ -3,19 +3,22 @@
 # Requirement Type: Functional
 
 # Event/BUC/PUC #:
--
+- Nutzer:in mit Erweiterungs- oder Adminrechten möchte ein zusätzliches Feld in einer bestehenden Eingabemaske hinzufügen (z. B. aufgrund neuer statistischer Anforderungen oder interner Anpassungen)
 
 # Description:
-- Nutzer:innen mit Erweiterungs- oder Adminrechten können bestehende Eingabemasken um neue Felder ergänzen. Dabei wählen sie Feldname und Eingabetyp (Text, Zahl, Datum, Dropdown, Checkbox). Das Feld steht anschließend allen Nutzer:innen zur Verfügung.
+- Nutzer:innen mit Erweiterungs- oder Adminrechten können bestehende Eingabemasken um neue Felder ergänzen
+- dabei wählen sie Feldname und Eingabetyp 
+- das Feld steht anschließend allen Nutzer:innen zur Verfügung
 
 # Rationale:
-- Gesetzliche oder organisatorische Änderungen können neue Datenerfassungen erforderlich machen. Um eine aufwendige Softwareanpassung zu vermeiden, sollen berechtigte Nutzer:innen die Formulare eigenständig erweitern können.
+- gesetzliche oder organisatorische Änderungen können neue Datenerfassungen erforderlich machen
+- um eine aufwendige Softwareanpassung zu vermeiden, sollen berechtigte Nutzer:innen die Formulare eigenständig erweitern können
 
 # Originator:
 - Mitarbeiter:innen des Bellis e.V.
 
 # Fit Criterion:
-- Eine berechtigte Nutzer:in kann ein neues Feld anlegen, speichern und dieses erscheint in allen relevanten Formularen und ist sofort nutzbar.
+- berechtigte Nutzer:in kann ein neues Feld anlegen, speichern und dieses erscheint in allen relevanten Formularen und ist sofort nutzbar
 
 # Customer Satisfaction:
 - 4
@@ -24,14 +27,14 @@
 - 4
 
 # Priority:
-- Hoch
+- hoch
 
 # Conflicts:
-- Mögliche Konflikte mit Datenbankstruktur oder bestehenden Datensätzen.
+- mögliche Konflikte mit Datenbankstruktur oder bestehenden Datensätzen
 
 # Supporting Materials:
 - Projektbeschreibung
 
 # History:
-- Bearbeitet am 03.11., letzte:r Bearbeiter:in Sarah
+- Bearbeitet am 04.11., letzte:r Bearbeiter:in Hanna
 
