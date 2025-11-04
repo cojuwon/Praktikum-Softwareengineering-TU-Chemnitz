@@ -36,5 +36,5 @@
 - Projektbeschreibung
 
 # History:
-- erstellt am 03.11., bearbeitet am 04.11., letzte:r Bearbeiter:in Hanna
+- erstellt: 03.11., bearbeitet: 04.11., letzte:r Bearbeiter:in Hanna
 
