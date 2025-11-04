@@ -3,24 +3,25 @@
 # Requirement Type: Non-functional
 
 # Event/BUC/PUC #:
+- Wartung, Fehlerbehebung und Erweiterung des Systems durch interne oder externe Entwickler:innen
 
 # Description:
-- Das System benötigt eine saubere und dokumentierte Codestruktur (Kommentare, modulare Architektur, Namenskonventionen), die externe Wartung ermöglicht. 
-- Die Änderungen am System sind ohne tiefgreifende Eingriffe möglich (modularer Aufbau).
-- Einheitliche Namenskonventionen, Kommentare und nachvollziehbare Verzeichnisstrukturen sind gegeben.
+- das System benötigt eine saubere und dokumentierte Codestruktur (Kommentare, modulare Architektur, Namenskonventionen), die externe Wartung ermöglicht
+- die Änderungen am System sind ohne tiefgreifende Eingriffe möglich (modularer Aufbau)
+- einheitliche Namenskonventionen, Kommentare und nachvollziehbare Verzeichnisstrukturen sind gegeben
 
 # Rationale:
-- Eine gute Wartbarkeit reduziert langfristig den Aufwand für Pflege, Anpassung und Fehlerbehebung.  
-- Da die Verantwortung für den Betrieb und die Weiterentwicklung an Dritte übergeben wird, muss der Code ohne persönliche Vorkenntnisse wartbar sein.
+- eine gute Wartbarkeit reduziert langfristig den Aufwand für Pflege, Anpassung und Fehlerbehebung
+- da die Verantwortung für den Betrieb und die Weiterentwicklung an Dritte übergeben wird, muss der Code ohne persönliche Vorkenntnisse wartbar sein
 
 # Originator:
-- Projektteam und zukünftige (externe) Systembetreuer:innen.
+- Projektteam und zukünftige (externe) Systembetreuer:innen
 
 # Fit Criterion:
-- Code ist modular aufgebaut (Funktionalitäten sind klar getrennt).
-- Mindestens 80 % der Hauptfunktionen und Module sind kommentiert.
-- Jede Datei und Komponente folgt einer einheitlichen Benennungs- und Ordnerstruktur.
-- Änderungen an einer Komponente erfordern keine Anpassungen in mehr als zwei weiteren Modulen.
+- Code ist modular aufgebaut (Funktionalitäten sind klar getrennt)
+- mindestens 80 % der Hauptfunktionen und Module sind kommentiert
+- Jede Datei und Komponente folgt einer einheitlichen Benennungs- und Ordnerstruktur
+- Änderungen an einer Komponente erfordern keine Anpassungen in mehr als zwei weiteren Modulen
 
 # Customer Satisfaction:
 - 4
@@ -32,12 +33,13 @@
 - hoch
 
 # Conflicts:
-- Keine direkten Konflikte, kann jedoch mit Zeitplan oder Ressourcenaufwand bei der Entwicklung konkurrieren (mehr Aufwand durch Dokumentation).
+- keine direkten Konflikte, kann jedoch mit Zeitplan oder Ressourcenaufwand bei der Entwicklung konkurrieren (mehr Aufwand durch Dokumentation)
 
 # Supporting Materials:
-- Projektdokumentation, ReadMe-Datei, Entwicklerhandbuch  
-- Verweis auf Volere Template Abschnitt *"Wartbarkeit und Support"*
+- Projektdokumentation
+- ReadMe-Datei
+- Benutzer:innenhandbuch
 
 # History:
-- Erstellt am 03.11., bearbeitet: 03.10., letzte:r Bearbeiter:in Pia
+- erstellt: 03.11., bearbeitet: 03.10., letzte:r Bearbeiter:in: Pia
 
