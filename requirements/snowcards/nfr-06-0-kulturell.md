@@ -3,37 +3,41 @@
 # Requirement Type: Non-functional
 
 # Event/BUC/PUC #:
--
+- Nutzer:innen interagieren mit der Software und erhalten Informationen oder Fehlermeldungen
 
 # Description:
-Die Gestaltung orientiert sich an einem traumasensiblen, feministischen und intersektionalen Selbstverständnis,
-das von einer weiten Definition des Gewaltbegriffs ausgeht. 
+- Gestaltung des Systems nach traumasensiblem, feministischen und intersektionalem Selbstverständnis
+- breite Definition des Gewaltbegriffs
+- Parteilichkeit für Betroffene als Leitprinzip
+- alle Texte, Labels und Hinweise verwenden gendersensible Formulierungen, die alle Personen unabhängig von ihrem Gender ansprechen
 
 # Rationale:
-Nicht-triggernde Sprache ist vonnöten, um eine optimale Benutzung zu gewährleisten.
+- Nicht-triggernde Sprache und inklusives Design erhöhen die Nutzbarkeit und das Wohlbefinden von Mitarbeiter:innen und Klient:innen
+- entspricht dem Leitbild von Bellis e.V. und fördert respektvolle Kommunikation
 
 # Originator:
-- Mitarbeiter:innen des Bellis e.V. 
+- Mitarbeiter:innen und Mitglieder:innen des Bellis e.V. 
 
 # Fit Criterion:
-- Mitarbeiter:innen sowie Nutzer:innen können das System problemlos nutzen, ohne sich vor den Kopf gestoßen zu fühlen.
-
+- alle Benutzeroberflächen, Fehlermeldungen und sonstige Texte sind genderneutral oder inklusiv formuliert
+- das Design und die Inhalte reflektieren das traumasensible, feministische und intersektionale Leitbild
+  
 # Customer Satisfaction:
-- 3
+- 4
 
 # Customer Dissatisfaction:
-- 3
+- 4
 
 # Priority:
-- Middle
+- mittel
 
 # Conflicts:
-- -
+- keine direkten Konflikte, ggf. zusätzlicher Aufwand bei Textüberarbeitung oder Designanpassungen
 
 # Supporting Materials:
-- Projektbeschreibung
+- Anforderungsbeschreibung
 
 # History:
-- Erstellt 03.11.2025, bearbeitet: 03.11.2025, letzte:r Bearbeiter:in : 
+- erstellt 03.11.2025, bearbeitet: 04.11.2025, letzte:r Bearbeiter:in: Hanna
 
 
