@@ -3,6 +3,7 @@
 # Requirement Type: Functional
 
 # Event/BUC/PUC #:
+- Mitarbeiter:in will neue Anfrage oder neuen Fall anlegen
 
 # Description:
 - das System soll Mitarbeiter:innen ermöglichen, neue Anfragen und Beratungsfälle über eine benutzerfreundliche Eingabemaske zu erfassen
