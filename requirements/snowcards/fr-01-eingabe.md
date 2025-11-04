@@ -38,4 +38,4 @@
 - Projektbeschreibung
 
 # History:
-- Erstellt am 03.11., bearbeitet: 04.10., letzte:r Bearbeiter:in Hanna
+- erstellt am 03.11., bearbeitet: 04.10., letzte:r Bearbeiter:in Hanna
