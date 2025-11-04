@@ -41,5 +41,5 @@
 - Projektbeschreibung
 
 # History:
-- erstellt am 03.11., bearbeitet: 04.10., letzte:r Bearbeiter:in Hanna
+- erstellt: 03.11., bearbeitet: 04.10., letzte:r Bearbeiter:in Hanna
 
