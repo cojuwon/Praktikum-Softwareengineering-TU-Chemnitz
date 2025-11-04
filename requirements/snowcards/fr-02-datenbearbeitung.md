@@ -42,5 +42,5 @@ Das System muss es allen berechtigten Mitarbeiter:innen ermöglichen bestehende 
 - Projektbeschreibung
 
 # History:
-- erstellt am 03.11., bearbeitet am 04.11., letzte:r Bearbeiter:in Sarah
+- erstellt: 03.11., bearbeitet: 04.11., letzte:r Bearbeiter:in Sarah
 
