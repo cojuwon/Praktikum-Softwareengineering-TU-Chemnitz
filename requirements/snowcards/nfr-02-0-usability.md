@@ -39,7 +39,8 @@
 - keine bekannten Konflikte
 
 # Supporting Materials:
--Projektbeschreibung
+- Projektbeschreibung
+- Eye-Able-Assistent der Website: https://bellis-leipzig.de​
 
 # History:
 - erstellt: 03.11.2025, bearbeitet: 04.11.2025, letzte:r Bearbeiter:in: Dabion
