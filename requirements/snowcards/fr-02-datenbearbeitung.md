@@ -3,9 +3,7 @@
 # Requirement Type: Functional
 
 # Event/BUC/PUC #: 
-- Event: Eine gespeicherte Anfrage oder ein Fall wird zur Bearbeitung geöffnet
-- BUC: Mitarbeiter:in bearbeitet bestehende Anfragen oder Beratungsfälle
-- PUC: Mitarbeiter:in sucht Datensatz, nimmt Änderungen vor und speichert aktualisierte Informationen
+- gespeicherte Anfrage oder ein Fall wird zur Bearbeitung geöffnet
 
 # Description:
 Das System muss es allen berechtigten Mitarbeiter:innen ermöglichen bestehende Datensätze:
