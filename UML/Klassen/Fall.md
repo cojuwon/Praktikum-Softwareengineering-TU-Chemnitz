@@ -8,7 +8,7 @@ klientID: int 
 
 Name: String 
 
-beratungsTermine: ?
+beratungsTermine: date
 
 statistikDaten: ?
 
