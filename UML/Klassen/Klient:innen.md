@@ -8,9 +8,9 @@ name: string
 
 wohnort: string
 
-geburtsdatum: ?
+geburtsdatum: date
 
-geschlecht: ? {weiblich, männlich, divers, nicht-binär}
+geschlecht: string  {weiblich, männlich, divers, nicht-binär}
 
 kontaktDaten: string
 
