@@ -1,3 +1,5 @@
+# Beratung
+
 | *Attribut*      | *Datentyp* | *Beschreibung*                                                                                  |
 | --------------- | ---------- | ----------------------------------------------------------------------------------------------- |
 | beratungs_id    | int        | Eindeutige ID zur Identifikation einer Beratung                                                 |
@@ -7,3 +9,5 @@
 | art             | enum       | Durchführungsart: persönlich / Video / Telefon / aufsuchend / schriftlich                       |
 | ort             | enum       | Durchführungsort: Leipzig Stadt / Leipzig Land / Nordsachsen                                    |
 | notizen         | String     | Freifeld für Notizen                                                                            |
+
+## Methoden
