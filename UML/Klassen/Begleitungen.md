@@ -1,3 +1,5 @@
+# Begleitungen
+
 | *Attribut*          | *Datentyp* | *Beschreibung*        |
 | ------------------- | ---------- | --------------------------------------------- |
 | begleitungs_id      | int        | Eindeutige ID zur Identifikation einer Begleitung          |
