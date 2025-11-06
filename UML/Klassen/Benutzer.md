@@ -1,6 +1,6 @@
 # Klasse: Benutzer
 
-Attribute:
+# Attribute:
 
 -benutzerID: int
 
@@ -10,7 +10,7 @@ Attribute:
 
 -rolle: ? {Basis, Erweiterung, Administration}
 
-Methoden:
+# Methoden:
 
 -anmelden()
 
