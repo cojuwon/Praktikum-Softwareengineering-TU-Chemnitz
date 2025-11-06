@@ -1,3 +1,5 @@
+# Gewalttat
+
 | *Attribut*              | *Datentyp* | *Beschreibung*     |
 | ----------------------- | ---------- | ---------------------- |
 | tat_id                  | int        | Eindeutige ID der Gewalttat       |
@@ -13,3 +15,5 @@
 | mitbetroffene_kinder    | int        | Zahl der mitbetroffenen Kinder                            |
 | direktbetroffene_kinder | int        | Zahl der direkt betroffenen Kinder unter den mitbetroffenen     |
 | notizen                 | String     | Freifeld für Notizen           |
+
+## Methoden
