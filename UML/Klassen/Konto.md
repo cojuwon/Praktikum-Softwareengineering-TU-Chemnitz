@@ -11,16 +11,6 @@
 | anfrage_id | int        | Anfragen, die von diesem Konto bearbeitet wurden  |
 | fall_id    | int        | Fälle, die von diesem Konto bearbeitet wurden     |
 
-# Attribute:
-
--benutzerID: int
-
--name: string
-
--passwort: string
-
--rolle: ? {Basis, Erweiterung, Administration}
-
 # Methoden:
 
 -anmelden()
