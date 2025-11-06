@@ -1,4 +1,4 @@
-# Klient:innen
+# Klient:in
 
 | *Attribut*           | *Datentyp* | *Beschreibung*  |
 | -------------------- | ---------- | ------------ |
@@ -16,17 +16,5 @@
 | dolmetschungssprachen| String     | Freitextfeld für Sprache(n)  |
 | notizen              | String     | Freifeld für Notizen       |
 
-# Attribute:
-
-klientID: int
-
-name: string
-
-wohnort: string
-
-geburtsdatum: date
-
-geschlecht: string  {weiblich, männlich, divers, nicht-binär}
-
-kontaktDaten: string
+# Methoden
 
