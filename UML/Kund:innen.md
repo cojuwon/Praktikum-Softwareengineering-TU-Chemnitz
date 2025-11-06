@@ -1,0 +1,2 @@
+Klasse:Kund*innen
+Atribute: 
