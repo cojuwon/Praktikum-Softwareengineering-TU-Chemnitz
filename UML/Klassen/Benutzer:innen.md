@@ -1,4 +1,4 @@
-# Klasse: Benutzer
+# Klasse: Benutzer:innen
 
 # Attribute:
 
