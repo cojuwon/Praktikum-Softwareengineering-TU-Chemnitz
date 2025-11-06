@@ -1,3 +1,5 @@
+# Gewaltfolgen
+
 | *Attribut*            | *Datentyp* | *Beschreibung*  |
 | --------------------- | ---------- | -------------------------------- |           
 | psychische_folgen     | enum       | Depression / Angststörung / PTBS / Burn-out / Schlafstörungen / Sucht /                                                                 Kommunikationsschwierigkeiten / Vernachlässigung alltäglicher Dinge / keine / andere |
@@ -11,3 +13,5 @@
 | weiteres              | String     | Freifeld für zusätzliche Informationen      |
 | keine_angabe          | enum       | Falls zuvor kein Feld ausgefüllt wurde                  |
 | notiz                 | String     | Freifeld für Notizen           |
+
+## Methoden
