@@ -11,17 +11,6 @@
 | beratungs_id | int        | Wenn ein Termin vereinbart wurde, wird eine Beratung mit ID, Datum und Ort angelegt  |
 | user_id      | int        | Mitarbeiter:in, welche Anfrage zugewiesen bekommen hat |
 
-# Attribute:
-
-anfrageID: int
-
-datum: date
-
-kontaktart: 
-Telefon: int 
-E-Mail: string  
-
-inhalt: string
 
 # Methoden:
 
