@@ -4,9 +4,11 @@
 
 anfrageID: int
 
-datum: ?
+datum: date
 
-kontaktart: ? {Telefon, E-Mail, Persönlich, Andere}
+kontaktart: 
+Telefon: int 
+E-Mail: string  
 
 inhalt: string
 
