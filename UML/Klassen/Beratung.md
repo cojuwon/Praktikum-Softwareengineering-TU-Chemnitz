@@ -11,3 +11,7 @@
 | notizen         | String     | Freifeld für Notizen                                                                            |
 
 ## Methoden
+- terminAnlegen()
+- terminBearbeiten()
+- notizenHinzufuegen()
+- terminSuchen()
