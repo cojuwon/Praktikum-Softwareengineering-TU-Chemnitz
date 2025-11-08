@@ -20,4 +20,4 @@
 - gewalttatErfassen()
 - gewalttatBearbeiten()
 - gewalttatSuchen()
-- gewalttatAnzeigen
+- gewalttatAnzeigen()
