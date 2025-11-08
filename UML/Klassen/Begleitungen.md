@@ -9,3 +9,5 @@
 | art_verweisungen    | enum       | Verweis an: Gerichte / Polizei / Rechtsanwält:innen / Ärzt:innen / Rechtsmedizin / Jugendamt /                                           Sozialamt / Jobcenter / Beratungsstellen / Frauen- und Kinderschutzeinrichtungen / spezialisierte                                        Schutzeinrichtungen / Interventionsstellen / sonstige – Freitextfeld bei „sonstige“     |
 
 ## Methoden
+- begleitungAnlegen()
+- begleitungBearbeiten()
