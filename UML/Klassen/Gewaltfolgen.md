@@ -15,3 +15,7 @@
 | notiz                 | String     | Freifeld für Notizen           |
 
 ## Methoden
+- gewaltfolgeErfassen()
+- gewaltfolgeBearbeiten()
+- gewaltfolgeSuchen()
+- gewaltfolgeAnzeigen()
