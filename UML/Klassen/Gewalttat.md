@@ -17,3 +17,7 @@
 | notizen                 | String     | Freifeld für Notizen           |
 
 ## Methoden
+- gewalttatErfassen()
+- gewalttatBearbeiten()
+- gewalttatSuchen()
+- gewalttatAnzeigen
