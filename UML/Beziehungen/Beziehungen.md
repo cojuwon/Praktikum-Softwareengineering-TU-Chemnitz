@@ -14,4 +14,6 @@ Benutzer → Preset: 0..* (Benutzer kann mehrere Presets speichern)
 
 Statistik → Fall: 1..* (Statistik wird über Fälle berechnet)
 
+Gewalttat → Gewaltfolgen 0..1 (jede Gewalttat kann Gewaltfolgen haben)
+
 Zusätzlich: Aggregationen? Komposition?
