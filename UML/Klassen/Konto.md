@@ -23,5 +23,5 @@
 
 -presetLaden()
 
-
+-logout()
 
