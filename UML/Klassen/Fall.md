@@ -11,9 +11,11 @@
 
 # Methoden:
 
-fallSpeichern()
-
-fallBearbeiten()
-
-datenAktualisieren()
-
+- fallSpeichern()
+- fallBearbeiten()
+- datenAktualisieren()
+- fallIdGenerieren()
+- clientIdGenerieren()
+- beratungsIdGenerieren()
+- tatIdGenerieren()
+- begleitungsIdGenerieren()
