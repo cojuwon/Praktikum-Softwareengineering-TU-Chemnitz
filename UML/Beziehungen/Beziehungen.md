@@ -1,7 +1,5 @@
 # Beziehungen 
 
-
-
 Benutzer → Anfrage
 1..*
 Assoziation
@@ -13,6 +11,17 @@ Benutzer → Fall
 Assoziation
 Benutzer (Beraterin) bearbeitet mehrere Fälle, aber der Fall ist nicht Besitz des Benutzers.
 
+ Klient-> Begleitung
+ 1..*
+ Komposition 
+ Begleitung nur da, wenn Klient existiert 
+
+Fall → Begleitung
+0..*
+Komposition (gefüllte Raute)
+Eine Begleitung existiert nur im Kontext eines Falls.
+
+ 
 Fall → Klient
 1..1
 Assoziation
