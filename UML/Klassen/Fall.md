@@ -10,7 +10,10 @@
 | user_id        | int        | Zuständige Mitarbeiter:in                                 |
 
 # Methoden:
-
+-terminhinzufügen()
+-terminBearbeiten()
+- terminLöschen()
+- Fallanlegen()
 - fallSpeichern()
 - fallBearbeiten()
 - datenAktualisieren()
@@ -20,3 +23,4 @@
 - tatIdGenerieren()
 - fallLoeschen()
 - begleitungsIdGenerieren()
+- statisticBerechnen()
