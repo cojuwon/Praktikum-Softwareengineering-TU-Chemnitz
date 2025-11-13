@@ -4,7 +4,7 @@
 
 terminID: int
 
-datum: ?
+datum: date
 
 ort: string
 
@@ -15,4 +15,5 @@ beschreibung: string
 terminSpeichern()
 
 terminBearbeiten()
-
+ terminAnlegen()
+ terminLöschen()
