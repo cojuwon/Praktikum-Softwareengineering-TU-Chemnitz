@@ -14,8 +14,8 @@
 - terminAnlegen()
 - terminBearbeiten() --> vermutlich das gleiche wie terminVerschieben()
 - notizenHinzufuegen()
-- notienBearbeiten()
+- notizenBearbeiten()
 - terminSuchen()
 - terminLoeschen()
-- beraterZuweisen() --> könnte man noch dazu nehmen, falls wir das auch speichern sollen?
+- berater:inZuweisen() --> könnte man noch dazu nehmen, falls wir das auch speichern sollen?
 - beratungStatusAendern()
