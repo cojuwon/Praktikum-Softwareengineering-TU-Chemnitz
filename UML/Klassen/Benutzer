@@ -1,0 +1,9 @@
+Methoden:
+login(): Anmeldung im System
+logout(): Abmeldung
+passwortÄndern(altesPasswort, neuesPasswort
+berechtigungPrüfen(action): Prüft, ob Benutzer bestimmte Aktionen durchführen darf
+eingabe fall/klient/termin()
+ 
+kontoVerwalten(neuesKonto, rechte): nur für Admin
+kontoLöschen(konto): nur für Admin
