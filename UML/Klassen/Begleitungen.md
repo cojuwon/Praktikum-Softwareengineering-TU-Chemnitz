@@ -14,8 +14,8 @@
 - begleitungBearbeiten()
 - begleitungAnzeigen()
 - begleitungLoeschen()
-- verweiungAnlegen()
-- verweiungHinzufuegen() --> gleiches wie anlegen, nur dass Person schon existiert und schon Verweisungen gespeichert hat
-- verweiungBearbeiten()
-- verweiungAnzeigen()
-- verweiungLoeschen()
+- verweisungAnlegen()
+- verweisungHinzufuegen() --> gleiches wie anlegen, nur dass Person schon existiert und schon Verweisungen gespeichert hat
+- verweisungBearbeiten()
+- verweisungAnzeigen()
+- verweisungLoeschen()
