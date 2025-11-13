@@ -10,4 +10,12 @@
 
 ## Methoden
 - begleitungAnlegen()
+- begleitungHinzufuegen() --> gleiches wie anlegen, nur dass Person schon existiert und schon Begleitungen gespeichert hat
 - begleitungBearbeiten()
+- begleitungAnzeigen()
+- begleitungLoeschen()
+- verweiungAnlegen()
+- verweiungHinzufuegen() --> gleiches wie anlegen, nur dass Person schon existiert und schon Verweisungen gespeichert hat
+- verweiungBearbeiten()
+- verweiungAnzeigen()
+- verweiungLoeschen()
