@@ -1,17 +1,20 @@
 # Beratung
 
-| *Attribut*      | *Datentyp* | *Beschreibung*                                                                                  |
-| --------------- | ---------- | ----------------------------------------------------------------------------------------------- |
-| beratungs_id    | int        | Eindeutige ID zur Identifikation einer Beratung                                                 |
-| beratungsstelle | enum       | Zuständige Beratungsstelle (z. B. Fachberatung Leipzig Stadt / Nordsachsen / Landkreis Leipzig) |
-| anzahl          | int        | Gesamtanzahl der Beratungen                                                                     |
-| datum           | date       | Datum des Beratungstermins                                                                      |
-| art             | enum       | Durchführungsart: persönlich / Video / Telefon / aufsuchend / schriftlich                       |
-| ort             | enum       | Durchführungsort: Leipzig Stadt / Leipzig Land / Nordsachsen                                    |
-| notizen         | String     | Freifeld für Notizen                                                                            |
+| *Attribut*               | *Datentyp* | *Beschreibung*                                                                                  |
+| ------------------------ | ---------- | ----------------------------------------------------------------------------------------------- |
+| beratungs_id             | int        | Eindeutige ID zur Identifikation einer Beratung                                                 |
+| beratungsstelle          | enum       | Zuständige Beratungsstelle (z. B. Fachberatung Leipzig Stadt / Nordsachsen / Landkreis Leipzig) |
+| anzahl_beratungen        | int        | Gesamtanzahl der Beratungen                                                                     |
+| datum_beratung           | date       | Datum des Beratungstermins                                                                      |
+| beratungsart             | enum       | Durchführungsart: persönlich / Video / Telefon / aufsuchend / schriftlich                       |
+| beratungsort             | enum       | Durchführungsort: Leipzig Stadt / Leipzig Land / Nordsachsen                                    |
+| notizen_beratung         | String     | Freifeld für Notizen                                                                            |
 
 ## Methoden
 - terminAnlegen()
-- terminBearbeiten()
+- terminBearbeiten() --> vermutlich das gleiche wie terminVerschieben()
 - notizenHinzufuegen()
+- notienBearbeiten()
 - terminSuchen()
+- terminLoeschen()
+- beraterZuweisen() --> könnte man noch dazu nehmen, falls wir das auch speichern sollen?
