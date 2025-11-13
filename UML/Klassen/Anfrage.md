@@ -28,3 +28,5 @@ beratungZuweisen() --> Anfrage wird zur Beratung
 
 anfrageSuchen() --> gehört eher zu einer übergeordneten Klasse
 
+anfrageAnonymisieren() -> Personenbezogene Daten müssen nach Frist anonymisiert werden
+
