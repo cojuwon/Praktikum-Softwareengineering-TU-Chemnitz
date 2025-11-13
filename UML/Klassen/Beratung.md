@@ -18,3 +18,4 @@
 - terminSuchen()
 - terminLoeschen()
 - beraterZuweisen() --> könnte man noch dazu nehmen, falls wir das auch speichern sollen?
+- beratungStatusAendern()
