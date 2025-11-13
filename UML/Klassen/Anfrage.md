@@ -13,10 +13,13 @@
 
 
 # Methoden:
+anlegen()
 
 anfrageSpeichern()
 
 anfrageBearbeiten()
+
+statusAktualisieren() 
 
 anfrageAnzeigen()
 
