@@ -1,17 +1,44 @@
 # Beziehungen 
 
-Benutzer → Anfrage: 1..* (ein Benutzer kann mehrere Anfragen bearbeiten) assoziation
 
-Benutzer → Fall: 1..* (ein Benutzer kann mehrere Fälle bearbeiten) assoziation
 
-Fall → Klient: 1..1 (jeder Fall gehört genau zu einem Klienten) assoziation
+Benutzer → Anfrage
+1..*
+Assoziation
 
-Fall (raute )→ Termin: 1..* (ein Fall kann mehrere Termine haben) Komposition (ein Termin existiert nur im Zusammenhang mit einem Fall.) oder constraint, weil termin nicht in vergangenheit liegen darf?
+Ein Benutzer kann mehrere Anfragen bearbeiten, aber Anfragen können theoretisch auch ohne festen Benutzer existieren (z. B. wenn anonym).
 
-Fall (ausgefüllte Raute) → Eingabefeld: 0..* (dynamische Formularelemente) Komposition (dynamische Formularelemente gehören zum Fall/Datensatz)
+Benutzer → Fall
+1..*
+Assoziation
+Benutzer (Beraterin) bearbeitet mehrere Fälle, aber der Fall ist nicht Besitz des Benutzers.
 
-Benutzer (raute) → Preset: 0..* (Benutzer kann mehrere Presets speichern) AGGREGATION (Preset gehört zum Benutzer, könnte aber theoretisch unabhängig existieren?)
+Fall → Klient
+1..1
+Assoziation
+Jeder Fall gehört genau zu einem Klienten. Beide existieren unabhängig voneinander.
 
-Statistik → Fall: 1..* (Statistik wird über Fälle berechnet) DEPENDENCY? statistik verwendet fälle, besitzt sie aber nicht
+Fall → Termin
+1..*
+Komposition (ausgefüllte Raute)
+Ein Termin existiert nur im Kontext eines Falls. Wenn der Fall gelöscht wird, verschwinden auch seine Termine. → Constraint: TerminDatum ≥ aktuellesDatum (Termin darf nicht in der Vergangenheit liegen).
 
-Gewalttat (raute) → Gewaltfolgen 0..1 (jede Gewalttat kann Gewaltfolgen haben) Komposition (Gewaltfolge existiert nur im Kontext einer Gewalttat) 
+Fall → Eingabefeld
+0..*
+Komposition (ausgefüllte Raute)
+Dynamische Formularelemente gehören logisch zum Fall und werden mit diesem gespeichert/gelöscht.
+
+Benutzer → Preset
+0..*
+Aggregation (leere Raute)
+Presets sind mit Benutzer verknüpft, können aber unabhängig (z. B. geteilt oder systemweit) existieren.
+
+Statistik → Fall
+1..*
+Dependency
+Statistik greift auf Falldaten zu, besitzt sie aber nicht. Sie hängt funktional von Fällen ab.
+
+Gewalttat → Gewaltfolge
+0..*
+Komposition (ausgefüllte Raute)
+Eine Gewaltfolge existiert nur im Zusammenhang mit einer Gewalttat. Wird die Gewalttat gelöscht, entfällt auch die Folge.
