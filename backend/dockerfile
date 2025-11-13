@@ -1,0 +1,20 @@
+FROM python:3.11-slim
+WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# Installation von netcat (nc) für den DB-Healthcheck im Start-Skript
+RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+
+# Kopiert das Start-Skript und macht es ausführbar
+COPY ./start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
+
+EXPOSE 8000
+
+# Setzt das Skript als Standardbefehl (wird von docker-compose überschrieben)
+CMD ["/usr/local/bin/start.sh"]

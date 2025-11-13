@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # 1. PERSISTENTE POSTGRESQL DATENBANK
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    restart: unless-stopped
+    # Persistente Speicherung der Daten
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - .env 
+    networks:
+      - webnet
+
+  # 2. DJANGO BACKEND SERVICE (mit automatischer Migration)
+  api:
+    build:
+      context: ./backend      
+      dockerfile: Dockerfile
+    container_name: django_api
+    # Führt das Skript start.sh aus, welches wartet, migriert und den Server startet
+    command: /usr/local/bin/start.sh 
+    # Bind Mount BEIBEHALTEN: Nützlich für die Live-Entwicklung des Django-Codes
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db                   
+    networks:
+      - webnet
+
+  # 3. NEXT.JS FRONTEND SERVICE (SSR/Proxy)
+  frontend:
+    build:
+      context: ./frontend     
+      dockerfile: Dockerfile
+    container_name: nextjs_frontend
+    
+    # !!! LÖSUNG DES PROBLEMS: Der Volumes-Abschnitt wurde entfernt!
+    # Die gebaute Anwendung wird nun aus dem Image geladen,
+    # wodurch der .next-Ordner korrekt vorhanden ist.
+    
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      DJANGO_INTERNAL_HOST: http://api:8000 
+    depends_on:
+      - api                  
+    networks:
+      - webnet
+
+# Definition der Volumes und Netzwerke
+volumes:
+  postgres_data:
+    driver: local            
+
+networks:
+  webnet:
+    driver: bridge

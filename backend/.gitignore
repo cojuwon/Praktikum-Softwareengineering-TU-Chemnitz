@@ -1,0 +1,10 @@
+# Virtuelle Umgebung (wird bei dir "venv" genannt)
+venv/
+.venv/
+
+# Python-Kompilate
+*.pyc
+__pycache__/
+
+# Django-Kompilate
+*.log
