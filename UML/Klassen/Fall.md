@@ -18,4 +18,5 @@
 - clientIdGenerieren()
 - beratungsIdGenerieren()
 - tatIdGenerieren()
+- fallLoeschen()
 - begleitungsIdGenerieren()
