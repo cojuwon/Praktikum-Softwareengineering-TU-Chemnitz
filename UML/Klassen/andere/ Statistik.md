@@ -1,8 +1,5 @@
 # Statistik
 
-
-# Anfrage
-
 | *Attribut*           | *Datentyp*     | *Beschreibung* |
 | -------------------- | -------------- |---------------------------------------------------------------|
 | statistik_id         | int            | Eindeutige ID der Statistikberechnung                         |
