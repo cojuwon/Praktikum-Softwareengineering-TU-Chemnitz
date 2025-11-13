@@ -38,6 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Dritte-Anbieter-Apps (z.B. Django Rest Framework)
+    'rest_framework', 
+    
+    # Eigene Apps
+    'api', # <-- Deine neue API-App!
 ]
 
 MIDDLEWARE = [
@@ -127,3 +132,24 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    # Erzwingt JSON-Renderer als Standard für die API-Antworten
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    
+    # Globale Permission-Einstellung (FR-05)
+    # Standardmäßig ist der API-Zugriff nur für eingeloggte Nutzer erlaubt.
+    # Dies kann später in einzelnen Views überschrieben werden.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    
+    # Konfiguriert, wie Authentifizierungs-Header gelesen werden
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        # Später: Token-basierte Authentifizierung für Next.js
+        # 'rest_framework.authentication.TokenAuthentication', 
+    )
+}
