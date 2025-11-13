@@ -12,7 +12,7 @@
 | suizidalität          | enum       | Ja / Nein – ggf. Freitextfeld              |
 | weiteres              | String     | Freifeld für zusätzliche Informationen      |
 | keine_angabe          | enum       | Falls zuvor kein Feld ausgefüllt wurde                  |
-| notiz                 | String     | Freifeld für Notizen           |
+| folgen_notizen        | String     | Freifeld für Notizen           |
 
 ## Methoden
 - gewaltfolgeErfassen()
