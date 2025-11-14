@@ -10,17 +10,16 @@
 | user_id        | int        | Zuständige Mitarbeiter:in                                 |
 
 # Methoden:
--terminhinzufügen()
--terminBearbeiten()
-- terminLöschen()
-- Fallanlegen()
-- fallSpeichern()
-- fallBearbeiten()
-- datenAktualisieren()
-- fallIdGenerieren()
-- clientIdGenerieren()
-- beratungsIdGenerieren()
-- tatIdGenerieren()
-- fallLoeschen()
-- begleitungsIdGenerieren()
-- statisticBerechnen()
+fallAnlegen()
+
+fallBearbeiten()
+
+fallLoeschen()
+
+klientZuweisen()
+
+beratungZuweisen()
+
+tatZuweisen()
+
+begleitungZuweisen()
