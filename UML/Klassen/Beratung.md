@@ -7,7 +7,6 @@
 | anzahl_beratungen        | int        | Gesamtanzahl der Beratungen                                                                     |
 | datum_beratung           | date       | Datum des Beratungstermins                                                                      |
 | beratungsart             | enum       | Durchführungsart: persönlich / Video / Telefon / aufsuchend / schriftlich                       |
-| beratungsort             | enum       | Durchführungsort: Leipzig Stadt / Leipzig Land / Nordsachsen                                    |
 | notizen_beratung         | String     | Freifeld für Notizen                                                                            |
 
 ## Methoden
