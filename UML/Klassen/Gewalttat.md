@@ -17,11 +17,16 @@
 | tat_notizen                 | String     | Freifeld für Notizen           |
 
 ## Methoden
-- gewalttatErfassen()
-- gewalttatBearbeiten()
-- gewalttatSuchen()
-- gewalttatAnzeigen()
-- gewalttatLoeschen()
-- tatNotizenErstellen()
-- tatNotizenHinzufuegen()
-- tatNotizenLoeschen()
+gewalttatAnlegen()
+
+gewalttatBearbeiten()
+
+gewalttatSuchen()
+
+gewalttatLoeschen()
+
+tatNotizenAnlegen()
+
+tatNotizenBearbeiten()
+
+tatNotizenLoeschen()

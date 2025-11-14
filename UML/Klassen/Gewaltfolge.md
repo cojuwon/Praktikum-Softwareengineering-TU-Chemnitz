@@ -15,11 +15,16 @@
 | folgen_notizen        | String     | Freifeld für Notizen           |
 
 ## Methoden
-- gewaltfolgeErfassen()
-- gewaltfolgeBearbeiten()
-- gewaltfolgeSuchen()
-- gewaltfolgeAnzeigen()
-- gewaltfolgeLoeschen()
-- notizErstellen()
-- notizBearbeiten()
-- notizLoeschen()
+gewaltfolgeAnlegen()
+
+gewaltfolgeBearbeiten()
+
+gewaltfolgeSuchen()
+
+gewaltfolgeLoeschen()
+
+notizAnlegen()
+
+notizBearbeiten()
+
+notizLoeschen()

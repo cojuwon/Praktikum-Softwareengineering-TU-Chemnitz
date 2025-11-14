@@ -19,7 +19,7 @@ anfrageBearbeiten()
 
 anfrageSuchen()
 
-anfrageLöschen()
+anfrageLoeschen()
 
 mitarbeiterinZuweisen()
 

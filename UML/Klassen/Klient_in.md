@@ -17,18 +17,30 @@
 | klient_notizen              | String     | Freifeld für Notizen       |
 
 # Methoden
+klientAnlegen() --> mit ID-Generierung
 
-- clientAnlegen() --> mit ID-Generierung
-- clientBearbeiten()
-- clientSuchen()
-- clientAnzeigen()
-- clientLoeschen()
-- verknuepfungMitAnfrage()
-- verknuepfungMitBegleitung()
-- verknuepfungMitBeratung()
-- verknuepfungMitFall()
-- verknuepfungMitGewaltfolgen()
-- verknuepfungMitGewalttat()
-- clientNotizHinzufuegen()
-- clientNotizBearbeiten()
-- clientNotizLoeschen()
+klientBearbeiten()
+
+klientSuchen()
+
+klientLoeschen()
+
+anfrageZuweisen()
+
+begleitungZuweisen()
+
+beratungZuweisen()
+
+kontoZuweisen()
+
+fallZuweisen()
+
+gewaltfolgenZuweisen()
+
+gewalttatZuweisen()
+
+klientNotizAnlegen()
+
+klientNotizBearbeiten()
+
+klientNotizLoeschen()
