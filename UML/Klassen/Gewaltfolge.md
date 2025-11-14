@@ -1,4 +1,4 @@
-# Gewaltfolgen
+# Gewaltfolge
 
 | *Attribut*            | *Datentyp* | *Beschreibung*  |
 | --------------------- | ---------- | -------------------------------- |           
