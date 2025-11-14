@@ -113,7 +113,7 @@ services:
     env_file:
       - .env
     ports:
-      - "5432:5432" # <-- HINZUGEFÜGT
+      - "5432:5432" # Add this line to expose the database port
     networks:
       - webnet
 ```
