@@ -13,13 +13,11 @@
 
 
 # Methoden:
-anlegen()
-
-anfrageSpeichern()
+anfrageAnlegen()
 
 anfrageBearbeiten()
 
-statusAktualisieren() 
+anfrageSuchen()
 
 anfrageAnzeigen()
 
@@ -29,7 +27,4 @@ mitarbeiterinZuweisen()
 
 beratungZuweisen() --> Anfrage wird zur Beratung
 
-anfrageSuchen() --> gehört eher zu einer übergeordneten Klasse
-
-anfrageAnonymisieren() -> Personenbezogene Daten müssen nach Frist anonymisiert werden
 
