@@ -3,18 +3,22 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# Installation von netcat (nc) für den DB-Healthcheck im Start-Skript
+# Installation von netcat (nc) für den DB-Healthcheck
 RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
-# Kopiert das Start-Skript und macht es ausführbar
-COPY ./start.sh /usr/local/bin/start.sh
-RUN chmod +x /usr/local/bin/start.sh
-
 EXPOSE 8000
 
-# Setzt das Skript als Standardbefehl (wird von docker-compose überschrieben)
-CMD ["/usr/local/bin/start.sh"]
+# ✅ NEU: Komplette Start-Logik als Single-Line-Shell-Kommando
+# sh -c führt alle Befehle (Warten auf DB, Migrieren, Statik sammeln, Gunicorn starten) 
+# als einen einzelnen String aus. Dies ist die robusteste Methode, um CRLF-Probleme zu umgehen.
+CMD sh -c "while ! nc -z db 5432; do echo 'Warte auf DB...'; sleep 1; done; \
+           echo 'DB ist bereit. Starte Migrationen...'; \
+           python manage.py migrate --noinput; \
+           echo 'Sammle statische Dateien...'; \
+           python manage.py collectstatic --noinput; \
+           echo 'Starte Gunicorn...'; \
+           exec gunicorn core.wsgi:application --bind 0.0.0.0:8000"

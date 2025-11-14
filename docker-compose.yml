@@ -19,8 +19,7 @@ services:
       context: ./backend      
       dockerfile: Dockerfile
     container_name: django_api
-    # Startet das Skript, das auf die DB wartet und migriert
-    command: /usr/local/bin/start.sh 
+    
     # Bind Mount für Code-Änderungen in der Entwicklung (Live-Sync)
     volumes:
       - ./backend:/app
