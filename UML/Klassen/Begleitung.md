@@ -1,4 +1,4 @@
-# Begleitungen
+# Begleitung
 
 | *Attribut*          | *Datentyp* | *Beschreibung*        |
 | ------------------- | ---------- | --------------------------------------------- |
