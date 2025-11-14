@@ -6,18 +6,17 @@
 | statistik_titel      | String         | Titel                                                         |
 | statistik_notizen    | String         | genauere Beschreibung                                         |
 | preset_id            | int            | Referenz auf ein preset, falls vorhanden                      |
-| zeitraum_start       | int/date?      | Beginn des Auswertungszeitraums                               |
-| zeitraum_ende        | int/date?      | Ende des Auswertungszeitraums                                 |
-| datenart             | enum/String[]? | auszuwertende Daten, z. B. Anfrage, Beratung, etc.            |
-| ergebnis             | ?              | Objekt mit den Ergebnissen                                    | --> hier unsicher, wie das aussehen soll
+| zeitraum_start       | date           | Beginn des Auswertungszeitraums                               |
+| zeitraum_ende        | date           | Ende des Auswertungszeitraums                                 |
+| ergebnis             | Datei          | Objekt mit den Ergebnissen                                    |
 | creator_id           | int            | wer die Statistik erstellt hat                                |     
-| creation_date        | int/date?      | wann die Statistik erstellt wurde                             |
+| creation_date        | date           | wann die Statistik erstellt wurde                             |
 
 # Methoden:
+statistikBerechnen() --> StatistikErgebnis
 
-- statistikBerechnen() --> StatistikErgebnis
-- filterAnwenden() --> preset laden und anwenden
-- statistikAnzeigen() --> graphische/tabellarische Darstellung
-- exportieren() --> format PDF, XLSX, CSV?
-- 
+filterAnwenden() --> preset laden und anwenden
+
+statistikeExportieren() --> format PDF, XLSX, CSV?
+
 
