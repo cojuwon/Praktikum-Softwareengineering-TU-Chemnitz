@@ -17,7 +17,7 @@ Benutzer (Beraterin) bearbeitet mehrere Fälle, aber der Fall ist nicht Besitz d
  Begleitung nur da, wenn Klient existiert 
 
 Fall → Begleitung
-0..*
+1..*
 Komposition (gefüllte Raute)
 Eine Begleitung existiert nur im Kontext eines Falls.
 
@@ -30,7 +30,7 @@ Jeder Fall gehört genau zu einem Klienten. Beide existieren unabhängig voneina
 Fall → Termin
 1..*
 Komposition (ausgefüllte Raute)
-Ein Termin existiert nur im Kontext eines Falls. Wenn der Fall gelöscht wird, verschwinden auch seine Termine. → Constraint: TerminDatum ≥ aktuellesDatum (Termin darf nicht in der Vergangenheit liegen).
+Ein Termin existiert nur im Kontext eines Falls. Wenn der Fall gelöscht wird, verschwinden auch seine Termine. 
 
 Fall → Eingabefeld
 0..*
@@ -48,6 +48,6 @@ Dependency
 Statistik greift auf Falldaten zu, besitzt sie aber nicht. Sie hängt funktional von Fällen ab.
 
 Gewalttat → Gewaltfolge
-0..*
+1..*
 Komposition (ausgefüllte Raute)
 Eine Gewaltfolge existiert nur im Zusammenhang mit einer Gewalttat. Wird die Gewalttat gelöscht, entfällt auch die Folge.
