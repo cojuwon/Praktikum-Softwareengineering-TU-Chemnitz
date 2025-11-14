@@ -10,10 +10,15 @@
 
 ## Methoden
 begleitungAnlegen()
+
 begleitungBearbeiten()
-begleitungAnzeigen()
+
 begleitungLoeschen()
+
 verweisungAnlegen()
+
 verweisungBearbeiten()
+
 verweisungAnzeigen()
+
 verweisungLoeschen()
