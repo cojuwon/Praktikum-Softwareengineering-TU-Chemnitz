@@ -19,8 +19,6 @@ anfrageBearbeiten()
 
 anfrageSuchen()
 
-anfrageAnzeigen()
-
 anfrageLöschen()
 
 mitarbeiterinZuweisen()
