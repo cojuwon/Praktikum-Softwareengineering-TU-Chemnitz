@@ -16,7 +16,7 @@ Es gibt zwei empfohlene Wege, um das Projekt lokal zu starten:
 
 ---
 
-# Workflow 1: Alles über Docker Compose (Produktions-Simulation)
+# Workflow 1: Alles über Docker Compose (Produktionssimulation)
 
 Dieser Workflow baut und startet das gesamte System (Frontend, Backend, DB) in Docker-Containern.
 
@@ -113,7 +113,7 @@ services:
     env_file:
       - .env
     ports:
-      - "5432:5432" # Add this line to expose the database port
+      - "5432:5432" # Füge diese Zeile hinzu, um den Datenbank-Port freizugeben
     networks:
       - webnet
 ```
@@ -147,7 +147,7 @@ python -m venv venv
 # macOS/Linux:
 source venv/bin/activate
 # Windows CMD:
-# .\venv\Scripts\activate
+# venv\Scripts\activate
 
 pip install -r requirements.txt
 python manage.py migrate
@@ -176,8 +176,8 @@ Frontend erreichbar unter: **http://localhost:3000**
 - **Backend API:** http://localhost:8000
 
 ### System stoppen
-- In Terminal 2 & 3: `Strg + C`  
-- In Terminal 1: `Strg + C` (Datenbank stoppen)
+- In Terminal 2 & 3: `Strg+C`  
+- In Terminal 1: `Strg+C` (Datenbank stoppen)
 
 ---
 
