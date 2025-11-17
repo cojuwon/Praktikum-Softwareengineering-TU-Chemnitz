@@ -17,6 +17,6 @@ statistikBerechnen() --> StatistikErgebnis
 
 filterAnwenden() --> preset laden und anwenden
 
-statistikeExportieren() --> format PDF, XLSX, CSV?
+statistikExportieren() --> format PDF, XLSX, CSV?
 
 
