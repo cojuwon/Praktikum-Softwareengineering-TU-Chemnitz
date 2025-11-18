@@ -8,7 +8,7 @@
 | preset_id            | int            | Referenz auf ein preset, falls vorhanden                      |
 | zeitraum_start       | date           | Beginn des Auswertungszeitraums                               |
 | zeitraum_ende        | date           | Ende des Auswertungszeitraums                                 |
-| ergebnis             | Datei          | Objekt mit den Ergebnissen                                    |
+| ergebnis             | File           | Objekt mit den Ergebnissen                                    |
 | creator_id           | int            | wer die Statistik erstellt hat                                |     
 | creation_date        | date           | wann die Statistik erstellt wurde                             |
 
@@ -18,5 +18,9 @@ statistikBerechnen() --> StatistikErgebnis
 filterAnwenden() --> preset laden und anwenden
 
 statistikExportieren() --> format PDF, XLSX, CSV?
+
+titelBearbeiten() --> bearbeiten von statistik_titel
+
+notizenBearbeiten() --> bearbeiten von statistik_notizen
 
 
