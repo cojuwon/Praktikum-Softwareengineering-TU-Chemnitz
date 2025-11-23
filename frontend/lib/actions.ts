@@ -1,5 +1,5 @@
 //Beinhaltet Server Actions / Beispiel-Funktionen, z. B. zum Erstellen, Bearbeiten, Löschen von Datensätzen in der Demo-Datenbank.
-
+/*
 
 'use server';
 
@@ -13,7 +13,7 @@ import { redirect } from 'next/navigation';
 import { AuthError } from 'next-auth';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
-
+*/
 /*
 export async function authenticate(
   prevState: string | undefined,
