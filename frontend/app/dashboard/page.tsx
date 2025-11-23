@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { lusitana } from '@/components/ui/fonts';
-import Image from 'next/image';
 
 export default function Page() {
   return (
@@ -12,27 +11,35 @@ export default function Page() {
           <p
             className={`${lusitana.className} text-xl text-gray-800 md:text-3xl md:leading-normal`}
           >
-            <strong>Willkommen bei Bellis e.V.</strong> <br />
-            Hier geht's zu Anmeldung:
+            <strong>Willkommen auf dem Dashboard</strong> <br />
           </p>
           
           <Link
-            href="/login"
+            href="dashboard/anfrage"
             className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base"
           >
-            <span>Log in</span> 
+            <span> Anfrage</span> 
+          </Link>
+          <br></br>
+
+        <Link
+            href="dashboard/fall"
+            className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base"
+          >
+            <span> Fall</span> 
+          </Link>
+
+           <br></br>
+
+            <Link
+            href="dashboard/statistik"
+            className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base"
+          >
+            <span> Statistik </span> 
           </Link>
 
         </div>
         <div className="flex items-center justify-center p-6 md:w-3/5 md:px-28 md:py-12">
-        
-          <Image
-            src="/bellis-favicon.png"
-            width={512}
-            height={512}
-            alt="Bellis Logo"
-            className="hidden md:block"
-          />
 
         </div>
       </div>

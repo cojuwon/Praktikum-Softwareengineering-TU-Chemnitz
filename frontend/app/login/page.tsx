@@ -1,5 +1,3 @@
-// Bellis Logo importieren und ersetzen
-
 'use client';
 import LoginForm from '@/components/login/login-form';
 import { Suspense } from 'react';

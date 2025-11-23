@@ -4,6 +4,7 @@
 // - Update Anfrage & Delete Anfrage Button erstellen
 // - fetch Anfragen erstellen
 
+/*
 import { fetchAnfrage } from '@/lib/api';
 //import { UpdateAnfrage, DeleteAnfrage } from '@/app/ui/anfragen/buttons';
 import { formatDateToLocal } from '@/lib/utils';
@@ -52,8 +53,7 @@ export default async function AnfragenTable({
                   <td className="whitespace-nowrap px-3 py-3">{a.user_id}</td>
                   <td className="whitespace-nowrap py-3 pl-6 pr-3">
                     <div className="flex justify-end gap-3">
-                      {/* <UpdateAnfrage id={a.id} /> */}
-                      {/* <DeleteAnfrage id={a.id} /> */}
+                    
                     </div>
                   </td>
                 </tr>
@@ -68,4 +68,4 @@ export default async function AnfragenTable({
 }
 
 
-
+*/
