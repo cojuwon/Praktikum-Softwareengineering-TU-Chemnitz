@@ -40,12 +40,18 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Dritte-Anbieter-Apps (z.B. Django Rest Framework)
     'rest_framework', 
+    'rest_framework.authtoken',
+    'corsheaders',              
+    'dj_rest_auth',
+    'allauth',
+    'allauth.account',
     
     # Eigene Apps
     'api', # <-- Deine neue API-App!
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -148,8 +154,31 @@ REST_FRAMEWORK = {
     
     # Konfiguriert, wie Authentifizierungs-Header gelesen werden
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
-        # Später: Token-basierte Authentifizierung für Next.js
-        # 'rest_framework.authentication.TokenAuthentication', 
+        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
     )
 }
+
+AUTH_USER_MODEL = 'api.Konto'
+
+REST_AUTH = {
+    'USE_JWT': True,
+    'JWT_AUTH_COOKIE': 'app-auth',         # Name des Access-Token Cookies
+    'JWT_AUTH_REFRESH_COOKIE': 'app-refresh-token',
+    'JWT_AUTH_HTTPONLY': True,                # JavaScript kann Cookie nicht lesen (Sicherheit!)
+    'SESSION_LOGIN': False,
+    'USER_DETAILS_SERIALIZER': 'api.serializers.KontoSerializer', # Damit wir Vornamen/Rolle zurückkriegen
+}
+
+# Einfaches JWT Setup (keine E-Mail Verifizierung für den Anfang)
+ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_USERNAME_REQUIRED = True
+ACCOUNT_AUTHENTICATION_METHOD = 'username'
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+
+# --- CORS (Damit Next.js auf Port 3000 zugreifen darf) ---
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+CORS_ALLOW_CREDENTIALS = True # Wichtig für Cookies!
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]

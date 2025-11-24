@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
 
 # --- ENUM/CHOICES DEFINITIONEN ---
@@ -97,13 +98,50 @@ VERWEISUNG_ART_CHOICES = BEGLEITUNG_ART_CHOICES
 
 
 # --- MODELLE ---
+class KontoManager(BaseUserManager):
+    def create_user(self, username, password=None, **extra_fields):
+        if not username:
+            raise ValueError('Der Benutzername ist erforderlich')
+        
+        # Email normalisieren, falls vorhanden
+        if 'mail_mb' in extra_fields and extra_fields['mail_mb']:
+            extra_fields['mail_mb'] = self.normalize_email(extra_fields['mail_mb'])
+            
+        user = self.model(username=username, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
 
-class Konto(models.Model):
+    def create_superuser(self, username, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('rolle_mb', 'AD') # Admin-Rolle setzen
+        return self.create_user(username, password, **extra_fields)
+
+# --- Model ---
+class Konto(AbstractBaseUser, PermissionsMixin):
     user_id = models.BigAutoField(primary_key=True)
+    
+    # NEU: Username Feld für den Login
+    username = models.CharField(max_length=150, unique=True, verbose_name="Benutzername")
+    
     vorname_mb = models.CharField(max_length=100, verbose_name="Vorname")
     nachname_mb = models.CharField(max_length=100, verbose_name="Nachname")
-    mail_mb = models.EmailField(max_length=255, unique=True, verbose_name="E-Mail")
+    
+    # Email ist jetzt optional (blank=True) und darf NULL sein (null=True), 
+    # damit die Datenbank bei leeren Feldern nicht wegen "unique" meckert.
+    mail_mb = models.EmailField(max_length=255, unique=True, null=True, blank=True, verbose_name="E-Mail")
+    
     rolle_mb = models.CharField(max_length=2, choices=BERECHTIGUNG_CHOICES, default='B', verbose_name="Rolle")
+    
+    is_active = models.BooleanField(default=True) #TODO neu, noch ergänzen im Klassendiagramm
+    is_staff = models.BooleanField(default=False) #TODO neu, noch ergänzen im Klassendiagramm
+    date_joined = models.DateTimeField(default=timezone.now) #TODO neu, noch ergänzen im Klassendiagramm
+
+    objects = KontoManager()
+
+    USERNAME_FIELD = 'username'  # Login erfolgt über dieses Feld
+    REQUIRED_FIELDS = ['vorname_mb', 'nachname_mb'] # Email ist hier raus, da optional
 
     class Meta:
         verbose_name = "Benutzerkonto"
