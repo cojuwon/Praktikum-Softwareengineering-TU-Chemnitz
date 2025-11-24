@@ -26,8 +26,10 @@ services:
       
     # 🔒 SICHERHEIT: Der Port ist nur INTERN für andere Container erreichbar.
     # Externe Zugriffe (z.B. über localhost:8000) werden blockiert.
-    expose:
-      - "8000" 
+    # expose:
+    #  - "8000" (FOR DEVELOPMENT, we will expose this port so Swagger can be accessed)
+    ports: 
+      - "8000:8000" 
       
     env_file:
       - .env

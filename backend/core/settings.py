@@ -29,7 +29,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'DEFAULT_KEY_NUR_IM_NOTFALL')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost"] #TODO Added localhost here temporairily -> should be changed for production
 
 
 # Application definition
@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'dj_rest_auth',
     'allauth',
     'allauth.account',
+
+    'drf_spectacular',
     
     # Eigene Apps
     'api', # <-- Deine neue API-App!
@@ -161,7 +163,9 @@ REST_FRAMEWORK = {
     # Konfiguriert, wie Authentifizierungs-Header gelesen werden
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
-    )
+    ),
+
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 AUTH_USER_MODEL = 'api.Konto'
