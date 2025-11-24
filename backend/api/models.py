@@ -98,7 +98,7 @@ VERWEISUNG_ART_CHOICES = BEGLEITUNG_ART_CHOICES
 
 
 # --- MODELLE ---
-class KontoManager(BaseUserManager): # I want to change this from username to email based auth and remove the username field.
+class KontoManager(BaseUserManager): 
     def create_user(self, mail_mb, password=None, **extra_fields):
         if not mail_mb:
             raise ValueError('Die E-Mail ist erforderlich')
