@@ -1,8 +1,14 @@
 from rest_framework import serializers
+from dj_rest_auth.serializers import LoginSerializer
 from .models import Konto
 
 class KontoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Konto
-        fields = ('user_id', 'vorname_mb', 'nachname_mb', 'mail_mb', 'rolle_mb')
-        read_only_fields = ('user_id', 'mail_mb', 'rolle_mb')
+        fields = ('id', 'vorname_mb', 'nachname_mb', 'mail_mb', 'rolle_mb')
+        read_only_fields = ('id', 'mail_mb', 'rolle_mb')
+        
+class CustomLoginSerializer(LoginSerializer):
+    username = None 
+    def validate(self, attrs):
+        return super().validate(attrs)

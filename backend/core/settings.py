@@ -55,6 +55,15 @@ INSTALLED_APPS = [
     'api', # <-- Deine neue API-App!
 ]
 
+
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of allauth
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -179,13 +188,19 @@ REST_AUTH = {
     'USER_DETAILS_SERIALIZER': 'api.serializers.KontoSerializer', # Damit wir Vornamen/Rolle zurückkriegen
 }
 
+REST_AUTH_SERIALIZERS = {
+    'LOGIN_SERIALIZER': 'api.serializers.CustomLoginSerializer',
+    'USER_DETAILS_SERIALIZER': 'api.serializers.KontoSerializer',
+}
+
 # Einfaches JWT Setup (keine E-Mail Verifizierung für den Anfang)
 ACCOUNT_EMAIL_VERIFICATION = 'none'
-ACCOUNT_AUTHENTICATION_METHOD = 'username'
-ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
 
 ACCOUNT_USER_MODEL_EMAIL_FIELD = 'mail_mb'
-ACCOUNT_USER_MODEL_USERNAME_FIELD = 'username'
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 
 # --- CORS (Damit Next.js auf Port 3000 zugreifen darf) ---
 CORS_ALLOWED_ORIGINS = [

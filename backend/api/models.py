@@ -98,39 +98,32 @@ VERWEISUNG_ART_CHOICES = BEGLEITUNG_ART_CHOICES
 
 
 # --- MODELLE ---
-class KontoManager(BaseUserManager):
-    def create_user(self, username, password=None, **extra_fields):
-        if not username:
-            raise ValueError('Der Benutzername ist erforderlich')
+class KontoManager(BaseUserManager): # I want to change this from username to email based auth and remove the username field.
+    def create_user(self, mail_mb, password=None, **extra_fields):
+        if not mail_mb:
+            raise ValueError('Die E-Mail ist erforderlich')
         
         # Email normalisieren, falls vorhanden
-        if 'mail_mb' in extra_fields and extra_fields['mail_mb']:
+        if 'mail_mb' in extra_fields:
             extra_fields['mail_mb'] = self.normalize_email(extra_fields['mail_mb'])
             
-        user = self.model(username=username, **extra_fields)
+        user = self.model(mail_mb=mail_mb, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, username, password=None, **extra_fields):
+    def create_superuser(self, mail_mb, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('rolle_mb', 'AD') # Admin-Rolle setzen
-        return self.create_user(username, password, **extra_fields)
+        return self.create_user(mail_mb, password, **extra_fields)
 
 # --- Model ---
 class Konto(AbstractBaseUser, PermissionsMixin):
-    user_id = models.BigAutoField(primary_key=True)
-    
-    # NEU: Username Feld für den Login
-    username = models.CharField(max_length=150, unique=True, verbose_name="Benutzername")
-    
     vorname_mb = models.CharField(max_length=100, verbose_name="Vorname")
     nachname_mb = models.CharField(max_length=100, verbose_name="Nachname")
     
-    # Email ist jetzt optional (blank=True) und darf NULL sein (null=True), 
-    # damit die Datenbank bei leeren Feldern nicht wegen "unique" meckert.
-    mail_mb = models.EmailField(max_length=255, unique=True, null=True, blank=True, verbose_name="E-Mail")
+    mail_mb = models.EmailField(max_length=255, unique=True, verbose_name="E-Mail")
     
     rolle_mb = models.CharField(max_length=2, choices=BERECHTIGUNG_CHOICES, default='B', verbose_name="Rolle")
     
@@ -139,9 +132,8 @@ class Konto(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(default=timezone.now) #TODO neu, noch ergänzen im Klassendiagramm
 
     objects = KontoManager()
-
-    USERNAME_FIELD = 'username'  # Login erfolgt über dieses Feld
-    REQUIRED_FIELDS = ['vorname_mb', 'nachname_mb'] # Email ist hier raus, da optional
+    USERNAME_FIELD = 'mail_mb'
+    REQUIRED_FIELDS = ['vorname_mb', 'nachname_mb']
 
     class Meta:
         verbose_name = "Benutzerkonto"
