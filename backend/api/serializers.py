@@ -20,3 +20,18 @@ class CustomRegisterSerializer(RegisterSerializer):
     vorname_mb = serializers.CharField(required=True)
     nachname_mb = serializers.CharField(required=True)
     
+    def get_cleaned_data(self):
+        data = super().get_cleaned_data()
+        data.update({
+            'vorname_mb': self.validated_data.get('vorname_mb', ''),
+            'nachname_mb': self.validated_data.get('nachname_mb', ''),
+        })
+        return data
+
+    def save(self, request):
+        user = super().save(request)
+        user.vorname_mb = self.cleaned_data.get('vorname_mb')
+        user.nachname_mb = self.cleaned_data.get('nachname_mb')
+        user.save()
+        return user
+    
