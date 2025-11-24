@@ -194,3 +194,32 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_CREDENTIALS = True # Wichtig für Cookies!
 CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
+
+
+
+if DEBUG:
+    # In development, allow embedding from anywhere (e.g., Next.js on localhost:3000)
+    X_FRAME_OPTIONS = 'ALLOWALL'
+
+    # Also helpful for dev: Disable the middleware entirely if headers are stubborn
+    MIDDLEWARE.remove('django.middleware.clickjacking.XFrameOptionsMiddleware')
+
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8000",
+    ]
+    CORS_ALLOW_CREDENTIALS = True # Wichtig für Cookies!
+    CSRF_TRUSTED_ORIGINS = ["http://localhost:3000", "http://localhost:8000"]
+
+
+else:
+    # In production, be strict!
+    X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+    CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    ]
+    CORS_ALLOW_CREDENTIALS = True # Wichtig für Cookies!
+    CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
