@@ -124,3 +124,12 @@ export interface Anfrage {
   beratungs_id?: number;          // Optional, wenn Termin vereinbart
   user_id: number;                // Mitarbeiter:in, der die Anfrage zugewiesen bekommen hat
 }
+
+export interface Fall {
+  fall_id: number;         // automatisch generierte ID
+  klient_id: number;       // zugeordnete Klient:in
+  beratungs_id: number;    // zugeordnete Beratung
+  tat_id: number;          // zugehörige Gewalttat
+  begleitungs_id: number;  // zugeordnete Begleitung
+  user_id: number;         // zuständige Mitarbeiter:in
+}
