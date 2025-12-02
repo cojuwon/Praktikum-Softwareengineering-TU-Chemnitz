@@ -1,6 +1,7 @@
 from django.urls import path, include
 from drf_spectacular.views import SpectacularSwaggerView, SpectacularRedocView, SpectacularAPIView
 
+
 # Import the views and your custom serializers
 from dj_rest_auth.views import LoginView
 from dj_rest_auth.registration.views import RegisterView
