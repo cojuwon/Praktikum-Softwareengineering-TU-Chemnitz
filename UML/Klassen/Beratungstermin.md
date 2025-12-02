@@ -8,6 +8,7 @@
 | termin_beratung           | date       | Datum des Beratungstermins                                                                      |
 | beratungsart             | enum       | Durchführungsart: persönlich / Video / Telefon / aufsuchend / schriftlich                       |
 | notizen_beratung         | String     | Freifeld für Notizen                                                                            |
+| berater_id               | int        | ID der zugewiesenen Berater:in (konto_id)
 
 ## Methoden
 terminAnlegen()
@@ -22,4 +23,4 @@ notizenHinzufuegen()
 
 notizenBearbeiten()
 
-berater:inZuweisen() 
+beraterZuweisen() 

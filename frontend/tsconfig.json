@@ -18,8 +18,9 @@
         "name": "next"
       }
     ],
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./*"]
     }
   },
   "include": [
@@ -27,8 +28,9 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "**/*.mts"
-  ],
+    "app/lib/placeholder-data.ts",
+    "scripts/seed.js",
+    ".next/dev/types/**/*.ts"
+, "lib/authAlt/Altauth.config.ts"  ],
   "exclude": ["node_modules"]
 }
