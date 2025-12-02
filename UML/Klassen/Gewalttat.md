@@ -5,8 +5,8 @@
 | tat_id                      | int        | Eindeutige ID der Gewalttat       |
 | tat_alter                   | enum       | Alter zum Tatzeitpunkt oder keine Angabe                     |
 | tat_zeitraum                | enum       | Angabe eines Zeitraums oder keine Angabe     |
-| anzahl_vorfälle             | enum       | einmalig / mehrere / genaue Zahl / keine Angabe                |
-| anzahl_täter_innen          | enum       | 1 / mehrere / genaue Zahl / keine Angabe        |
+| anzahl_vorfaelle            | enum       | einmalig / mehrere / genaue Zahl / keine Angabe                |
+| anzahl_taeter_innen         | enum       | 1 / mehrere / genaue Zahl / keine Angabe        |
 | tat_art                     | enum       | Art der Gewalt (Mehrfachauswahl möglich, z. B. sexuelle Belästigung, Vergewaltigung, Spiking,                                             digitale Gewalt etc.)       |
 | tatort                      | enum       | Leipzig / Leipzig Land / Nordsachsen / Sachsen / Deutschland / Ausland / auf der Flucht / im                                             Herkunftsland / keine Angabe |
 | tat_anzeige                 | enum       | Ja / Nein / noch nicht entschieden / keine Angabe             |
