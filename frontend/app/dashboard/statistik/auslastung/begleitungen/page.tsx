@@ -1,31 +1,36 @@
 "use client";
+
 import { useStatistik } from "@/app/dashboard/statistik/StatistikContext";
-import Link from 'next/link';
-import { lusitana } from '@/components/ui/fonts';
+import { DynamicKPIs } from "@/components/statistik/DynamicKPIs";
 
-export default function Page() {
-    
-    const { data } = useStatistik();
-    
-    if (!data) return <p>Noch keine Daten geladen. Bitte zuerst Filter anwenden.</p>;
+export default function BegleitungenPage() {
+  const { data } = useStatistik();
 
-    
+  if (!data) {
+    return <p>Noch keine Daten geladen. Bitte zuerst Filter anwenden.</p>;
+  }
+
+  // Struktur aus dem Backend
+  const structure = data.structure.auslastung.unterkategorien.begleitungen;
+
+  // Werte aus dem Backend
+  const values = data.data.auslastung.begleitungen;
+
   return (
-    <main className="flex min-h-screen flex-col p-6">
-      <div className="flex h-20 shrink-0 items-end rounded-lg bg-blue-500 p-4 md:h-52">
-      </div>
-      <div className="mt-4 flex grow flex-col gap-4 md:flex-row">
-        <div className="flex flex-col justify-center gap-6 rounded-lg bg-gray-50 px-6 py-10 md:w-2/5 md:px-20">
-          <p
-            className={`${lusitana.className} text-xl text-gray-800 md:text-3xl md:leading-normal`}
-          >
-            <strong>Begleitungen</strong> <br />
-          </p>
+    <div className="p-6">
+      <h1 className="text-xl font-bold mb-6">{structure.label}</h1>
 
-          <p>Gesamt: {data.gesamt}</p>
+      {/* ABSCHNITTE RENDERN */}
+      {structure.abschnitte.map((abschnitt: any) => (
+        <div key={abschnitt.label} className="mb-10">
+          <h2 className="text-lg font-semibold mb-3">
+            {abschnitt.label}
+          </h2>
 
+          <DynamicKPIs kpis={abschnitt.kpis} data={values} />
         </div>
-      </div>
-    </main>
+      ))}
+    </div>
   );
 }
+
