@@ -5,10 +5,13 @@ import { Anfrage } from './definitions';
 
 const PAGE_SIZE = 10; // Anzahl Einträge pro Seite
 
-export async function fetchAnfragenPages (query: string): Promise<number> {
+export async function fetchAnfragenPages(query: string): Promise<number> {
   try {
     // Beispiel-API: /api/anfragen?search=...&page_size=10
-    const res = await fetch(`/api/anfragen?search=${encodeURIComponent(query)}&page_size=${PAGE_SIZE}`);
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const res = await fetch(`${backendUrl}/api/anfragen?search=${encodeURIComponent(query)}&page_size=${PAGE_SIZE}`, {
+      credentials: 'include'
+    });
     if (!res.ok) {
       throw new Error('Fehler beim Laden der Anfragen');
     }
@@ -24,8 +27,10 @@ export async function fetchAnfragenPages (query: string): Promise<number> {
 
 export async function fetchAnfrage(query: string, page: number) {
   try {
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
     const res = await fetch(
-      `/api/anfragen?search=${encodeURIComponent(query)}&page=${page}&page_size=${PAGE_SIZE}`
+      `${backendUrl}/api/anfragen?search=${encodeURIComponent(query)}&page=${page}&page_size=${PAGE_SIZE}`,
+      { credentials: 'include' }
     );
 
     if (!res.ok) throw new Error("Fehler beim Laden der Anfragen");

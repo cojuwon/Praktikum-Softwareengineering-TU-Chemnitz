@@ -5,62 +5,38 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
   const { email, password } = await request.json();
 
-  let user = null;
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-  if (email === "friedakahlo@nextmail.com" && password === "123456") {
-    user = {
-      vorname_mb: "Frieda",
-      nachname_mb: "Kahlo",
-      mail_mb: email,
-      rolle_mb: "Basis"
-    };
-  }
-
-  if (email === "jenniferlawrence@nextmail.com" && password === "123456") {
-    user = {
-      vorname_mb: "Jennifer",
-      nachname_mb: "Lawrence",
-      mail_mb: email,
-      rolle_mb: "Erweiterung"
-    };
-  }
-
-  if (email === "mariecurie@nextmail.com" && password === "123456") {
-    user = {
-      vorname_mb: "Marie",
-      nachname_mb: "Curie",
-      mail_mb: email,
-      rolle_mb: "Admin"
-    };
-  }
-
-  if (!user) {
-    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
-  }
-
-  // Token simulieren
-  const fakeToken = "test-token-" + Date.now();
-
-  // Cookie setzen
-  const response = NextResponse.json({
-    detail: "Successfully logged in"
-  });
-
-  response.cookies.set("my-app-auth", fakeToken, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: false,        // <-- WICHTIG LOKAL!
-    path: "/"
+  try {
+    const response = await fetch(`${backendUrl}/api/auth/login/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
     });
 
+    const data = await response.json();
 
+    if (!response.ok) {
+      return NextResponse.json(data, { status: response.status });
+    }
 
-  // Zusätzlich speichern wir den User in einem dev-Fake-Cookie
-  response.cookies.set("fake-user", JSON.stringify(user), {
-    httpOnly: false, // muss nicht sicher sein – nur zum Testen
-    path: "/"
-  });
+    const res = NextResponse.json(data, { status: 200 });
 
-  return response;
+    // Forward cookies from backend to client
+    const setCookieHeader = response.headers.get('set-cookie');
+    if (setCookieHeader) {
+      // Split multiple cookies if necessary, though usually fetch merges them or we handle the string
+      // Next.js NextResponse headers.set('set-cookie', ...) might overwrite.
+      // A safe way is to parse and set individually, but for a simple proxy:
+      res.headers.set('set-cookie', setCookieHeader);
+    }
+
+    return res;
+  } catch (error) {
+    console.error('Login proxy error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
 }
 
