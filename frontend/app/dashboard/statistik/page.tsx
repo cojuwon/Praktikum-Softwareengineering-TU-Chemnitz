@@ -49,6 +49,9 @@ export default function StatistikPage() {
   return (
     <div>
       <h1>Statistik Dashboard</h1>
+      <br></br>
+      <h2>Filter setzen:</h2>
+
 
       {!filterDefinition && <p>Filter werden geladen…</p>}
 
@@ -61,6 +64,8 @@ export default function StatistikPage() {
         />
       )}
 
+      <br></br>
+
       {data && (
         <div>
           <Link href="/dashboard/statistik/auslastung" className="btn">
@@ -69,6 +74,14 @@ export default function StatistikPage() {
 
           <Link href="/dashboard/statistik/berichtsdaten" className="btn">
             Berichtsdaten
+          </Link> <br/>
+
+          <Link href="/dashboard/statistik/finanzen" className="btn">
+            Finanzen
+          </Link><br/>
+
+          <Link href="/dashboard/statistik/netzwerk" className="btn">
+            Netzwerk
           </Link>
         </div>
       )}
