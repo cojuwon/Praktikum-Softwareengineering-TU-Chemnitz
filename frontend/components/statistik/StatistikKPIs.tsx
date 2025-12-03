@@ -5,9 +5,11 @@ type Props = {
 };
 
 export function StatistikKPIs({ data }: Props) {
-  const total = data.length;
-  const anfragen = data.filter(d => d.fall_typ === "Anfrage").length;
-  const faelle = data.filter(d => d.fall_typ === "Fall").length;
+  if (!data || data.length === 0) return null;
+
+  const total = data[0].total;
+  const anfragen = data[0].anfragen;
+  const faelle = data[0].fall;
 
   return (
     <div className="flex gap-4">
