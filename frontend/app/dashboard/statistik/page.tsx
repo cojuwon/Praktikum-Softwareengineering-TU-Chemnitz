@@ -76,8 +76,8 @@ export default function StatistikPage() {
             Berichtsdaten
           </Link> <br/>
 
-          <Link href="/dashboard/statistik/finanzen" className="btn">
-            Finanzen
+          <Link href="/dashboard/statistik/finanzierung" className="btn">
+            Finanzierung
           </Link><br/>
 
           <Link href="/dashboard/statistik/netzwerk" className="btn">

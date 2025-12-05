@@ -19,7 +19,7 @@ export default function BerichtsdatenPage() {
         </Link>
         <br></br>
         <Link
-            href="/dashboard/statistik/berichtsdaten/staatsangehörigkeit"
+            href="/dashboard/statistik/berichtsdaten/staatsangehoerigkeit"
             className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base">
             <span> Staatsangehörigkeit </span> 
         </Link> <br/>
@@ -34,7 +34,7 @@ export default function BerichtsdatenPage() {
             <span> Anzahl der Klient:innen mit vorliegender Schwerbehinderung</span> 
         </Link> <br/>
         <Link
-            href="/dashboard/statistik/berichtsdaten/tater-opfer-beziehung"
+            href="/dashboard/statistik/berichtsdaten/taeterOpferBeziehung"
             className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base">
             <span> Täter-Opfer-Beziehung</span> 
         </Link> <br/>

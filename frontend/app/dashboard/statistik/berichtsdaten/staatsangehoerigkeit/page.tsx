@@ -3,7 +3,7 @@
 import { useStatistik } from "@/app/dashboard/statistik/StatistikContext";
 import { DynamicKPIs } from "@/components/statistik/DynamicKPIs";
 
-export default function GewaltfolgenPage() {
+export default function StaatsangehoerigkeitPage() {
   const { data } = useStatistik();
 
   if (!data) {
@@ -11,10 +11,10 @@ export default function GewaltfolgenPage() {
   }
 
   // Struktur aus dem Backend
-  const structure = data.structure.berichtsdaten.unterkategorien.gewaltfolgen;
+  const structure = data.structure.berichtsdaten.unterkategorien.staatsangehoerigkeit;
 
   // Werte aus dem Backend
-  const values = data.data.berichtsdaten.gewaltfolgen;
+  const values = data.data.berichtsdaten.staatsangehoerigkeit;
 
   return (
     <div className="p-6">

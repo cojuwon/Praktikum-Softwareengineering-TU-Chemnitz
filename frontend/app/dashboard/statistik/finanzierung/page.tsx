@@ -1,24 +1,28 @@
 "use client";
 
-import { useStatistik } from "@/app/dashboard/statistik/StatistikContext";
+import { useStatistik } from "../StatistikContext";
+import Link from 'next/link';
+import { lusitana } from '@/components/ui/fonts';
 import { DynamicKPIs } from "@/components/statistik/DynamicKPIs";
 
-export default function GewaltfolgenPage() {
+
+export default function FinanzierungPage() {
   const { data } = useStatistik();
 
-  if (!data) {
-    return <p>Noch keine Daten geladen. Bitte zuerst Filter anwenden.</p>;
-  }
+  if (!data) return <p>Noch keine Daten geladen. Bitte zuerst Filter anwenden.</p>;
+
 
   // Struktur aus dem Backend
-  const structure = data.structure.berichtsdaten.unterkategorien.gewaltfolgen;
+  const structure = data.structure.finanzierung.unterkategorien.finanzierung;
 
   // Werte aus dem Backend
-  const values = data.data.berichtsdaten.gewaltfolgen;
+  const values = data.data.fifinanzierung;
 
   return (
+
     <div className="p-6">
-      <h1 className="text-xl font-bold mb-6">{structure.label}</h1>
+      
+      <h1 className="text-xl font-bold mb-6"> {structure.label} </h1>
 
       {/* ABSCHNITTE RENDERN */}
       {structure.abschnitte.map((abschnitt: any) => (
@@ -33,3 +37,5 @@ export default function GewaltfolgenPage() {
     </div>
   );
 }
+
+
