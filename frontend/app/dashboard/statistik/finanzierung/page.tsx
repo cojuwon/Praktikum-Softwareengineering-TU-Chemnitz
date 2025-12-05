@@ -16,7 +16,7 @@ export default function FinanzierungPage() {
   const structure = data.structure.finanzierung.unterkategorien.finanzierung;
 
   // Werte aus dem Backend
-  const values = data.data.fifinanzierung;
+  const values = data.data.finanzierung;
 
   return (
 
