@@ -220,9 +220,9 @@ export async function POST(req: Request) {
               {
                 label: "04-1-16 Ausland",
                 kpis: [
-                  { field: "04_1_13_a_Anzahl_Klientinnen", label: "04_1_13_a_Anzahl_Klientinnen" },
-                  { field: "04_1_13_b_Beratungen", label: "04_1_13_b_Beratungen" },
-                  { field: "04_1_13_c_Welche_Lander", label: "04_1_13_c_Welche_Lander" }
+                  { field: "04_1_16_a_Anzahl_Klientinnen", label: "04_1_16_a_Anzahl_Klientinnen" },
+                  { field: "04_1_16_b_Beratungen", label: "04_1_16_b_Beratungen" },
+                  { field: "04_1_16_c_Welche_Lander", label: "04_1_16_c_Welche_Lander" }
                 ]
               },
 

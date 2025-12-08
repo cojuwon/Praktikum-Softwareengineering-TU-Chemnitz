@@ -88,3 +88,6 @@ export default function StatistikPage() {
     </div>
   );
 }
+
+// Dropdownmenü mit gespeicherten Filtern
+// Filter anlegen
