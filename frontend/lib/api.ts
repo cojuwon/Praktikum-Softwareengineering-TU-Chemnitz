@@ -138,3 +138,18 @@ export async function updateFall(fallData: Fall): Promise<Fall> {
   });
   return await res.json();
 }
+
+export async function fetchFallById(id: number): Promise<Fall> {
+  try {
+    const res = await fetch(`/api/fall/${id}`);
+
+    if (!res.ok) {
+      throw new Error(`Fall mit ID ${id} nicht gefunden`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error('Fehler beim Laden des Falls:', error);
+    throw error;
+  }
+}
