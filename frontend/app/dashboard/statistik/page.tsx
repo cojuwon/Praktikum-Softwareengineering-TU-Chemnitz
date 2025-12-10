@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useStatistik } from "./StatistikContext";
@@ -5,6 +6,7 @@ import { DynamicFilterForm, FieldDefinition } from "@/components/statistik/Dynam
 import { useState, useEffect } from "react";
 import PresetSelector from "@/components/statistik/PresetSelector";
 import Link from 'next/link';
+
 
 export default function StatistikPage() {
   const { data, setData } = useStatistik();
@@ -79,31 +81,10 @@ export default function StatistikPage() {
       <h1>Statistik Dashboard</h1>
     
       <h2>Vordefinierte Filter (Presets)</h2>
-      
-      <select
-        className="border p-2 rounded mb-4"
-        onChange={(e) => handleSelectPreset(e.target.value)}
-      >
-        <option value="">Preset auswählen…</option>
-
-        <optgroup label="System-Presets">
-          {presets.filter(p => p.preset_type === "system").map(p =>
-            <option key={p.id} value={p.id}>{p.name}</option>
-          )}
-        </optgroup>
-
-        <optgroup label="Eigene Presets">
-          {presets.filter(p => p.preset_type === "user").map(p =>
-            <option key={p.id} value={p.id}>{p.name}</option>
-          )}
-        </optgroup>
-
-        <optgroup label="Geteilte Presets">
-          {presets.filter(p => p.preset_type === "shared").map(p =>
-            <option key={p.id} value={p.id}>{p.name}</option>
-          )}
-        </optgroup>
-      </select> 
+      <PresetSelector
+      presets={presets}
+      onSelect={handleSelectPreset}
+      />
 
       <h2>Filter setzen:</h2>
 
@@ -131,6 +112,3 @@ export default function StatistikPage() {
     </div>
   );
 }
-
-
-
