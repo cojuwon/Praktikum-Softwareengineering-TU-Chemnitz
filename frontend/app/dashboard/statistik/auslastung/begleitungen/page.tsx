@@ -4,6 +4,7 @@ import { useStatistik } from "@/app/dashboard/statistik/StatistikContext";
 import { DynamicKPIs } from "@/components/statistik/DynamicKPIs";
 import { DynamicTable } from "@/components/statistik/DynamicTable";
 import { DynamicChart } from "@/components/statistik/DynamicChart";
+import ExportButtons from "@/components/statistik/ExportButtons";
 
 export default function BegleitungenPage() {
   const { data } = useStatistik();
@@ -53,6 +54,8 @@ export default function BegleitungenPage() {
             />
 
             <br />
+
+            {data && <ExportButtons />}
           </div>
         );
       })}

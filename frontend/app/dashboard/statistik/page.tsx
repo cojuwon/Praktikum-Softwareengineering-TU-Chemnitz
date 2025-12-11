@@ -4,16 +4,20 @@
 import { useStatistik } from "./StatistikContext";
 import { DynamicFilterForm, FieldDefinition } from "@/components/statistik/DynamicFilterForm";
 import { useState, useEffect } from "react";
+import ExportCSVButton from "@/components/statistik/ExportCSVButton";
+import ExportXLSXButton from "@/components/statistik/ExportXLSXButton";
+import ExportButtons from "@/components/statistik/ExportButtons";
 import PresetSelector from "@/components/statistik/PresetSelector";
 import Link from 'next/link';
 
 
 export default function StatistikPage() {
   const { data, setData } = useStatistik();
-
   const [filters, setFilters] = useState<{ [key: string]: any }>({});
   const [filterDefinition, setFilterDefinition] = useState<FieldDefinition[] | null>(null);
   const [presets, setPresets] = useState<any[]>([]);
+  const [structure, setStructure] = useState<any | null>(null);
+
 
   /** FILTERDEFINITIONEN LADEN */
   useEffect(() => {
@@ -70,21 +74,31 @@ export default function StatistikPage() {
 
       const result = await response.json();
       setData(result);
+      setStructure(result.structure); // Struktur für Labels
 
     } catch (error) {
       console.error("Fehler beim Laden der Statistik:", error);
     }
   };
 
+  console.log(data);
+
+
   return (
     <div>
       <h1>Statistik Dashboard</h1>
     
-      <h2>Vordefinierte Filter (Presets)</h2>
       <PresetSelector
-      presets={presets}
-      onSelect={handleSelectPreset}
-      />
+        presets={presets}
+        onSelect={handleSelectPreset}
+      /> 
+      <Link 
+      href="/dashboard/statistik/presets" 
+      className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base" >
+        <span> Presets verwalten </span> 
+      </Link>
+
+      <br/>
 
       <h2>Filter setzen:</h2>
 
@@ -106,7 +120,15 @@ export default function StatistikPage() {
           <Link href="/dashboard/statistik/auslastung" className="btn">Auslastung</Link><br />
           <Link href="/dashboard/statistik/berichtsdaten" className="btn">Berichtsdaten</Link><br />
           <Link href="/dashboard/statistik/finanzierung" className="btn">Finanzierung</Link><br />
-          <Link href="/dashboard/statistik/netzwerk" className="btn">Netzwerk</Link>
+          <Link href="/dashboard/statistik/netzwerk" className="btn">Netzwerk</Link> <br/> <br/>
+
+          <div className="flex gap-3 mb-4">
+            <ExportCSVButton structure={structure} />
+            {/* Optional: XLSX oder PDF Buttons */}
+            <ExportXLSXButton structure={structure} />
+            {/* Optional: XLSX oder PDF Buttons */}
+          </div>
+
         </div>
       )}
     </div>
