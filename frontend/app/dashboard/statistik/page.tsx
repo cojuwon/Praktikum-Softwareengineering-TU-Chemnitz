@@ -6,6 +6,7 @@ import { DynamicFilterForm, FieldDefinition } from "@/components/statistik/Dynam
 import { useState, useEffect } from "react";
 import ExportCSVButton from "@/components/statistik/ExportCSVButton";
 import ExportXLSXButton from "@/components/statistik/ExportXLSXButton";
+import ExportPDFButton from "@/components/statistik/ExportPDFButton";
 import ExportButtons from "@/components/statistik/ExportButtons";
 import PresetSelector from "@/components/statistik/PresetSelector";
 import Link from 'next/link';
@@ -124,9 +125,9 @@ export default function StatistikPage() {
 
           <div className="flex gap-3 mb-4">
             <ExportCSVButton structure={structure} />
-            {/* Optional: XLSX oder PDF Buttons */}
             <ExportXLSXButton structure={structure} />
-            {/* Optional: XLSX oder PDF Buttons */}
+            <ExportPDFButton structure={structure} />
+         
           </div>
 
         </div>

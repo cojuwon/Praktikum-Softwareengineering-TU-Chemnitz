@@ -326,7 +326,7 @@ export async function POST(req: Request) {
             label: "Täter-Opfer-Beziehung",
             abschnitte: [
               {
-                label: "04-5-1",
+                label: "04-5-1 Ehepartner/Ehepartnerin sowie eingetragene Lebenspartner/Lebenspartnerin",
                 kpis: [
                   { field: "04_5_1_a_Anzahl_weiblich", label: "04-5-1-a Anzahl weiblich" },
                   { field: "04_5_1_b_Anzahl_maennlich", label: "04-5-1-b Anzahl männlich" },
@@ -334,7 +334,7 @@ export async function POST(req: Request) {
                 ]
               },
               {
-                label: "04-5-2",
+                label: "04-5-2 Partner/Partnerin",
                 kpis: [
                   { field: "04_5_2_a_Anzahl_weiblich", label: "04-5-2-a Anzahl weiblich" },
                   { field: "04_5_2_b_Anzahl_maennlich", label: "04-5-2-b Anzahl männlich" },
@@ -342,7 +342,7 @@ export async function POST(req: Request) {
                 ]
               },
               {
-                label: "04-5-3",
+                label: "04-5-3 Partner/Partnerin ehemalig",
                 kpis: [
                   { field: "04_5_3_a_Anzahl_weiblich", label: "04-5-3-a Anzahl weiblich" },
                   { field: "04_5_3_b_Anzahl_maennlich", label: "04-5-3-b Anzahl männlich" },
@@ -350,7 +350,7 @@ export async function POST(req: Request) {
                 ]
               },
               {
-                label: "04-5-4",
+                label: "04-5-4 andere Familienangehörige",
                 kpis: [
                   { field: "04_5_4_a_Anzahl_weiblich", label: "04-5-4-a Anzahl weiblich" },
                   { field: "04_5_4_b_Anzahl_maennlich", label: "04-5-4-b Anzahl männlich" },
@@ -359,7 +359,7 @@ export async function POST(req: Request) {
                 ]
               },
               {
-                label: "04-5-5",
+                label: "04-5-5 Bekannte",
                 kpis: [
                   { field: "04_5_5_a_Anzahl_weiblich", label: "04-5-5-a Anzahl weiblich" },
                   { field: "04_5_5_b_Anzahl_maennlich", label: "04-5-5-b Anzahl männlich" },
@@ -368,7 +368,7 @@ export async function POST(req: Request) {
                 ]
               },
               {
-                label: "04-5-6",
+                label: "04-5-6 sonstige Personen",
                 kpis: [
                   { field: "04_5_6_a_Anzahl_weiblich", label: "04-5-6-a Anzahl weiblich" },
                   { field: "04_5_6_b_Anzahl_maennlich", label: "04-5-6-b Anzahl männlich" },
@@ -377,7 +377,7 @@ export async function POST(req: Request) {
                 ]
               },
               {
-                label: "04-5-7",
+                label: "04-5-7 Unbekannte",
                 kpis: [
                   { field: "04_5_7_a_Anzahl_weiblich", label: "04-5-7-a Anzahl weiblich" },
                   { field: "04_5_7_b_Anzahl_maennlich", label: "04-5-7-b Anzahl männlich" },
@@ -386,7 +386,7 @@ export async function POST(req: Request) {
                 ]
               },
               {
-                label: "04-5-8",
+                label: "04-5-8 Keine Angabe",
                 kpis: [
                   { field: "04_5_8_a_Anzahl_weiblich", label: "04-5-8-a Anzahl weiblich" },
                   { field: "04_5_8_b_Anzahl_maennlich", label: "04-5-8-b Anzahl männlich" },
@@ -395,7 +395,7 @@ export async function POST(req: Request) {
                 ]
               },
               {
-                label: "04-5-9",
+                label: "04-5-9 mitbetroffene Kinder",
                 kpis: [
                   { field: "04_5_9_a_Anzahl_mitbetroffene_Kinder", label: "04-5-9-a Anzahl mitbetroffene Kinder gesamt" },
                   { field: "04_5_9_b_davon_direkt_betroffen", label: "04-5-9-b davon direkt betroffen" }
