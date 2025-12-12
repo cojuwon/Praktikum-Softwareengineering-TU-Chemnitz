@@ -7,7 +7,6 @@ import { useState, useEffect } from "react";
 import ExportCSVButton from "@/components/statistik/ExportCSVButton";
 import ExportXLSXButton from "@/components/statistik/ExportXLSXButton";
 import ExportPDFButton from "@/components/statistik/ExportPDFButton";
-import ExportButtons from "@/components/statistik/ExportButtons";
 import PresetSelector from "@/components/statistik/PresetSelector";
 import Link from 'next/link';
 
