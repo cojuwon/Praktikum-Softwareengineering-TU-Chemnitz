@@ -15,7 +15,7 @@ export default function Page() {
           </p>
           
           <Link
-            href="dashboard/anfrage"
+            href="/dashboard/anfrage"
             className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base"
           >
             <span> Anfrage</span> 
@@ -23,7 +23,7 @@ export default function Page() {
           <br></br>
 
         <Link
-            href="dashboard/fall"
+            href="/dashboard/fall"
             className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base"
           >
             <span> Fall</span> 
@@ -32,7 +32,7 @@ export default function Page() {
            <br></br>
 
             <Link
-            href="dashboard/statistik"
+            href="/dashboard/statistik"
             className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base"
           >
             <span> Statistik </span> 
