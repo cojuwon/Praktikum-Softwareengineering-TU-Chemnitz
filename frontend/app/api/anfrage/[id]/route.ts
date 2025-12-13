@@ -1,4 +1,4 @@
-// app/api/fall/[id]/route.ts
+// app/api/anfrage/[id]/route.ts
 import { NextResponse } from "next/server";
 
 // ----------------------------------
@@ -11,8 +11,8 @@ let fieldDefinitions = [
 ];
 
 // ----------------------------------
-// Fake Fälle
-let fakeFaelle: Record<string, any> = {
+// Fake Anfrage
+let fakeAnfrage: Record<string, any> = {
   "1": {
     values: {
       name: "Müller",
@@ -36,46 +36,46 @@ let fakeFaelle: Record<string, any> = {
 };
 
 // ----------------------------------
-// GET → Fall + Felddefinitionen laden
+// GET → Anfrage + Felddefinitionen laden
 export async function GET(_req: Request, context: { params: any }) {
   const { id } = await context.params; // ✅ unwrap params
-  const fall = fakeFaelle[id];
+  const anfrage = fakeAnfrage[id];
 
-  if (!fall) {
-    return NextResponse.json({ error: "Fall nicht gefunden" }, { status: 404 });
+  if (!anfrage) {
+    return NextResponse.json({ error: "Anfrage nicht gefunden" }, { status: 404 });
   }
 
   return NextResponse.json({
     fields: fieldDefinitions,
-    values: fall.values,
-    beratungstermine: fall.beratungstermine,
+    values: anfrage.values,
+    beratungstermine: anfrage.beratungstermine,
   });
 }
 
 // ----------------------------------
-// PUT → Fall speichern
+// PUT → Anfrage speichern
 export async function PUT(req: Request, context: { params: any }) {
   const { id } = await context.params; // ✅ unwrap params
   const updatedValues = await req.json();
 
-  if (!fakeFaelle[id]) {
-    return NextResponse.json({ error: "Fall nicht gefunden" }, { status: 404 });
+  if (!fakeAnfrage[id]) {
+    return NextResponse.json({ error: "Anfrage nicht gefunden" }, { status: 404 });
   }
 
-  fakeFaelle[id] = {
-    ...fakeFaelle[id],
+  fakeAnfrage[id] = {
+    ...fakeAnfrage[id],
     values: {
-      ...fakeFaelle[id].values,
+      ...fakeAnfrage[id].values,
       ...updatedValues.values,
     },
-    beratungstermine: updatedValues.beratungstermine ?? fakeFaelle[id].beratungstermine,
+    beratungstermine: updatedValues.beratungstermine ?? fakeAnfrage[id].beratungstermine,
   };
 
-  console.log("Fall gespeichert:", id, fakeFaelle[id]);
+  console.log("Anfrage gespeichert:", id, fakeAnfrage[id]);
 
   return NextResponse.json({
     success: true,
-    values: fakeFaelle[id].values,
-    beratungstermine: fakeFaelle[id].beratungstermine,
+    values: fakeAnfrage[id].values,
+    beratungstermine: fakeAnfrage[id].beratungstermine,
   });
 }

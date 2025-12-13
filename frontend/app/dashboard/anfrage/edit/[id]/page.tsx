@@ -90,7 +90,7 @@ export default function FallEditPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Fall bearbeiten #{id}</h1>
+      <h1 className="text-2xl font-bold mb-6">Anfrage bearbeiten #{id}</h1>
 
       {/* Dynamische Fall-Felder */}
       <DynamicForm
@@ -101,11 +101,6 @@ export default function FallEditPage() {
 
       <hr className="my-6" />
 
-      {/* Statische Komponente für neuen Beratungstermin */}
-      <BeratungsterminForm
-        initial={termin}
-        onChange={(updatedTermin) => setTermin(updatedTermin)}
-      />
 
       <button
         className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"

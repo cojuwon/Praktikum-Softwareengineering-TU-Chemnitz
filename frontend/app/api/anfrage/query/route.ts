@@ -1,4 +1,4 @@
-// app/api/fall/query/route.ts
+// app/api/anfrage/query/route.ts
 
 
 import { NextResponse } from "next/server";
@@ -36,13 +36,13 @@ function isInRange(date: string, from?: string, to?: string): boolean {
 export async function POST(request: Request) {
   const filters = await request.json();
 
-  const { datumVon, datumBis, name, fallId } = filters;
+  const { datumVon, datumBis, name, anfrageId } = filters;
 
   // ---- FILTER LOGIK ----
-  let result = fakeFaelle.filter((fall) => {
-    const matchId = fallId ? fall.id === fallId : true;
-    const matchName = name ? fall.name.toLowerCase().includes(name.toLowerCase()) : true;
-    const matchDate = isInRange(fall.datum, datumVon, datumBis);
+  let result = fakeFaelle.filter((anfrage) => {
+    const matchId = anfrageId ? anfrage.id === anfrageId : true;
+    const matchName = name ? anfrage.name.toLowerCase().includes(name.toLowerCase()) : true;
+    const matchDate = isInRange(anfrage.datum, datumVon, datumBis);
 
     return matchId && matchName && matchDate;
   });
