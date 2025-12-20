@@ -1,10 +1,11 @@
 from rest_framework import serializers
 from dj_rest_auth.serializers import LoginSerializer
 from dj_rest_auth.registration.serializers import RegisterSerializer
-from .models import Konto
-import sys
+from .models import (
+    Konto, KlientIn, Preset, Fall, Beratungstermin, Begleitung,
+    Gewalttat, Gewaltfolge, Anfrage, Statistik
+)
 
-print("--- LOADING API SERIALIZERS ---", file=sys.stderr)
 class KontoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Konto
@@ -36,4 +37,48 @@ class CustomRegisterSerializer(RegisterSerializer):
         user.nachname_mb = self.cleaned_data.get('nachname_mb')
         user.save()
         return user
-    
+
+class KlientInSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = KlientIn
+        fields = '__all__'
+
+class PresetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Preset
+        fields = '__all__'
+
+class FallSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Fall
+        fields = '__all__'
+
+class BeratungsterminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Beratungstermin
+        fields = '__all__'
+
+class BegleitungSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Begleitung
+        fields = '__all__'
+
+class GewalttatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Gewalttat
+        fields = '__all__'
+
+class GewaltfolgeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Gewaltfolge
+        fields = '__all__'
+
+class AnfrageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Anfrage
+        fields = '__all__'
+
+class StatistikSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Statistik
+        fields = '__all__'
