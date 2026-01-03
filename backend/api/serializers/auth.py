@@ -1,10 +1,10 @@
+"""Serializers für Authentifizierung und Benutzerkonten."""
+
 from rest_framework import serializers
 from dj_rest_auth.serializers import LoginSerializer
 from dj_rest_auth.registration.serializers import RegisterSerializer
-from .models import Konto, KlientIn, Fall, Beratungstermin, Begleitung, Gewalttat, Gewaltfolge, Anfrage, Preset, Statistik
-import sys
 
-print("--- LOADING API SERIALIZERS ---", file=sys.stderr)
+from api.models import Konto
 
 
 class KontoSerializer(serializers.ModelSerializer):
@@ -41,16 +41,20 @@ class KontoMeSerializer(serializers.ModelSerializer):
 
 
 class CustomLoginSerializer(LoginSerializer):
-    username = None 
+    """Login Serializer ohne Username (nur E-Mail)."""
+    username = None
+
     def validate(self, attrs):
         return super().validate(attrs)
-    
+
+
 class CustomRegisterSerializer(RegisterSerializer):
+    """Registrierungs-Serializer mit Vorname und Nachname."""
     username = None
-    
+
     vorname_mb = serializers.CharField(required=True)
     nachname_mb = serializers.CharField(required=True)
-    
+
     def get_cleaned_data(self):
         data = super().get_cleaned_data()
         data.update({
@@ -65,59 +69,3 @@ class CustomRegisterSerializer(RegisterSerializer):
         user.nachname_mb = self.cleaned_data.get('nachname_mb')
         user.save()
         return user
-
-
-# --- Model Serializers für ViewSets ---
-
-class KlientInSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = KlientIn
-        fields = '__all__'
-
-
-class FallSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Fall
-        fields = '__all__'
-
-
-class BeratungsterminSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Beratungstermin
-        fields = '__all__'
-
-
-class BegleitungSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Begleitung
-        fields = '__all__'
-
-
-class GewalttatSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Gewalttat
-        fields = '__all__'
-
-
-class GewaltfolgeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Gewaltfolge
-        fields = '__all__'
-
-
-class AnfrageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Anfrage
-        fields = '__all__'
-
-
-class PresetSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Preset
-        fields = '__all__'
-
-
-class StatistikSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Statistik
-        fields = '__all__'

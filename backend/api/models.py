@@ -316,7 +316,7 @@ class Gewaltfolge(models.Model):
 class Anfrage(models.Model):
     anfrage_id = models.BigAutoField(primary_key=True)
     anfrage_weg = models.CharField(max_length=100, verbose_name="Anfrageweg (Freitext)")
-    anfrage_datum = models.DateField(default=timezone.now, verbose_name="Datum der Anfrage")
+    anfrage_datum = models.DateField(default=timezone.localdate, verbose_name="Datum der Anfrage")
     anfrage_ort = models.CharField(max_length=2, choices=STANDORT_CHOICES, verbose_name="Anfrage Ort")
     anfrage_person = models.CharField(max_length=4, choices=ANFRAGE_PERSON_CHOICES, verbose_name="Anfrage Person (wer)")
     anfrage_art = models.CharField(max_length=2, choices=ANFRAGE_ART_CHOICES, verbose_name="Anfrage Art")
