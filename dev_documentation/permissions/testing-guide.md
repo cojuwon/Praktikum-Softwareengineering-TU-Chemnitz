@@ -77,9 +77,194 @@ print("Test-Benutzer erstellt!")
 
 ---
 
-## 2. API Tests mit cURL/HTTPie
+## 2. API Tests mit Swagger UI
 
-### 2.1 Login und Cookie speichern
+Swagger UI (`drf_spectacular`) bietet eine interaktive Dokumentation für alle API-Endpoints mit eingebauter Test-Funktionalität.
+
+### 2.1 Swagger UI öffnen
+
+Navigiere zu: `http://localhost:8000/api/docs/`
+
+Die Swagger UI zeigt alle verfügbaren Endpoints mit ihrer Dokumentation an.
+
+### 2.2 Authentifizierung in Swagger
+
+Das Backend verwendet **JWT Cookie Authentication**. Swagger zeigt zwei Auth-Optionen:
+
+1. **jwtCookieAuth** (apiKey) - JWT Token im Cookie
+2. **jwtHeaderAuth** (http, Bearer) - JWT Token im Authorization Header
+
+#### Methode 1: Cookie-basierte Authentifizierung (Empfohlen)
+
+**Schritt 1: Login durchführen**
+
+1. Finde den Endpoint `POST /api/auth/login/` in Swagger
+2. Klicke auf "Try it out"
+3. Gib folgende Daten ein:
+   ```json
+   {
+     "email": "admin@test.de",
+     "password": "admin123"
+   }
+   ```
+4. Klicke "Execute"
+
+**Schritt 2: Cookie wird automatisch gesetzt**
+
+Nach erfolgreichem Login setzt der Browser automatisch das Cookie `app-auth` (HttpOnly).
+
+**Schritt 3: Authentifizierung in Swagger aktivieren**
+
+1. Klicke oben rechts auf **"Authorize"** Button (🔒)
+2. Unter **jwtCookieAuth** gib irgendeinen Platzhalter-Wert ein (z.B. "authenticated")
+   - Der tatsächliche JWT-Token kommt aus dem Cookie, nicht aus diesem Feld
+   - Das Feld muss nur ausgefüllt sein, damit Swagger weiß, dass Auth aktiv ist
+3. Klicke "Authorize" und "Close"
+
+**Schritt 4: Testen**
+
+Alle nachfolgenden API-Calls verwenden jetzt automatisch das Cookie.
+
+Beispiel:
+- `GET /api/auth/user/` - Zeigt deine User-Daten mit Permissions
+- `GET /api/faelle/` - Zeigt Fälle (Permission: `view_fall` nötig)
+
+#### Methode 2: Header-basierte Authentifizierung (Manuell)
+
+Diese Methode ist nützlich, wenn Cookies nicht funktionieren (z.B. bei CORS-Problemen).
+
+**Schritt 1: Access Token aus Login-Response extrahieren**
+
+1. Mache Login über `POST /api/auth/login/`
+2. In der Response siehst du:
+   ```json
+   {
+     "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+     "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+     "user": { ... }
+   }
+   ```
+3. Kopiere den **access** Token (der lange String)
+
+**Schritt 2: Token in Authorization Header setzen**
+
+1. Klicke auf **"Authorize"** (🔒)
+2. Unter **jwtHeaderAuth (http, bearer)**:
+   - Gib den Token ein (OHNE "Bearer " Prefix - Swagger fügt das automatisch hinzu)
+   - Beispiel: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
+3. Klicke "Authorize" und "Close"
+
+**Wichtig:** Access Tokens sind zeitlich begrenzt (Standard: 5 Minuten). Nach Ablauf musst du dich neu einloggen.
+
+### 2.3 Test-Szenarien in Swagger
+
+#### Test 1: User-Daten mit Permissions abrufen
+
+```
+GET /api/auth/user/
+```
+
+Erwartete Response:
+```json
+{
+  "id": 1,
+  "vorname_mb": "Admin",
+  "nachname_mb": "User",
+  "mail_mb": "admin@test.de",
+  "rolle_mb": "AD",
+  "groups": ["Admin"],
+  "permissions": [
+    "api.view_fall",
+    "api.add_fall",
+    "api.change_fall",
+    "api.delete_fall",
+    "api.can_manage_users",
+    "api.can_view_all_data",
+    ...
+  ]
+}
+```
+
+#### Test 2: Permission-Check (403 Forbidden)
+
+**Als Basis-User einloggen:**
+```json
+{
+  "email": "basis@test.de",
+  "password": "test1234"
+}
+```
+
+**Versuch, einen Fall zu löschen:**
+```
+DELETE /api/faelle/{id}/
+```
+
+**Erwartete Response:** `403 Forbidden`
+```json
+{
+  "detail": "You do not have permission to perform this action."
+}
+```
+
+#### Test 3: Custom Permission (Export)
+
+**Endpoint:** `GET /api/statistiken/{id}/export/`
+
+- Als **Basis-User** → `403 Forbidden`
+- Als **Erweiterung/Admin** → `200 OK` mit Export-Daten
+
+#### Test 4: Admin-Only Endpoint
+
+**Endpoint:** `GET /api/konten/` (User-Verwaltung)
+
+- Benötigt Permission: `api.can_manage_users`
+- Nur Admin-Gruppe hat diese Permission
+
+### 2.4 Swagger Tipps & Tricks
+
+#### Cookie-Debugging
+
+Wenn Cookies nicht funktionieren:
+
+1. Öffne Browser DevTools (F12)
+2. Gehe zu "Application" Tab → "Cookies" → `http://localhost:8000`
+3. Prüfe, ob `app-auth` Cookie vorhanden ist
+4. Wenn nicht: CORS-Konfiguration prüfen (siehe `settings.py`)
+
+#### Swagger neu laden nach Änderungen
+
+Nach Backend-Änderungen (z.B. neue Permissions):
+- Swagger UI neu laden (F5)
+- Schema neu generieren: `docker compose exec api python manage.py spectacular --file schema.yml`
+
+#### Logout
+
+Um auszuloggen:
+```
+POST /api/auth/logout/
+```
+
+Oder Browser-Cookies manuell löschen (DevTools → Application → Cookies → Delete).
+
+### 2.5 Vergleich: Swagger vs. cURL
+
+| Feature | Swagger UI | cURL |
+|---------|-----------|------|
+| **Setup** | Browser öffnen, fertig | Cookies manuell speichern |
+| **Auth** | Button-Klick | Header/Cookie manuell setzen |
+| **Doku** | Automatisch sichtbar | Keine Doku |
+| **Request Builder** | Interaktiv | Manuell tippen |
+| **Response Viewer** | Formatiert, farbig | Plain text |
+| **Automationsfähig** | Nein | Ja (Scripting) |
+
+**Empfehlung:** Swagger für manuelle Tests, cURL für Automation/CI.
+
+---
+
+## 3. API Tests mit cURL/HTTPie
+
+### 3.1 Login und Cookie speichern
 
 ```bash
 # Login als Basis-User
@@ -95,7 +280,7 @@ curl -X POST http://localhost:8000/api/auth/login/ \
   -c cookies_admin.txt
 ```
 
-### 2.2 User-Daten mit Permissions abrufen
+### 3.2 User-Daten mit Permissions abrufen
 
 ```bash
 # Als Basis-User
@@ -115,7 +300,7 @@ curl -X GET http://localhost:8000/api/auth/user/ \
 # }
 ```
 
-### 2.3 Permission-Tests
+### 3.3 Permission-Tests
 
 #### Test: Basis-User kann NICHT löschen
 
@@ -160,21 +345,21 @@ curl -X GET http://localhost:8000/api/statistiken/1/export/ \
 
 ---
 
-## 3. Django Admin Panel Tests
+## 4. Django Admin Panel Tests
 
-### 3.1 Zugang
+### 4.1 Zugang
 
 1. Navigiere zu `http://localhost:8000/admin/`
 2. Login mit Superuser-Credentials
 
-### 3.2 Gruppen verwalten
+### 4.2 Gruppen verwalten
 
 1. Gehe zu **Authentication and Authorization > Groups**
 2. Klicke auf eine Gruppe (z.B. "Erweiterung")
 3. Sieh dir die zugewiesenen Permissions an
 4. **Test:** Entferne eine Permission und prüfe, ob der User sie nicht mehr hat
 
-### 3.3 User Gruppen zuweisen
+### 4.3 User Gruppen zuweisen
 
 1. Gehe zu **Api > Benutzerkonten**
 2. Klicke auf einen User
@@ -183,9 +368,9 @@ curl -X GET http://localhost:8000/api/statistiken/1/export/ \
 
 ---
 
-## 4. Frontend Tests
+## 5. Frontend Tests
 
-### 4.1 Frontend starten
+### 5.1 Frontend starten
 
 ```bash
 cd frontend
@@ -193,14 +378,14 @@ npm install
 npm run dev
 ```
 
-### 4.2 Manuelle Tests im Browser
+### 5.2 Manuelle Tests im Browser
 
 1. Öffne die Browser DevTools (F12)
 2. Gehe zum **Network** Tab
 3. Login über `/api/auth/login/`
 4. Prüfe die Response von `/api/auth/user/` - enthält `permissions` Array?
 
-### 4.3 Hook Tests in einer Komponente
+### 5.3 Hook Tests in einer Komponente
 
 Erstelle eine Test-Komponente:
 
@@ -277,7 +462,7 @@ export default function TestPermissions() {
 }
 ```
 
-### 4.4 Test-Szenarios
+### 5.4 Test-Szenarios
 
 | Szenario | Login als | Erwartetes Ergebnis |
 |----------|-----------|---------------------|
@@ -291,9 +476,9 @@ export default function TestPermissions() {
 
 ---
 
-## 5. Automatisierte Tests
+## 6. Automatisierte Tests
 
-### 5.1 Backend Unit Tests
+### 6.1 Backend Unit Tests
 
 Erstelle eine Test-Datei:
 
@@ -391,7 +576,7 @@ class PermissionTestCase(TestCase):
         self.assertIn('api.can_view_all_data', response.data['permissions'])
 ```
 
-### 5.2 Tests ausführen
+### 6.2 Tests ausführen
 
 ```bash
 docker compose exec api python manage.py test api.tests.test_permissions -v 2
@@ -399,30 +584,30 @@ docker compose exec api python manage.py test api.tests.test_permissions -v 2
 
 ---
 
-## 6. Nächste Schritte / Weiterentwicklung
+## 7. Nächste Schritte / Weiterentwicklung
 
-### 6.1 Sofort umsetzen
+### 7.1 Sofort umsetzen
 
 - [ ] Migrations ausführen (`makemigrations` + `migrate`)
 - [ ] `setup_groups` Command ausführen
 - [ ] Test-Benutzer erstellen
 - [ ] API manuell testen
 
-### 6.2 Kurzfristig
+### 7.2 Kurzfristig
 
 - [ ] Frontend Login-Page implementieren
 - [ ] Protected Routes mit Permission-Checks
 - [ ] Error-Handling für 403 Responses
 - [ ] Loading-States während Auth-Check
 
-### 6.3 Mittelfristig
+### 7.3 Mittelfristig
 
 - [ ] Unit Tests für Permissions schreiben
 - [ ] Integration Tests für Frontend
 - [ ] Audit-Logging für Permission-Änderungen
 - [ ] UI für Gruppen-/Permission-Verwaltung (statt Django Admin)
 
-### 6.4 Optional / Nice-to-have
+### 7.4 Optional / Nice-to-have
 
 - [ ] Row-Level Security (nur eigene Daten sehen)
 - [ ] Temporäre Permissions (mit Ablaufdatum)
@@ -431,7 +616,7 @@ docker compose exec api python manage.py test api.tests.test_permissions -v 2
 
 ---
 
-## 7. Troubleshooting
+## 8. Troubleshooting
 
 ### Problem: Migrations-Fehler
 
@@ -491,7 +676,7 @@ await refreshUser();
 
 ---
 
-## 8. Checkliste für Go-Live
+## 9. Checkliste für Go-Live
 
 - [ ] Alle Test-Benutzer entfernt
 - [ ] Produktions-Gruppen konfiguriert
