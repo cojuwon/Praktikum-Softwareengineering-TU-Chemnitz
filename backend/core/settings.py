@@ -13,8 +13,13 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 import dotenv
+import warnings
 
 dotenv.load_dotenv()
+
+# Suppress deprecation warnings from dj_rest_auth (uses old allauth API internally)
+warnings.filterwarnings('ignore', message='app_settings.USERNAME_REQUIRED is deprecated')
+warnings.filterwarnings('ignore', message='app_settings.EMAIL_REQUIRED is deprecated')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
