@@ -44,8 +44,14 @@ class AnfrageSerializer(serializers.ModelSerializer):
             # Falls Beratungstermin-Daten vorhanden, erst Termin erstellen
             if beratungstermin_data:
                 # Berater wird vom aktuellen User übernommen (falls nicht explizit gesetzt)
+                # Nutze request.user statt validated_data, da mitarbeiterin read_only ist
                 if 'berater' not in beratungstermin_data:
-                    beratungstermin_data['berater'] = validated_data.get('mitarbeiterin')
+                    beratungstermin_data['berater'] = self.context['request'].user
+                
+                # Fall übernehmen, falls in der Anfrage vorhanden
+                if 'fall' not in beratungstermin_data and validated_data.get('fall'):
+                    beratungstermin_data['fall'] = validated_data.get('fall')
+                
                 beratungstermin = Beratungstermin.objects.create(**beratungstermin_data)
                 validated_data['beratungstermin'] = beratungstermin
 
