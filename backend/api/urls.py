@@ -1,4 +1,5 @@
 from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from drf_spectacular.views import SpectacularSwaggerView, SpectacularRedocView, SpectacularAPIView
 
 
@@ -6,17 +7,33 @@ from drf_spectacular.views import SpectacularSwaggerView, SpectacularRedocView, 
 from dj_rest_auth.views import LoginView
 from dj_rest_auth.registration.views import RegisterView
 from api.serializers import CustomLoginSerializer, CustomRegisterSerializer
-from .views import anfrage
-from .views import begleitung
-from .views import beratungstermin
-from .views import eingabefeld
-from .views import fall
-from .views import gewaltfolge
-from .views import gewalttat
-from .views import klient
-from .views import konto
-from .views import preset
-from .views import statistik
+
+# Import ViewSets
+from .views.anfrage import AnfrageViewSet
+from .views.begleitung import BegleitungViewSet
+from .views.beratungstermin import BeratungsterminViewSet
+from .views.fall import FallViewSet
+from .views.gewaltfolge import GewaltfolgeViewSet
+from .views.gewalttat import GewalttatViewSet
+from .views.klient import KlientInViewSet
+from .views.konto import KontoViewSet
+from .views.preset import PresetViewSet
+from .views.statistik import StatistikViewSet
+
+
+# Router für ViewSets mit automatischer URL-Generierung
+router = DefaultRouter()
+router.register(r'anfragen', AnfrageViewSet, basename='anfrage')
+router.register(r'begleitungen', BegleitungViewSet, basename='begleitung')
+router.register(r'beratungstermine', BeratungsterminViewSet, basename='beratungstermin')
+router.register(r'faelle', FallViewSet, basename='fall')
+router.register(r'gewaltfolgen', GewaltfolgeViewSet, basename='gewaltfolge')
+router.register(r'gewalttaten', GewalttatViewSet, basename='gewalttat')
+router.register(r'klienten', KlientInViewSet, basename='klient')
+router.register(r'konten', KontoViewSet, basename='konto')
+router.register(r'presets', PresetViewSet, basename='preset')
+router.register(r'statistiken', StatistikViewSet, basename='statistik')
+
 
 urlpatterns = [
     # 1. Explicitly override Login and Registration with your custom serializers
@@ -26,7 +43,10 @@ urlpatterns = [
     # 2. Include the rest of the auth URLs (Logout, Password Reset, etc.)
     path('auth/', include('dj_rest_auth.urls')),
     
-    # 3. Documentation URLs
+    # 3. API ViewSets (mit automatischer Permission-Prüfung)
+    path('', include(router.urls)),
+    
+    # 4. Documentation URLs
     path('docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     path('schema/', SpectacularAPIView.as_view(), name='schema'),

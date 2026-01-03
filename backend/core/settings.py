@@ -192,12 +192,12 @@ REST_AUTH = {
     'JWT_AUTH_REFRESH_COOKIE': 'app-refresh-token',
     'JWT_AUTH_HTTPONLY': True,                # JavaScript kann Cookie nicht lesen (Sicherheit!)
     'SESSION_LOGIN': False,
-    'USER_DETAILS_SERIALIZER': 'api.serializers.KontoSerializer', # Damit wir Vornamen/Rolle zurückkriegen
+    'USER_DETAILS_SERIALIZER': 'api.serializers.KontoMeSerializer', # Mit Berechtigungen & Gruppen
 }
 
 REST_AUTH_SERIALIZERS = {
     'LOGIN_SERIALIZER': 'api.serializers.CustomLoginSerializer',
-    'USER_DETAILS_SERIALIZER': 'api.serializers.KontoSerializer',
+    'USER_DETAILS_SERIALIZER': 'api.serializers.KontoMeSerializer', # Mit Berechtigungen & Gruppen
 }
 
 REST_AUTH_REGISTER_SERIALIZERS = {
