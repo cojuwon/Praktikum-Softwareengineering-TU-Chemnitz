@@ -138,6 +138,12 @@ class Konto(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = "Benutzerkonto"
         verbose_name_plural = "Benutzerkonten"
+        # Custom Permissions für Kontoverwaltung (Admin-Funktionen)
+        permissions = [
+            ("can_manage_users", "Kann Benutzerkonten verwalten"),
+            ("can_assign_roles", "Kann Rollen zuweisen"),
+            ("can_view_all_data", "Kann alle Daten einsehen"),
+        ]
         
     def __str__(self):
         return f"{self.vorname_mb} {self.nachname_mb} ({self.rolle_mb})"
@@ -191,6 +197,10 @@ class Preset(models.Model):
     class Meta:
         verbose_name = "Preset"
         verbose_name_plural = "Presets"
+        # Custom Permissions für Preset-Verwaltung
+        permissions = [
+            ("can_share_preset", "Kann Presets mit anderen teilen"),
+        ]
         
     def __str__(self):
         return self.preset_beschreibung
@@ -338,6 +348,11 @@ class Statistik(models.Model):
     class Meta:
         verbose_name = "Statistik"
         verbose_name_plural = "Statistiken"
+        # Custom Permissions für Statistik-Export (nur für erweiterte Benutzer)
+        permissions = [
+            ("can_export_statistik", "Kann Statistiken exportieren"),
+            ("can_share_statistik", "Kann Statistiken teilen"),
+        ]
         
     def __str__(self):
         return self.statistik_titel
