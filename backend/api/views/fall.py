@@ -11,12 +11,32 @@ Verwendet DjangoModelPermissions für automatische Permission-Prüfung:
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, OpenApiTypes
 
-from api.models import Fall
-from api.serializers import FallSerializer
+from api.models import Fall, Begleitung, Beratungstermin, Gewalttat, KlientIn
+from api.serializers import FallSerializer, BegleitungSerializer, BeratungsterminSerializer, GewalttatSerializer
 from api.permissions import DjangoModelPermissionsWithView, CanManageOwnData
 
 
+@extend_schema_view(
+    create=extend_schema(
+        description="Legt einen neuen Fall an. Wenn 'mitarbeiterin' nicht gesetzt ist, wird der aktuelle User zugewiesen.",
+        summary="Fall anlegen"
+    ),
+    update=extend_schema(
+        description="Bearbeitet einen bestehenden Fall vollständig.",
+        summary="Fall bearbeiten"
+    ),
+    partial_update=extend_schema(
+        description="Bearbeitet Teile eines bestehenden Falls.",
+        summary="Fall teilweise bearbeiten"
+    ),
+    destroy=extend_schema(
+        description="Löscht einen Fall. ACHTUNG: Durch Kaskadierung werden alle zugehörigen Beratungstermine, Gewalttaten und Begleitungen ebenfalls gelöscht!",
+        summary="Fall löschen"
+    )
+)
 class FallViewSet(viewsets.ModelViewSet):
     """
     ViewSet für CRUD-Operationen auf Fälle.
@@ -45,9 +65,14 @@ class FallViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """
-        Setzt automatisch den aktuellen User als Mitarbeiter:in beim Erstellen.
+        Erstellt einen neuen Fall.
+        Wenn keine Mitarbeiterin angegeben ist, wird der aktuelle User gesetzt.
         """
-        serializer.save(mitarbeiterin=self.request.user)
+        mitarbeiterin = serializer.validated_data.get('mitarbeiterin')
+        if not mitarbeiterin:
+            serializer.save(mitarbeiterin=self.request.user)
+        else:
+            serializer.save()
 
     @action(detail=True, methods=['post'])
     def assign(self, request, pk=None):
@@ -81,3 +106,140 @@ class FallViewSet(viewsets.ModelViewSet):
                 {'detail': 'Mitarbeiter:in nicht gefunden.'},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+    @extend_schema(
+        request={'application/json': {'type': 'object', 'properties': {'begleitung_id': {'type': 'integer'}}}},
+        responses={200: BegleitungSerializer},
+        description="Weist eine existierende Begleitung diesem Fall zu."
+    )
+    @action(detail=True, methods=['post'], url_path='assign-begleitung')
+    def assign_begleitung(self, request, pk=None):
+        """
+        Weist eine existierende Begleitung diesem Fall zu.
+        Prüft, ob Begleitung und Fall zum selben Klienten gehören.
+        """
+        fall = self.get_object()
+        begleitung_id = request.data.get('begleitung_id')
+
+        if not begleitung_id:
+            raise ValidationError({'begleitung_id': 'Dieses Feld ist erforderlich.'})
+
+        try:
+            begleitung = Begleitung.objects.get(pk=begleitung_id)
+        except Begleitung.DoesNotExist:
+            raise ValidationError({'begleitung_id': 'Begleitung nicht gefunden.'})
+
+        # Integritätsprüfung: Gleicher Klient?
+        if begleitung.klient != fall.klient:
+            raise ValidationError(
+                {'detail': 'Die Begleitung gehört zu einem anderen Klienten als der Fall.'}
+            )
+
+        # Zuweisung durchführen
+        begleitung.fall = fall
+        begleitung.save()
+
+        serializer = BegleitungSerializer(begleitung)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        request={'application/json': {'type': 'object', 'properties': {'beratungs_id': {'type': 'integer'}}}},
+        responses={200: BeratungsterminSerializer},
+        description="Weist einen existierenden Beratungstermin diesem Fall zu."
+    )
+    @action(detail=True, methods=['post'], url_path='assign-beratung')
+    def assign_beratung(self, request, pk=None):
+        """
+        Weist einen existierenden Beratungstermin diesem Fall zu.
+        Prüft, ob Termin und Fall zum selben Klienten gehören (implizit über Fall-Zuordnung oder Logik).
+        Da Beratungstermine oft direkt am Fall hängen, ist dies eher ein 'Move' oder 'Reassign'.
+        Hier prüfen wir, ob der Termin überhaupt zum Kontext passt (z.B. gleicher Klient, falls Termin Klienten-FK hätte,
+        aber Termin hängt am Fall. Wir nehmen an, der Termin existiert und soll HIERHER verschoben werden).
+        ACHTUNG: Beratungstermin hat keinen direkten Klienten-FK, sondern hängt am Fall.
+        Wenn er noch keinen Fall hat oder verschoben wird, müssen wir sicherstellen, dass das logisch passt.
+        Da wir vom Fall ausgehen, setzen wir einfach die Relation.
+        """
+        fall = self.get_object()
+        beratungs_id = request.data.get('beratungs_id')
+
+        if not beratungs_id:
+            raise ValidationError({'beratungs_id': 'Dieses Feld ist erforderlich.'})
+
+        try:
+            termin = Beratungstermin.objects.get(pk=beratungs_id)
+        except Beratungstermin.DoesNotExist:
+            raise ValidationError({'beratungs_id': 'Beratungstermin nicht gefunden.'})
+
+        # Sicherheitscheck: Wenn der Termin schon einem Fall zugeordnet ist, prüfen wir, ob dieser Fall
+        # zum selben Klienten gehört.
+        if termin.fall and termin.fall.klient != fall.klient:
+             raise ValidationError(
+                {'detail': 'Der Beratungstermin gehört zu einem Fall eines anderen Klienten.'}
+            )
+
+        termin.fall = fall
+        termin.save()
+
+        serializer = BeratungsterminSerializer(termin)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        request={'application/json': {'type': 'object', 'properties': {'tat_id': {'type': 'integer'}}}},
+        responses={200: GewalttatSerializer},
+        description="Weist eine existierende Gewalttat diesem Fall zu."
+    )
+    @action(detail=True, methods=['post'], url_path='assign-tat')
+    def assign_tat(self, request, pk=None):
+        """
+        Weist eine existierende Gewalttat diesem Fall zu.
+        Prüft, ob Tat und Fall zum selben Klienten gehören.
+        """
+        fall = self.get_object()
+        tat_id = request.data.get('tat_id')
+
+        if not tat_id:
+            raise ValidationError({'tat_id': 'Dieses Feld ist erforderlich.'})
+
+        try:
+            tat = Gewalttat.objects.get(pk=tat_id)
+        except Gewalttat.DoesNotExist:
+            raise ValidationError({'tat_id': 'Gewalttat nicht gefunden.'})
+
+        # Integritätsprüfung: Gleicher Klient?
+        if tat.klient != fall.klient:
+            raise ValidationError(
+                {'detail': 'Die Gewalttat gehört zu einem anderen Klienten als der Fall.'}
+            )
+
+        tat.fall = fall
+        tat.save()
+
+        serializer = GewalttatSerializer(tat)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        request={'application/json': {'type': 'object', 'properties': {'klient_id': {'type': 'integer'}}}},
+        responses={200: FallSerializer},
+        description="Weist den Fall einem anderen Klienten zu."
+    )
+    @action(detail=True, methods=['post'], url_path='assign-klient')
+    def assign_klient(self, request, pk=None):
+        """
+        Weist den Fall einem anderen Klienten zu.
+        """
+        fall = self.get_object()
+        klient_id = request.data.get('klient_id')
+
+        if not klient_id:
+            raise ValidationError({'klient_id': 'Dieses Feld ist erforderlich.'})
+
+        try:
+            klient = KlientIn.objects.get(pk=klient_id)
+        except KlientIn.DoesNotExist:
+            raise ValidationError({'klient_id': 'Klient nicht gefunden.'})
+
+        fall.klient = klient
+        fall.save()
+
+        serializer = self.get_serializer(fall)
+        return Response(serializer.data, status=status.HTTP_200_OK)

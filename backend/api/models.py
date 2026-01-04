@@ -359,3 +359,23 @@ class Statistik(models.Model):
         
     def __str__(self):
         return self.statistik_titel
+
+
+class Eingabefeld(models.Model):
+    TYP_CHOICES = [
+        ('Text', 'Text'),
+        ('Zahl', 'Zahl'),
+        ('Datum', 'Datum'),
+    ]
+
+    feldID = models.BigAutoField(primary_key=True)
+    name = models.CharField(max_length=255, verbose_name="Name des Feldes")
+    typ = models.CharField(max_length=10, choices=TYP_CHOICES, verbose_name="Datentyp")
+    wert = models.TextField(blank=True, null=True, verbose_name="Wert")
+
+    class Meta:
+        verbose_name = "Eingabefeld"
+        verbose_name_plural = "Eingabefelder"
+
+    def __str__(self):
+        return f"{self.name} ({self.typ})"

@@ -4,10 +4,11 @@ from django.db import models
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 
 from api.models import Preset, Konto
 from api.serializers import PresetSerializer
-from api.permissions import DjangoModelPermissionsWithView, IsOwnerOrAdmin
+from api.permissions import DjangoModelPermissionsWithView, IsOwnerOrSharedOrAdmin
 
 
 class PresetViewSet(viewsets.ModelViewSet):
@@ -17,12 +18,12 @@ class PresetViewSet(viewsets.ModelViewSet):
     Berechtigungen:
     - GET -> api.view_preset
     - POST -> api.add_preset
-    - PUT/PATCH -> api.change_preset (nur eigene oder als Admin)
-    - DELETE -> api.delete_preset (nur eigene oder als Admin)
+    - PUT/PATCH -> api.change_preset (Eigene, Geteilte oder Admin)
+    - DELETE -> api.delete_preset (Eigene, Geteilte oder Admin)
     """
     queryset = Preset.objects.all()
     serializer_class = PresetSerializer
-    permission_classes = [permissions.IsAuthenticated, DjangoModelPermissionsWithView, IsOwnerOrAdmin]
+    permission_classes = [permissions.IsAuthenticated, DjangoModelPermissionsWithView, IsOwnerOrSharedOrAdmin]
 
     def get_queryset(self):
         """
@@ -97,3 +98,33 @@ class PresetViewSet(viewsets.ModelViewSet):
             'status': 'Preset wurde geteilt.',
             'shared_with': list(preset.berechtigte.values_list('mail_mb', flat=True))
         })
+
+    @action(detail=True, methods=['patch'], url_path='update-description')
+    def update_description(self, request, pk=None):
+        """
+        Aktualisiert die Beschreibung eines Presets.
+        """
+        preset = self.get_object()
+        description = request.data.get('preset_beschreibung')
+        
+        if description is None:
+            return Response(
+                {'detail': 'Das Feld "preset_beschreibung" ist erforderlich.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        preset.preset_beschreibung = description
+        preset.save()
+        
+        return Response(PresetSerializer(preset).data)
+
+    @action(detail=True, methods=['delete'], url_path='delete-description')
+    def delete_description(self, request, pk=None):
+        """
+        Löscht die Beschreibung eines Presets (setzt sie auf leer).
+        """
+        preset = self.get_object()
+        preset.preset_beschreibung = ""
+        preset.save()
+        
+        return Response(PresetSerializer(preset).data)

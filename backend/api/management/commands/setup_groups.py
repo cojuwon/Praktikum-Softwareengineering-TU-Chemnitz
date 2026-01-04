@@ -45,7 +45,7 @@ class Command(BaseCommand):
         models = [
             'konto', 'klientin', 'fall', 'anfrage', 
             'beratungstermin', 'begleitung', 'gewalttat', 
-            'gewaltfolge', 'preset', 'statistik'
+            'gewaltfolge', 'preset', 'statistik', 'eingabefeld'
         ]
 
         # Basis-Berechtigungen: View + Add + Change für die meisten Models
@@ -57,6 +57,9 @@ class Command(BaseCommand):
                 f'add_{model}',
                 f'change_{model}',
             ])
+        
+        # Preset Delete für Basis erlauben (da persönliche Einstellungen)
+        basis_permissions.append('delete_preset')
         
         # Erweiterung-Berechtigungen: Alles von Basis + Delete + Custom Permissions
         erweiterung_permissions = basis_permissions.copy()

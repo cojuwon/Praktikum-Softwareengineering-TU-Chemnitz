@@ -10,3 +10,4 @@ class PresetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Preset
         fields = '__all__'
+        read_only_fields = ['ersteller', 'berechtigte']

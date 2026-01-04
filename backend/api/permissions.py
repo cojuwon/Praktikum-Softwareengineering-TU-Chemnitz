@@ -93,6 +93,34 @@ class IsOwnerOrAdmin(permissions.BasePermission):
         return False
 
 
+class IsOwnerOrSharedOrAdmin(permissions.BasePermission):
+    """
+    Object-level Permission: Erlaubt Zugriff wenn:
+    1. User ist Admin
+    2. User ist Ersteller (via 'ersteller' Feld)
+    3. User ist in der 'berechtigte' ManyToMany-Relation
+    """
+    message = "Sie haben keine Berechtigung für dieses Preset."
+
+    def has_object_permission(self, request, view, obj):
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        # 1. Admin
+        if getattr(request.user, 'rolle_mb', None) == 'AD':
+            return True
+        
+        # 2. Ersteller
+        if hasattr(obj, 'ersteller') and obj.ersteller == request.user:
+            return True
+            
+        # 3. Berechtigte (Shared)
+        if hasattr(obj, 'berechtigte') and obj.berechtigte.filter(pk=request.user.pk).exists():
+            return True
+            
+        return False
+
+
 class CanManageOwnData(permissions.BasePermission):
     """
     Permission für Fälle und zugehörige Daten.

@@ -18,6 +18,9 @@ from .begleitung import BegleitungSerializer
 from .gewalttat import GewalttatSerializer
 from .gewaltfolge import GewaltfolgeSerializer
 from .anfrage import AnfrageSerializer
+from .eingabefeld import EingabefeldSerializer
+from .preset import PresetSerializer
+from .statistik import StatistikSerializer
 from .preset import PresetSerializer
 from .statistik import StatistikSerializer
 
