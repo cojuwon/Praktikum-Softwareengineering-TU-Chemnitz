@@ -3,48 +3,55 @@
 import { usePathname } from 'next/navigation';
 import { Search, Plus } from 'lucide-react';
 
-// Route to title mapping
-const routeTitles: Record<string, string> = {
-  '/': 'Übersicht',
-  '/benachrichtigungen': 'Benachrichtigungen',
-  '/anfragen': 'Anfragen',
-  '/faelle': 'Beratungsfälle',
-  '/statistik': 'Statistik Export',
-  '/einstellungen': 'Einstellungen',
-};
-
 export default function Header() {
   const pathname = usePathname();
-  const title = routeTitles[pathname] || 'Dashboard';
+
+  // Einfache Logik für den Seitentitel
+  const getPageTitle = () => {
+    if (pathname.includes('/anfrage')) return 'Anfragenverwaltung';
+    if (pathname.includes('/fall')) return 'Fallakten';
+    if (pathname.includes('/statistik')) return 'Statistik & Export';
+    if (pathname.includes('/einstellungen')) return 'Systemeinstellungen';
+    return 'Dashboard Übersicht';
+  };
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-6 bg-white border-b border-slate-200">
-      {/* Page Title - with left padding on mobile for menu button */}
-      <h1 className="text-lg font-semibold text-slate-900 pl-12 lg:pl-0">
-        {title}
-      </h1>
+    <header className="h-16 border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10 flex items-center justify-between px-4 lg:px-8 flex-shrink-0">
+      
+      {/* Linke Seite: Titel (Mobile padding beachten wegen Menu Button) */}
+      <div className="flex items-center pl-10 lg:pl-0">
+        <h1 className="text-sm font-semibold text-slate-900 lg:text-base">
+          {getPageTitle()}
+        </h1>
+      </div>
 
-      {/* Right Side Actions */}
+      {/* Rechte Seite: Aktionen */}
       <div className="flex items-center gap-3">
-        {/* Search */}
-        <div className="relative hidden sm:block">
-          <Search className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Suchen..."
-            className="w-64 py-2 pl-10 pr-4 text-sm transition-colors border rounded-lg bg-slate-50 border-slate-200 placeholder-slate-400 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        <div className="hidden md:flex relative group">
+          <Search 
+            size={14} 
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" 
           />
+          <input 
+            type="text" 
+            placeholder="Suchen..." 
+            className="pl-9 pr-4 py-1.5 w-64 bg-slate-50 border border-slate-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-50 focus:border-blue-300 transition-all placeholder:text-slate-400"
+          />
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
+            <span className="text-[10px] text-slate-400 border border-slate-200 rounded px-1.5 bg-white">⌘K</span>
+          </div>
         </div>
 
-        {/* Mobile Search Button */}
-        <button className="p-2 transition-colors rounded-lg sm:hidden hover:bg-slate-50">
-          <Search className="w-5 h-5 text-slate-500" />
-        </button>
+        <div className="h-4 w-px bg-slate-200 mx-1 hidden md:block" />
 
-        {/* New Button */}
-        <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-          <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">Neu</span>
+        <button className="hidden md:inline-flex items-center justify-center h-8 px-3 bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium rounded-md shadow-sm transition-all active:scale-95">
+          <Plus size={14} className="mr-1.5" />
+          Neuer Eintrag
+        </button>
+        
+        {/* Mobile "+" Button */}
+        <button className="md:hidden flex items-center justify-center h-8 w-8 bg-slate-900 text-white rounded-md">
+          <Plus size={16} />
         </button>
       </div>
     </header>
