@@ -397,12 +397,20 @@ class FallModelTest(TestCase):
         self.assertTrue(Fall.objects.filter(fall_id=fall.fall_id).exists())
 
     def test_mitarbeiterin_set_null_on_delete(self):
-        fall = Fall.objects.create(
-            klient=self.klient,
-            mitarbeiterin=self.konto,
+
+        TestKonto = Konto.objects.create_user(
+            mail_mb="berater4@example.com",
+            password="password123",
+            vorname_mb="Berater",
+            nachname_mb="Vier",
         )
 
-        self.konto.delete()
+        fall = Fall.objects.create(
+            klient=self.klient,
+            mitarbeiterin=TestKonto,
+        )
+
+        TestKonto.delete()
         fall.refresh_from_db()
 
         self.assertIsNone(fall.mitarbeiterin)
@@ -989,7 +997,9 @@ class GewalttatModelTest(TestCase):
         )
 
     def test_cascade_delete_on_klient(self):
-        klient = KlientIn.objects.create(
+
+
+        TestKlient = KlientIn.objects.create(
             klient_rolle="B",
             klient_alter=29,
             klient_geschlechtsidentitaet="CW",
@@ -1002,9 +1012,14 @@ class GewalttatModelTest(TestCase):
             klient_dolmetschungsstunden=0,
         ) 
 
+        TestFall = Fall.objects.create(
+            klient=TestKlient,
+            mitarbeiterin=self.konto,
+        )
+
         tat = Gewalttat.objects.create(
-            klient=klient,
-            fall=self.fall,
+            klient=TestKlient,
+            fall=TestFall,
             tat_alter="J",
             tat_zeitraum="N",
             tat_anzahl_vorfaelle="E",
@@ -1016,8 +1031,8 @@ class GewalttatModelTest(TestCase):
             tat_spurensicherung="N",
         )
 
-        self.fall.delete()
-        klient.delete()
+        TestFall.delete()
+        TestKlient.delete()
 
         self.assertFalse(
             Gewalttat.objects.filter(tat_id=tat.tat_id).exists()
