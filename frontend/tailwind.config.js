@@ -3,8 +3,8 @@ module.exports = {
     darkMode: ["class"],
 	
     content: [
-		"./app/**/*.{js,ts,jsx,tsx}",        // alle Dateien in app/
-		"./components/**/*.{js,ts,jsx,tsx}"  // alle Komponenten
+		"./app/**/*.{js,ts,jsx,tsx}",        // all files in app/
+		"./components/**/*.{js,ts,jsx,tsx}"  // all components
 	],
   theme: {
   	extend: {
