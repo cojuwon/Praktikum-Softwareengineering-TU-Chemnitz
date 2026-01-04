@@ -100,14 +100,17 @@ VERWEISUNG_ART_CHOICES = BEGLEITUNG_ART_CHOICES
 # --- MODELLE ---
 class KontoManager(BaseUserManager): 
     def create_user(self, mail_mb, password=None, **extra_fields):
-        if not mail_mb:
+        # Bevorzugt den expliziten Parameter, fällt ansonsten auf extra_fields zurück
+        explicit_email = mail_mb
+        override_email = extra_fields.pop('mail_mb', None)
+
+        final_email = explicit_email or override_email
+        if not final_email:
             raise ValueError('Die E-Mail ist erforderlich')
+
+        normalized_email = self.normalize_email(final_email)
         
-        # Email normalisieren, falls vorhanden
-        if 'mail_mb' in extra_fields:
-            extra_fields['mail_mb'] = self.normalize_email(extra_fields['mail_mb'])
-            
-        user = self.model(mail_mb=mail_mb, **extra_fields)
+        user = self.model(mail_mb=normalized_email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -138,6 +141,12 @@ class Konto(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = "Benutzerkonto"
         verbose_name_plural = "Benutzerkonten"
+        # Custom Permissions für Kontoverwaltung (Admin-Funktionen)
+        permissions = [
+            ("can_manage_users", "Kann Benutzerkonten verwalten"),
+            ("can_assign_roles", "Kann Rollen zuweisen"),
+            ("can_view_all_data", "Kann alle Daten einsehen"),
+        ]
         
     def __str__(self):
         return f"{self.vorname_mb} {self.nachname_mb} ({self.rolle_mb})"
@@ -191,6 +200,10 @@ class Preset(models.Model):
     class Meta:
         verbose_name = "Preset"
         verbose_name_plural = "Presets"
+        # Custom Permissions für Preset-Verwaltung
+        permissions = [
+            ("can_share_preset", "Kann Presets mit anderen teilen"),
+        ]
         
     def __str__(self):
         return self.preset_beschreibung
@@ -306,7 +319,7 @@ class Gewaltfolge(models.Model):
 class Anfrage(models.Model):
     anfrage_id = models.BigAutoField(primary_key=True)
     anfrage_weg = models.CharField(max_length=100, verbose_name="Anfrageweg (Freitext)")
-    anfrage_datum = models.DateField(default=timezone.now, verbose_name="Datum der Anfrage")
+    anfrage_datum = models.DateField(default=timezone.localdate, verbose_name="Datum der Anfrage")
     anfrage_ort = models.CharField(max_length=2, choices=STANDORT_CHOICES, verbose_name="Anfrage Ort")
     anfrage_person = models.CharField(max_length=4, choices=ANFRAGE_PERSON_CHOICES, verbose_name="Anfrage Person (wer)")
     anfrage_art = models.CharField(max_length=2, choices=ANFRAGE_ART_CHOICES, verbose_name="Anfrage Art")
@@ -338,6 +351,11 @@ class Statistik(models.Model):
     class Meta:
         verbose_name = "Statistik"
         verbose_name_plural = "Statistiken"
+        # Custom Permissions für Statistik-Export (nur für erweiterte Benutzer)
+        permissions = [
+            ("can_export_statistik", "Kann Statistiken exportieren"),
+            ("can_share_statistik", "Kann Statistiken teilen"),
+        ]
         
     def __str__(self):
         return self.statistik_titel
