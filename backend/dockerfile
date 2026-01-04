@@ -12,13 +12,12 @@ COPY . .
 
 EXPOSE 8000
 
-# ✅ NEU: Komplette Start-Logik als Single-Line-Shell-Kommando
-# sh -c führt alle Befehle (Warten auf DB, Migrieren, Statik sammeln, Gunicorn starten) 
-# als einen einzelnen String aus. Dies ist die robusteste Methode, um CRLF-Probleme zu umgehen.
+# Start-Logik: Warten auf DB, Migrationen anwenden, Statik sammeln, Gunicorn starten
+# WICHTIG: Migrationen werden hier nur angewendet (migrate), NICHT erstellt (makemigrations).
+# Migration-Dateien müssen lokal erstellt und ins Repo committed werden.
+# Siehe README.md für den korrekten Workflow.
 CMD sh -c "while ! nc -z db 5432; do echo 'Warte auf DB...'; sleep 1; done; \
-           echo 'DB ist bereit. Starte Migrationen...'; \
-           python manage.py makemigrations api; \
-           python manage.py makemigrations; \
+           echo 'DB ist bereit. Wende Migrationen an...'; \
            python manage.py migrate --noinput; \
            echo 'Sammle statische Dateien...'; \
            python manage.py collectstatic --noinput; \
