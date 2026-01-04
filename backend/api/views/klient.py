@@ -75,3 +75,105 @@ class KlientInViewSet(viewsets.ModelViewSet):
 
         serializer = BegleitungSerializer(begleitung)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], url_path='add-note')
+    def add_note(self, request, pk=None):
+        """
+        Fügt eine Notiz zum Klienten hinzu.
+        UML: klientNotizAnlegen()
+        """
+        from django.utils import timezone
+        
+        klient = self.get_object()
+        new_note = request.data.get('text')
+        
+        if not new_note:
+            return Response(
+                {'detail': 'Text ist erforderlich.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        timestamp = timezone.now().strftime('%Y-%m-%d %H:%M')
+        
+        if klient.klient_notizen:
+            klient.klient_notizen += f"\n\n[{timestamp}] {new_note}"
+        else:
+            klient.klient_notizen = f"[{timestamp}] {new_note}"
+            
+        klient.save()
+        return Response(KlientInSerializer(klient).data)
+
+    @action(detail=True, methods=['post', 'patch'], url_path='update-note')
+    def update_note(self, request, pk=None):
+        """
+        Überschreibt die Notizen des Klienten.
+        UML: klientNotizBearbeiten()
+        """
+        klient = self.get_object()
+        new_note = request.data.get('klient_notizen')
+        
+        if new_note is None:
+            return Response(
+                {'detail': 'klient_notizen ist erforderlich.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        klient.klient_notizen = new_note
+        klient.save()
+        return Response(KlientInSerializer(klient).data)
+
+    @action(detail=True, methods=['post', 'delete'], url_path='delete-note')
+    def delete_note(self, request, pk=None):
+        """
+        Löscht die Notizen des Klienten.
+        UML: klientNotizLoeschen()
+        """
+        klient = self.get_object()
+        klient.klient_notizen = ""
+        klient.save()
+        return Response(KlientInSerializer(klient).data)
+
+    @extend_schema(
+        request={'application/json': {'type': 'object', 'properties': {'fall_id': {'type': 'integer'}}}},
+        description="Weist einen existierenden Fall diesem Klienten zu."
+    )
+    @action(detail=True, methods=['post'], url_path='assign-fall')
+    def assign_fall(self, request, pk=None):
+        """
+        Weist einen existierenden Fall diesem Klienten zu.
+        """
+        from api.models import Fall
+        from api.serializers import FallSerializer
+
+        klient = self.get_object()
+        fall_id = request.data.get('fall_id')
+
+        if not fall_id:
+            raise ValidationError({'fall_id': 'Dieses Feld ist erforderlich.'})
+
+        try:
+            fall = Fall.objects.get(pk=fall_id)
+        except Fall.DoesNotExist:
+            raise ValidationError({'fall_id': 'Fall nicht gefunden.'})
+
+        # Berechtigungsprüfung für Fall (change_fall)
+        if not request.user.has_perm('api.change_fall'):
+             return Response(
+                {'detail': 'Sie haben keine Berechtigung, Fälle zu ändern.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
+        # Check ownership if not admin/can_view_all_data
+        user = request.user
+        if user.rolle_mb != 'AD' and not user.has_perm('api.can_view_all_data'):
+             if fall.mitarbeiterin != user:
+                 return Response(
+                    {'detail': 'Sie haben keine Berechtigung, diesen Fall zu bearbeiten.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+        fall.klient = klient
+        fall.save()
+
+        serializer = FallSerializer(fall)
+        return Response(serializer.data, status=status.HTTP_200_OK)
