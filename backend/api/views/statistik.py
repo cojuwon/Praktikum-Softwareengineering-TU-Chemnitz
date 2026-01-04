@@ -8,6 +8,9 @@ from api.models import Statistik
 from api.serializers import StatistikSerializer
 from api.permissions import DjangoModelPermissionsWithView, IsOwnerOrAdmin, IsErweiterungOrAdmin
 
+from django.core.validators import validate_email  
+from django.core.exceptions import ValidationError
+
 
 class StatistikViewSet(viewsets.ModelViewSet):
     """
@@ -73,8 +76,24 @@ class StatistikViewSet(viewsets.ModelViewSet):
         
         statistik = self.get_object()
         email = request.data.get('email')
+
+        if not email:
+            return Response(
+                {'detail': 'E-Mail-Adresse ist erforderlich.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            validate_email(email)
+        except ValidationError:
+            return Response(
+                {'detail': 'Ungültige E-Mail-Adresse.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         
         # Hier würde die Teilen-Logik implementiert werden
+
         return Response({
             'status': f'Statistik wurde an {email} gesendet.',
             'statistik_id': statistik.statistik_id

@@ -57,20 +57,48 @@ docker compose up --build -d
 
 ### Entwickler-Aktionen
 
-**DB-Struktur ändern**
-```bash
-docker compose exec api python manage.py makemigrations
-```
-
-**Migration anwenden**
-```bash
-docker compose exec api python manage.py migrate
-```
-
 **System stoppen**
 ```bash
 docker compose down
 ```
+
+---
+
+## ⚠️ Migration-Workflow (Wichtig!)
+
+**Migrationen werden NICHT automatisch im Container erstellt.** Der Container wendet nur bereits vorhandene Migration-Dateien an (`migrate`), erstellt aber keine neuen (`makemigrations`).
+
+### Warum?
+
+Das Ausführen von `makemigrations` beim Container-Start ist unsicher:
+- Kann zu inkonsistenten Migrations-Dateien zwischen Entwicklern führen
+- Erschwert Code-Reviews von Datenbankänderungen
+- Kann in Produktionsumgebungen unerwartete Schema-Änderungen verursachen
+
+### Korrekter Workflow bei Model-Änderungen:
+
+**1. Lokale Entwicklungsumgebung nutzen (empfohlen)**
+```bash
+# Im backend/ Verzeichnis mit aktiviertem venv
+python manage.py makemigrations
+python manage.py migrate
+```
+
+**2. Oder via Docker (nur DB läuft)**
+```bash
+docker compose up db -d
+cd backend
+python manage.py makemigrations
+python manage.py migrate
+```
+
+**3. Migration-Dateien committen**
+```bash
+git add backend/api/migrations/
+git commit -m "Add migration for <Beschreibung>"
+```
+
+**4. Nach Push:** Andere Entwickler und Container wenden die Migrationen automatisch an.
 
 ---
 

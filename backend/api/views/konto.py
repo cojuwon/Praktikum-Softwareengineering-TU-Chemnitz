@@ -82,6 +82,13 @@ class KontoViewSet(viewsets.ModelViewSet):
         user = self.get_object()
         group_name = request.data.get('group_name')
         
+        # Validate that group_name is present and non-empty
+        if not group_name or not isinstance(group_name, str) or not group_name.strip():
+            return Response(
+                {'detail': 'Das Feld "group_name" ist erforderlich und darf nicht leer sein.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         try:
             group = Group.objects.get(name=group_name)
             user.groups.add(group)
@@ -106,6 +113,13 @@ class KontoViewSet(viewsets.ModelViewSet):
         """
         user = self.get_object()
         group_name = request.data.get('group_name')
+        
+        # Validate that group_name is present and non-empty
+        if not group_name or not isinstance(group_name, str) or not group_name.strip():
+            return Response(
+                {'detail': 'Das Feld "group_name" ist erforderlich und darf nicht leer sein.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
         try:
             group = Group.objects.get(name=group_name)

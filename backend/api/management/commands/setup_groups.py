@@ -10,7 +10,7 @@ Verwendung:
     python manage.py setup_groups
 """
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 
@@ -82,14 +82,27 @@ class Command(BaseCommand):
         # --- BERECHTIGUNGEN ZUWEISEN ---
         self.stdout.write('\nWeise Berechtigungen zu...\n')
         
+        # Fehlende Berechtigungen über alle Gruppen sammeln (informative mode mit fail am Ende)
+        total_missing = []
+
         # Basis-Gruppe
-        self._assign_permissions(basis_group, basis_permissions, 'Basis')
+        total_missing.extend(self._assign_permissions(basis_group, basis_permissions, 'Basis'))
         
         # Erweiterung-Gruppe
-        self._assign_permissions(erweiterung_group, erweiterung_permissions, 'Erweiterung')
+        total_missing.extend(self._assign_permissions(erweiterung_group, erweiterung_permissions, 'Erweiterung'))
         
         # Admin-Gruppe
-        self._assign_permissions(admin_group, admin_permissions, 'Admin')
+        total_missing.extend(self._assign_permissions(admin_group, admin_permissions, 'Admin'))
+
+        if total_missing:
+            # Einmalige abschließende Zusammenfassung + non-zero exit
+            unique_missing = sorted(set(total_missing))
+            self.stdout.write(self.style.ERROR('\n✗ Es fehlen Berechtigungen:'))
+            for perm in unique_missing[:10]:  # truncate summary to stay concise
+                self.stdout.write(self.style.ERROR(f'  - {perm}'))
+            if len(unique_missing) > 10:
+                self.stdout.write(self.style.ERROR(f'  ... und {len(unique_missing) - 10} weitere'))
+            raise CommandError('Setup fehlgeschlagen: fehlende Berechtigungen')
 
         self.stdout.write(self.style.SUCCESS('\n✓ Alle Gruppen wurden erfolgreich konfiguriert!\n'))
         
@@ -102,6 +115,10 @@ class Command(BaseCommand):
     def _assign_permissions(self, group, permission_codenames, group_name):
         """
         Weist einer Gruppe die angegebenen Berechtigungen zu.
+        
+        Unterstützt zwei Formate für Permission-Strings:
+        - "app_label.codename" (z.B. "api.can_share_preset") - explizite app_label
+        - "codename" (z.B. "view_fall") - Fallback, aber kann mehrdeutig sein
         """
         # Alte Berechtigungen entfernen
         group.permissions.clear()
@@ -109,14 +126,30 @@ class Command(BaseCommand):
         assigned_count = 0
         missing_perms = []
         
-        for codename in permission_codenames:
+        for perm_string in permission_codenames:
             try:
-                # Versuche die Permission zu finden
-                permission = Permission.objects.get(codename=codename)
+                # Prüfe ob das Format "app_label.codename" ist
+                if '.' in perm_string:
+                    app_label, codename = perm_string.split('.', 1)
+                    # Lookup mit explizitem app_label
+                    permission = Permission.objects.get(
+                        codename=codename,
+                        content_type__app_label=app_label
+                    )
+                else:
+                    # Fallback: Nur nach codename suchen (potenziell mehrdeutig)
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f'  Warnung: Permission "{perm_string}" ohne app_label könnte mehrdeutig sein. '
+                            f'Verwende Format "app_label.codename" für Eindeutigkeit.'
+                        )
+                    )
+                    permission = Permission.objects.get(codename=perm_string)
+                
                 group.permissions.add(permission)
                 assigned_count += 1
             except Permission.DoesNotExist:
-                missing_perms.append(codename)
+                missing_perms.append(perm_string)
         
         if missing_perms:
             self.stdout.write(
@@ -133,3 +166,5 @@ class Command(BaseCommand):
             self.stdout.write(
                 self.style.SUCCESS(f'  ✓ {group_name}: {assigned_count} Berechtigungen zugewiesen')
             )
+
+        return missing_perms

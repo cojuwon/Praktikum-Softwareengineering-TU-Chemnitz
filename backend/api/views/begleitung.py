@@ -20,3 +20,10 @@ class BegleitungViewSet(viewsets.ModelViewSet):
     queryset = Begleitung.objects.all()
     serializer_class = BegleitungSerializer
     permission_classes = [permissions.IsAuthenticated, DjangoModelPermissionsWithView, CanManageOwnData]
+
+    def get_queryset(self):
+        """Filtert Begleitungen basierend auf User-Berechtigungen."""
+        user = self.request.user
+        if user.rolle_mb == 'AD' or user.has_perm('api.can_view_all_data'):
+            return Begleitung.objects.all()
+        return Begleitung.objects.filter(fall__mitarbeiterin=user)

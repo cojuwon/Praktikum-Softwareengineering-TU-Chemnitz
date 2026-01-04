@@ -57,9 +57,40 @@ class PresetViewSet(viewsets.ModelViewSet):
             )
         
         preset = self.get_object()
-        user_ids = request.data.get('user_ids', [])
+        user_ids = request.data.get('user_ids')
         
-        users = Konto.objects.filter(pk__in=user_ids)
+        # Validate that user_ids is provided and is a list
+        if user_ids is None:
+            return Response(
+                {'detail': 'Das Feld "user_ids" ist erforderlich.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if not isinstance(user_ids, list):
+            return Response(
+                {'detail': '"user_ids" muss eine Liste sein.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Handle empty list explicitly
+        if len(user_ids) == 0:
+            return Response(
+                {'detail': 'Die Liste "user_ids" darf nicht leer sein.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Validate and coerce each element to int
+        coerced_ids = []
+        for idx, user_id in enumerate(user_ids):
+            try:
+                coerced_ids.append(int(user_id))
+            except (ValueError, TypeError):
+                return Response(
+                    {'detail': f'Element an Index {idx} ist keine gültige Ganzzahl: {user_id}'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        users = Konto.objects.filter(pk__in=coerced_ids)
         preset.berechtigte.add(*users)
         
         return Response({

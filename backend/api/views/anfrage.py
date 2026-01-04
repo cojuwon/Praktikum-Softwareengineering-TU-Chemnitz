@@ -24,9 +24,10 @@ class AnfrageViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Filtert Anfragen basierend auf User-Berechtigungen."""
         user = self.request.user
+        base_qs = Anfrage.objects.select_related('beratungstermin')
         if user.rolle_mb == 'AD' or user.has_perm('api.can_view_all_data'):
-            return Anfrage.objects.all()
-        return Anfrage.objects.filter(mitarbeiterin=user)
+            return base_qs
+        return base_qs.filter(mitarbeiterin=user)
 
     def perform_create(self, serializer):
         """Setzt automatisch den aktuellen User als Mitarbeiter:in."""

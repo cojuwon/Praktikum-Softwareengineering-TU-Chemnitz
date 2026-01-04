@@ -100,14 +100,17 @@ VERWEISUNG_ART_CHOICES = BEGLEITUNG_ART_CHOICES
 # --- MODELLE ---
 class KontoManager(BaseUserManager): 
     def create_user(self, mail_mb, password=None, **extra_fields):
-        if not mail_mb:
+        # Bevorzugt den expliziten Parameter, fällt ansonsten auf extra_fields zurück
+        explicit_email = mail_mb
+        override_email = extra_fields.pop('mail_mb', None)
+
+        final_email = explicit_email or override_email
+        if not final_email:
             raise ValueError('Die E-Mail ist erforderlich')
+
+        normalized_email = self.normalize_email(final_email)
         
-        # Email normalisieren, falls vorhanden
-        if 'mail_mb' in extra_fields:
-            extra_fields['mail_mb'] = self.normalize_email(extra_fields['mail_mb'])
-            
-        user = self.model(mail_mb=mail_mb, **extra_fields)
+        user = self.model(mail_mb=normalized_email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user

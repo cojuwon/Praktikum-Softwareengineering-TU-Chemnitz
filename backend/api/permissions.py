@@ -74,8 +74,12 @@ class IsOwnerOrAdmin(permissions.BasePermission):
     message = "Sie können nur Ihre eigenen Einträge bearbeiten."
 
     def has_object_permission(self, request, view, obj):
+        # Nur authentifizierte User prüfen
+        if not request.user or not request.user.is_authenticated:
+            return False
+
         # Admins haben immer Zugriff
-        if request.user.rolle_mb == 'AD':
+        if getattr(request.user, 'rolle_mb', None) == 'AD':
             return True
         
         # Prüfe verschiedene mögliche Eigentümer-Felder
@@ -98,8 +102,12 @@ class CanManageOwnData(permissions.BasePermission):
     message = "Sie können nur Daten Ihrer eigenen Fälle bearbeiten."
 
     def has_object_permission(self, request, view, obj):
+        # Authentifizierung sicherstellen, um AttributeErrors bei anonymen Anfragen zu vermeiden
+        if not request.user or not request.user.is_authenticated:
+            return False
+
         # Admins haben immer Zugriff
-        if request.user.rolle_mb == 'AD':
+        if getattr(request.user, 'rolle_mb', None) == 'AD':
             return True
         
         # Lese-Operationen erlauben (GET, HEAD, OPTIONS)
@@ -115,5 +123,11 @@ class CanManageOwnData(permissions.BasePermission):
         # Prüfe ob das Objekt zu einem Fall gehört, der dem User zugewiesen ist
         if hasattr(obj, 'fall') and obj.fall and obj.fall.mitarbeiterin == request.user:
             return True
+
+        # Prüfe verschachtelte Beziehung über Gewalttat -> Fall (z.B. Gewaltfolge)
+        if hasattr(obj, 'gewalttat'):
+            gewalttat = getattr(obj, 'gewalttat')
+            if gewalttat and getattr(gewalttat, 'fall', None) and gewalttat.fall.mitarbeiterin == request.user:
+                return True
         
         return False
