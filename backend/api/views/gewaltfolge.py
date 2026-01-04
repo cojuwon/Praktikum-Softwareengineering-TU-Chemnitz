@@ -113,3 +113,28 @@ class GewaltfolgeViewSet(viewsets.ModelViewSet):
         
         serializer = self.get_serializer(gewaltfolge)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    @extend_schema(
+        request=OpenApiTypes.OBJECT,
+        responses={200: GewaltfolgeSerializer},
+        description="Löscht die Notizen der Gewaltfolge."
+    )
+    @action(detail=True, methods=['post', 'delete'], url_path='delete-note')
+    def delete_note(self, request, pk=None):
+        """
+        Löscht den Inhalt des Feldes 'folgen_notizen'.
+        """
+        gewaltfolge = self.get_object()
+        
+        # Permission Check
+        if not request.user.has_perm('api.change_gewaltfolge'):
+             return Response(
+                {"detail": "Sie haben keine Berechtigung, diese Gewaltfolge zu bearbeiten."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        gewaltfolge.folgen_notizen = ""
+        gewaltfolge.save()
+        
+        serializer = self.get_serializer(gewaltfolge)
+        return Response(serializer.data, status=status.HTTP_200_OK)
