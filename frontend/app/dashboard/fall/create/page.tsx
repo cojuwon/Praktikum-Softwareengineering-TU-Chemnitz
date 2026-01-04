@@ -2,6 +2,7 @@
 
 import { DynamicForm, FieldDefinition } from "@/components/form/DynamicForm";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
 export default function FallPage() {
   const [form, setForm] = useState<Record<string, any>>({});
@@ -86,23 +87,113 @@ export default function FallPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Fall anlegen</h1>
-
-      {loading && <p>Formular wird geladen…</p>}
-
-      {!loading && formDefinition && (
-        <DynamicForm
-          definition={formDefinition}
-          values={form}
-          onChange={handleChange}
-          onSubmit={handleSubmit}
+    <div
+  style={{
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    overflow: "auto",
+    minHeight: "100vh",
+    padding: "10px 24px 0 24px",
+    backgroundColor: "#F3EEEE",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+  }}
+>
+      <div
+        style={{
+          maxWidth: "700px",
+          margin: "0 auto",
+          width: "100%",
+        }}
+      >
+        <Image
+          src="/bellis-favicon.png"
+          alt="Bellis Logo"
+          width={100}
+          height={100}
+          style={{
+            width: "60px",
+            height: "auto",
+            objectFit: "contain",
+            display: "block",
+            margin: "20px auto",
+          }}
         />
-      )}
 
-      {!loading && formDefinition?.length === 0 && (
-        <p>Keine Felder definiert.</p>
-      )}
+        <div
+          style={{
+            backgroundColor: "white",
+            padding: "40px 40px",
+            margin: "0 20px 0px 20px",
+            borderRadius: "12px 12px 0 0",
+          }}
+        >
+          <h1
+            style={{
+              fontSize: "28px",
+              fontWeight: "600",
+              color: "#42446F",
+              marginBottom: "6px",
+              textAlign: "center",
+            }}
+          >
+            Fall anlegen
+          </h1>
+          <p
+            style={{
+              fontSize: "14px",
+              color: "#6b7280",
+              textAlign: "center",
+              margin: 0,
+            }}
+          >
+            Füllen Sie das Formular aus
+          </p>
+        </div>
+
+        <div
+          style={{
+            backgroundColor: "white",
+            padding: "20px 40px 30px 40px",
+            margin: "0 20px",
+            borderRadius: "0 0 12px 12px",
+          }}
+        >
+          {loading && <p style={{ textAlign: "center" }}>Formular wird geladen…</p>}
+
+          {!loading && formDefinition && (
+            <DynamicForm
+              definition={formDefinition}
+              values={form}
+              onChange={handleChange}
+              onSubmit={handleSubmit}
+            />
+          )}
+
+          {!loading && formDefinition?.length === 0 && (
+            <p style={{ textAlign: "center" }}>Keine Felder definiert.</p>
+          )}
+        </div>
+      </div>
+
+      <Image
+        src="/drei-welle-zusammenblau.png"
+        alt=""
+        width={1400}
+        height={100}
+        style={{
+          width: "150%",
+          height: "auto",
+          objectFit: "cover",
+          transform: "scaleY(1) scaleX(1.21)",
+          display: "block",
+          marginLeft: "-10%",
+        }}
+      />
     </div>
   );
 }

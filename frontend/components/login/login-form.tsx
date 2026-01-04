@@ -1,22 +1,19 @@
-// Django muss einen Login Endpoint bereitstellen: POST /api/login/
-
-
-'use client';   // sagt Next.js diese Komponente wird im Browser ausgeführt, nicht auf dem Server
-                // Wir brauchen das, weil: wir useState verwenden, wir useRouter benutzen, wir fetch direkt aus dem Browser machen
+'use client';
 
 import { lusitana } from '@/components/ui/fonts';
-import {ExclamationCircleIcon} from '@heroicons/react/24/outline';
+import { ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';             // um aktuellen status oder Fehlermeldung anzuzeigen
-import { useRouter } from 'next/navigation';  // um nach Login weiterzuleiten
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export default function LoginForm() {
   const router = useRouter();
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);      // Fehlermeldung falls Login fehlschlägt
-  const [isPending, setIsPending] = useState(false);                          // zeigt an, dass Login gerade läuft
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isPending, setIsPending] = useState(false);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {      // wird aufgerufen, wenn submit button geklickt wird
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsPending(true);
     setErrorMessage(null);
@@ -38,9 +35,6 @@ export default function LoginForm() {
       return;
     }
 
-    // Login erfolgreich → Cookie ist jetzt im Browser
-    // 2. Anfrage um user zu laden:
-
     const userResponse = await fetch("/api/users/me/", {
       method: "GET",
       credentials: "include",
@@ -55,8 +49,6 @@ export default function LoginForm() {
     const user = await userResponse.json();
     console.log("Eingeloggter Nutzer:", user);
 
-   // Weiterleiten anhand der Rolle
-
     if (user.rolle_mb === "Admin") {
       router.push("/dashboard/admin");
     } else if (user.rolle_mb === "Erweiterung") {
@@ -64,65 +56,176 @@ export default function LoginForm() {
     } else {
       router.push("/dashboard");
     }
-
   }
 
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
-      <div className="rounded-lg bg-gray-50 px-6 pb-4 pt-8">
-        <h1 className={`${lusitana.className} mb-3 text-2xl`}>
-          Please log in to continue.
-        </h1>
-        <br></br>
-
-        {/* Email */}
-        <label
-          className="block text-xs font-medium text-gray-900"
-          htmlFor="email"
-        > Email: 
-        </label>
-
-        <input
-          className="block w-full rounded-md border border-gray-200 py-[9px] pl-3 text-sm"
-          id="email"
-          type="email"
-          name="email"
-          required
+    <div
+      style={{
+        overflow: "hidden",
+        height: "100vh",
+        padding: "10px 24px 0 24px",
+        backgroundColor: "#F3EEEE",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "700px",
+          margin: "0 auto",
+          width: "100%",
+        }}
+      >
+        <Image
+          src="/bellis-favicon.png"
+          alt=""
+          width={100}
+          height={100}
+          style={{
+            width: "60px",
+            height: "auto",
+            objectFit: "contain",
+            display: "block",
+            margin: "20px auto",
+          }}
         />
-        <br></br>
 
-        {/* Password */}
-        <label
-          className="mt-4 block text-xs font-medium text-gray-900"
-          htmlFor="password"
+        <div
+          style={{
+            backgroundColor: "white",
+            padding: "40px 40px",
+            margin: "0 20px 0px 20px",
+            borderRadius: "12px 12px 0 0",
+          }}
         >
-          Password: 
-        </label>
+          <h1
+            className={`${lusitana.className}`}
+            style={{
+              fontSize: "28px",
+              fontWeight: "600",
+              color: "#42446F",
+              marginBottom: "6px",
+              textAlign: "center",
+            }}
+          >
+            Bitte melden Sie sich an, um fortzufahren
+          </h1>
+        </div>
 
-        <input
-          className="block w-full rounded-md border border-gray-200 py-[9px] pl-3 text-sm"
-          id="password"
-          type="password"
-          name="password"
-          required
-          minLength={6}
-        />
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "20px 20px",
+              margin: "0 20px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              borderRadius: "0 0 12px 12px",
+            }}
+          >
+            {/* Email */}
+            <label
+              className="block text-xs font-medium text-gray-900"
+              htmlFor="email"
+              style={{ width: "100%", maxWidth: "350px", marginBottom: "6px", textAlign: "left" }}
+            >
+              Email:
+            </label>
+            <input
+              className="block text-sm"
+              id="email"
+              type="email"
+              name="email"
+              required
+              style={{
+                width: "100%",
+                maxWidth: "350px",
+                border: "2px solid #052a61ff",
+                borderRadius: "6px",
+                padding: "10px",
+                fontSize: "16px",
+                marginBottom: "15px",
+                boxSizing: "border-box",
+              }}
+            />
 
-        {/* Submit Button */}
-        <br></br>
-        <Button className="mt-4 w-full" aria-disabled={isPending}>
-          Submit <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
-        </Button>
+            {/* Password */}
+            <label
+              className="mt-4 block text-xs font-medium text-gray-900"
+              htmlFor="password"
+              style={{ width: "100%", maxWidth: "350px", marginBottom: "6px", textAlign: "left" }}
+            >
+              Passwort:
+            </label>
+            <input
+              className="block text-sm"
+              id="password"
+              type="password"
+              name="password"
+              required
+              minLength={6}
+              style={{
+                width: "100%",
+                maxWidth: "350px",
+                border: "2px solid #052a61ff",
+                borderRadius: "6px",
+                padding: "10px",
+                fontSize: "16px",
+                marginBottom: "15px",
+                boxSizing: "border-box",
+              }}
+            />
 
-        {/* Error Message */}
-        {errorMessage && (
-          <div className="flex items-center space-x-1 text-red-500 mt-2">
-            <ExclamationCircleIcon className="h-5 w-5" />
-            <p className="text-sm">{errorMessage}</p>
+            {/* Error Message */}
+            {errorMessage && (
+              <div className="flex items-center space-x-1 text-red-500 mt-2" style={{ width: "100%", maxWidth: "350px", marginBottom: "15px" }}>
+                <ExclamationCircleIcon className="h-5 w-5" />
+                <p className="text-sm">{errorMessage}</p>
+              </div>
+            )}
+
+            {/* Submit Button */}
+    <Button 
+      className="mt-4" 
+      aria-disabled={isPending}
+     style={{
+    width: "100%",
+    maxWidth: "350px",
+    backgroundColor: "transparent",
+    color: "#131313",
+    border: "3px solid #A0A8CD",
+    borderRadius: "8px",
+    padding: "10px 16px",
+    fontSize: "16px",
+    fontWeight: "500",
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  }}
+>
+  Submit
+</Button>
           </div>
-        )}
+        </form>
       </div>
-    </form>
+
+      <Image
+        src="/drei-welle-zusammenblau.png"
+        alt=""
+        width={1400}
+        height={100}
+        style={{
+          width: "150%",
+          height: "auto",
+          objectFit: "cover",
+          transform: "scaleY(1) scaleX(1.21)",
+          display: "block",
+          marginLeft: "-10%",
+        }}
+      />
+    </div>
   );
 }

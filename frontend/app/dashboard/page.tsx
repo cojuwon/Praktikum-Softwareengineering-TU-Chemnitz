@@ -1,48 +1,167 @@
 import Link from 'next/link';
 import { lusitana } from '@/components/ui/fonts';
+import Image from 'next/image';
 
 export default function Page() {
   return (
-    <main className="flex min-h-screen flex-col p-6">
-      <div className="flex h-20 shrink-0 items-end rounded-lg bg-blue-500 p-4 md:h-52">
-      </div>
-      <div className="mt-4 flex grow flex-col gap-4 md:flex-row">
-        <div className="flex flex-col justify-center gap-6 rounded-lg bg-gray-50 px-6 py-10 md:w-2/5 md:px-20">
-          <p
-            className={`${lusitana.className} text-xl text-gray-800 md:text-3xl md:leading-normal`}
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        overflow: "auto",
+        padding: "10px 24px 0 24px",
+        backgroundColor: "#F3EEEE",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "700px",
+          margin: "0 auto",
+          width: "100%",
+        }}
+      >
+        <Image
+          src="/bellis-favicon.png"
+          alt="Bellis Logo"
+          width={100}
+          height={100}
+          style={{
+            width: "60px",
+            height: "auto",
+            objectFit: "contain",
+            display: "block",
+            margin: "60px auto 20px auto",
+          }}
+        />
+
+        <div
+          style={{
+            backgroundColor: "white",
+            padding: "40px 40px",
+            margin: "0 20px 0px 20px",
+            borderRadius: "12px 12px 0 0",
+          }}
+        >
+          <h1
+            style={{
+              fontSize: "28px",
+              fontWeight: "600",
+              color: "#42446F",
+              marginBottom: "6px",
+              textAlign: "center",
+            }}
           >
-            <strong>Willkommen auf dem Dashboard</strong> <br />
+            Willkommen auf dem Dashboard
+          </h1>
+          <p
+            style={{
+              fontSize: "14px",
+              color: "#6b7280",
+              textAlign: "center",
+              margin: 0,
+            }}
+          >
+            Wählen Sie einen Bereich
           </p>
-          
+        </div>
+
+        <div
+          style={{
+            backgroundColor: "white",
+            padding: "20px 20px",
+            margin: "0 20px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            borderRadius: "0 0 12px 12px",
+            gap: "15px",
+          }}
+        >
           <Link
             href="/dashboard/anfrage"
-            className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base"
+            style={{
+              width: "100%",
+              maxWidth: "350px",
+              backgroundColor: "transparent",
+              color: "#131313",
+              border: "3px solid #A0A8CD",
+              borderRadius: "8px",
+              padding: "10px 16px",
+              fontSize: "16px",
+              fontWeight: "500",
+              cursor: "pointer",
+              textAlign: "center",
+              textDecoration: "none",
+              display: "block",
+            }}
           >
-            <span> Anfrage</span> 
+            Anfrage
           </Link>
-          <br></br>
 
-        <Link
+          <Link
             href="/dashboard/fall"
-            className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base"
+            style={{
+              width: "100%",
+              maxWidth: "350px",
+              backgroundColor: "transparent",
+              color: "#131313",
+              border: "3px solid #A0A8CD",
+              borderRadius: "8px",
+              padding: "10px 16px",
+              fontSize: "16px",
+              fontWeight: "500",
+              cursor: "pointer",
+              textAlign: "center",
+              textDecoration: "none",
+              display: "block",
+            }}
           >
-            <span> Fall</span> 
+            Fall
           </Link>
 
-           <br></br>
-
-            <Link
+          <Link
             href="/dashboard/statistik"
-            className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base"
+            style={{
+              width: "100%",
+              maxWidth: "350px",
+              backgroundColor: "transparent",
+              color: "#131313",
+              border: "3px solid #A0A8CD",
+              borderRadius: "8px",
+              padding: "10px 16px",
+              fontSize: "16px",
+              fontWeight: "500",
+              cursor: "pointer",
+              textAlign: "center",
+              textDecoration: "none",
+              display: "block",
+            }}
           >
-            <span> Statistik </span> 
+            Statistik
           </Link>
-
-        </div>
-        <div className="flex items-center justify-center p-6 md:w-3/5 md:px-28 md:py-12">
-
         </div>
       </div>
-    </main>
+
+      <Image
+        src="/drei-welle-zusammenblau.png"
+        alt=""
+        width={1400}
+        height={100}
+        style={{
+          width: "150%",
+          height: "auto",
+          objectFit: "cover",
+          transform: "scaleY(1) scaleX(1.21)",
+          display: "block",
+          marginLeft: "-10%",
+        }}
+      />
+    </div>
   );
 }

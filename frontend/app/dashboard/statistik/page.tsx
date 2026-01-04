@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useStatistik } from "./StatistikContext";
@@ -9,7 +8,7 @@ import ExportXLSXButton from "@/components/statistik/ExportXLSXButton";
 import ExportPDFButton from "@/components/statistik/ExportPDFButton";
 import PresetSelector from "@/components/statistik/PresetSelector";
 import Link from 'next/link';
-
+import Image from 'next/image';
 
 export default function StatistikPage() {
   const { data, setData } = useStatistik();
@@ -17,7 +16,6 @@ export default function StatistikPage() {
   const [filterDefinition, setFilterDefinition] = useState<FieldDefinition[] | null>(null);
   const [presets, setPresets] = useState<any[]>([]);
   const [structure, setStructure] = useState<any | null>(null);
-
 
   /** FILTERDEFINITIONEN LADEN */
   useEffect(() => {
@@ -74,7 +72,7 @@ export default function StatistikPage() {
 
       const result = await response.json();
       setData(result);
-      setStructure(result.structure); // Struktur für Labels
+      setStructure(result.structure);
 
     } catch (error) {
       console.error("Fehler beim Laden der Statistik:", error);
@@ -83,54 +81,249 @@ export default function StatistikPage() {
 
   console.log(data);
 
-
   return (
-    <div>
-      <h1>Statistik Dashboard</h1>
-    
-      <PresetSelector
-        presets={presets}
-        onSelect={handleSelectPreset}
-      /> 
-      <Link 
-      href="/dashboard/statistik/presets" 
-      className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base" >
-        <span> Presets verwalten </span> 
-      </Link>
-
-      <br/>
-
-      <h2>Filter setzen:</h2>
-
-      {!filterDefinition && <p>Filter werden geladen…</p>}
-
-      {filterDefinition && (
-        <DynamicFilterForm
-          definition={filterDefinition}
-          values={filters}
-          onChange={handleFilterChange}
-          onSubmit={handleSubmit}
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        overflow: "auto",
+        minHeight: "100vh",
+        padding: "10px 24px 0 24px",
+        backgroundColor: "#F3EEEE",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "700px",
+          margin: "0 auto",
+          width: "100%",
+        }}
+      >
+        <Image
+          src="/bellis-favicon.png"
+          alt="Bellis Logo"
+          width={100}
+          height={100}
+          style={{
+            width: "60px",
+            height: "auto",
+            objectFit: "contain",
+            display: "block",
+            margin: "20px auto",
+          }}
         />
-      )}
 
-      <br />
-
-      {data && (
-        <div>
-          <Link href="/dashboard/statistik/auslastung" className="btn">Auslastung</Link><br />
-          <Link href="/dashboard/statistik/berichtsdaten" className="btn">Berichtsdaten</Link><br />
-          <Link href="/dashboard/statistik/finanzierung" className="btn">Finanzierung</Link><br />
-          <Link href="/dashboard/statistik/netzwerk" className="btn">Netzwerk</Link> <br/> <br/>
-
-          <div className="flex gap-3 mb-4">
-            <ExportCSVButton structure={structure} />
-            <ExportXLSXButton structure={structure} />
-            <ExportPDFButton structure={structure} />
-         
-          </div>
-
+        <div
+          style={{
+            backgroundColor: "white",
+            padding: "40px 40px",
+            margin: "0 20px 0px 20px",
+            borderRadius: "12px 12px 0 0",
+          }}
+        >
+          <h1
+            style={{
+              fontSize: "28px",
+              fontWeight: "600",
+              color: "#42446F",
+              marginBottom: "6px",
+              textAlign: "center",
+            }}
+          >
+            Statistik Dashboard
+          </h1>
+          <p
+            style={{
+              fontSize: "14px",
+              color: "#6b7280",
+              textAlign: "center",
+              margin: 0,
+            }}
+          >
+            Filter setzen und Daten exportieren
+          </p>
         </div>
-      )}
+
+        <div
+          style={{
+            backgroundColor: "white",
+            padding: "20px 40px 30px 40px",
+            margin: "0 20px",
+            borderRadius: "0 0 12px 12px",
+          }}
+        >
+          <PresetSelector
+            presets={presets}
+            onSelect={handleSelectPreset}
+          />
+
+          <Link
+            href="/dashboard/statistik/presets"
+            style={{
+              width: "100%",
+              maxWidth: "350px",
+              backgroundColor: "transparent",
+              color: "#131313",
+              border: "3px solid #A0A8CD",
+              borderRadius: "8px",
+              padding: "10px 16px",
+              fontSize: "16px",
+              fontWeight: "500",
+              cursor: "pointer",
+              textAlign: "center",
+              textDecoration: "none",
+              display: "block",
+              margin: "15px auto",
+            }}
+          >
+            Presets verwalten
+          </Link>
+
+          <h2
+            style={{
+              fontSize: "20px",
+              fontWeight: "600",
+              color: "#42446F",
+              marginTop: "30px",
+              marginBottom: "15px",
+            }}
+          >
+            Filter setzen:
+          </h2>
+
+          {!filterDefinition && <p style={{ textAlign: "center" }}>Filter werden geladen…</p>}
+
+          {filterDefinition && (
+            <DynamicFilterForm
+              definition={filterDefinition}
+              values={filters}
+              onChange={handleFilterChange}
+              onSubmit={handleSubmit}
+            />
+          )}
+
+          {data && (
+            <>
+              <hr style={{ margin: "30px 0", border: "none", borderTop: "1px solid #e5e7eb" }} />
+
+              <h2
+                style={{
+                  fontSize: "20px",
+                  fontWeight: "600",
+                  color: "#42446F",
+                  marginBottom: "15px",
+                }}
+              >
+                Auswertungen:
+              </h2>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "20px" }}>
+                <Link
+                  href="/dashboard/statistik/auslastung"
+                  style={{
+                    backgroundColor: "#f9fafb",
+                    color: "#42446F",
+                    border: "2px solid #e5e7eb",
+                    borderRadius: "8px",
+                    padding: "10px 16px",
+                    textDecoration: "none",
+                    textAlign: "center",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  Auslastung
+                </Link>
+
+                <Link
+                  href="/dashboard/statistik/berichtsdaten"
+                  style={{
+                    backgroundColor: "#f9fafb",
+                    color: "#42446F",
+                    border: "2px solid #e5e7eb",
+                    borderRadius: "8px",
+                    padding: "10px 16px",
+                    textDecoration: "none",
+                    textAlign: "center",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  Berichtsdaten
+                </Link>
+
+                <Link
+                  href="/dashboard/statistik/finanzierung"
+                  style={{
+                    backgroundColor: "#f9fafb",
+                    color: "#42446F",
+                    border: "2px solid #e5e7eb",
+                    borderRadius: "8px",
+                    padding: "10px 16px",
+                    textDecoration: "none",
+                    textAlign: "center",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  Finanzierung
+                </Link>
+
+                <Link
+                  href="/dashboard/statistik/netzwerk"
+                  style={{
+                    backgroundColor: "#f9fafb",
+                    color: "#42446F",
+                    border: "2px solid #e5e7eb",
+                    borderRadius: "8px",
+                    padding: "10px 16px",
+                    textDecoration: "none",
+                    textAlign: "center",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  Netzwerk
+                </Link>
+              </div>
+
+              <h2
+                style={{
+                  fontSize: "20px",
+                  fontWeight: "600",
+                  color: "#42446F",
+                  marginBottom: "15px",
+                }}
+              >
+                Export:
+              </h2>
+
+              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                <ExportCSVButton structure={structure} />
+                <ExportXLSXButton structure={structure} />
+                <ExportPDFButton structure={structure} />
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      <Image
+        src="/drei-welle-zusammenblau.png"
+        alt=""
+        width={1400}
+        height={100}
+        style={{
+          width: "150%",
+          height: "auto",
+          objectFit: "cover",
+          transform: "scaleY(1) scaleX(1.21)",
+          display: "block",
+          marginLeft: "-10%",
+        }}
+      />
     </div>
   );
 }
