@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 
 from api.models import Statistik
 from api.serializers import StatistikSerializer
-from api.permissions import DjangoModelPermissionsWithView, IsOwnerOrAdmin, IsErweiterungOrAdmin
+from api.permissions import DjangoModelPermissionsWithView, IsOwnerOrAdmin #, IsErweiterungOrAdmin
 
 from django.core.validators import validate_email  
 from django.core.exceptions import ValidationError

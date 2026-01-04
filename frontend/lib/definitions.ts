@@ -3,8 +3,6 @@
 // For simplicity of teaching, we're manually defining these types.
 // However, these types are generated automatically if you're using an ORM such as Prisma.
 
-import { EnumDeclaration } from "typescript";
-
 export enum AnfrageOrt {
   LeipzigStadt = 'Leipzig Stadt',
   LeipzigLand = 'Leipzig Land',
@@ -15,7 +13,7 @@ export enum AnfrageOrt {
 
 export enum AnfragePerson {
   F = 'Fachkraft',
-  A = 'Aneghörige:r',
+  A = 'Angehörige:r',
   B = 'Betroffene:r',
   Anonym = 'anonym',
   qB =  'queer Betroffene:r (qB)',
@@ -216,7 +214,7 @@ export enum PsychischeFolgen {
   angsttörung = 'angststörung',
   ptbs = 'PTBS',
   burnout = 'Burn-out',
-  schalfstörungen = 'Schlafstörungen',
+  schlafstörungen = 'Schlafstörungen',
   sucht = 'sucht',
   kommunikationsschwierigkeiten = 'Kommunikationsschwierigkeiten',
   vernachlässigung = 'Vernachlässigung alltäglicher Dinge',
