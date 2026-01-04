@@ -37,22 +37,23 @@ class BaseModelTestCase(TestCase):
             mitarbeiterin=cls.konto
         )
 
-"""
-Tests for the Konto model.
-
-Covered aspects:
-- Successful creation of regular users
-- Successful creation of superusers
-- Required fields and validation errors
-- Email uniqueness constraint
-- Email normalization
-- Default field values (rolle_mb, is_active, is_staff, date_joined)
-- Password hashing and authentication
-- String representation (__str__)
-- Manager behavior (create_user, create_superuser)
-"""
 
 class KontoModelTest(TestCase):
+
+    """
+    Tests for the Konto model.
+
+    Covered aspects:
+    - Successful creation of regular users
+    - Successful creation of superusers
+    - Required fields and validation errors
+    - Email uniqueness constraint
+    - Email normalization
+    - Default field values (rolle_mb, is_active, is_staff, date_joined)
+    - Password hashing and authentication
+    - String representation (__str__)
+    - Manager behavior (create_user, create_superuser)
+    """
 
     def test_create_konto_success(self):
         konto = Konto.objects.create_user(
@@ -195,21 +196,20 @@ class KontoMetaConfigurationTest(TestCase):
         self.assertIn("vorname_mb", Konto.REQUIRED_FIELDS)
         self.assertIn("nachname_mb", Konto.REQUIRED_FIELDS)
 
-"""
-Tests for the KlientIn model.
-
-Covered aspects:
-- Successful creation with valid data
-- Required fields and validation
-- Enum/choice field validation
-- Min/Max validators (age, dolmetschungsstunden)
-- Default field values
-- Optional vs required fields
-- String representation (__str__)
-"""
 
 class KlientInModelTest(TestCase):
+    """
+    Tests for the KlientIn model.
 
+    Covered aspects:
+    - Successful creation with valid data
+    - Required fields and validation
+    - Enum/choice field validation
+    - Min/Max validators (age, dolmetschungsstunden)
+    - Default field values
+    - Optional vs required fields
+    - String representation (__str__)
+    """
     def setUp(self):
         self.valid_data = {
             "klient_rolle": "B",
@@ -316,19 +316,18 @@ class KlientInModelTest(TestCase):
         with self.assertRaises(ValidationError):
             klient.full_clean()
 
-"""
-Tests for the Fall model.
-
-Covered aspects:
-- Successful creation of a Fall
-- Required foreign key relations (KlientIn, Konto)
-- String representation (__str__)
-- ForeignKey behavior on deletion (PROTECT, SET_NULL)
-- Reverse relations from related models
-"""
-
-
 class FallModelTest(TestCase):
+
+    """
+    Tests for the Fall model.
+
+    Covered aspects:
+    - Successful creation of a Fall
+    - Required foreign key relations (KlientIn, Konto)
+    - String representation (__str__)
+    - ForeignKey behavior on deletion (PROTECT, SET_NULL)
+    - Reverse relations from related models
+    """
 
     @classmethod
     def setUpTestData(cls):
@@ -447,22 +446,21 @@ class FallReverseRelationTest(TestCase):
         self.assertIn(fall1, Fall.objects.all())
         self.assertIn(fall2, Fall.objects.all())
 
-"""
-Tests for the Beratungstermin model.
-
-Covered aspects:
-- Successful creation with valid data
-- Required fields and choice validation
-- MinValueValidator on anzahl_beratungen
-- Default values
-- ForeignKey relations (Konto, Fall)
-- Reverse relation from Fall (beratungstermine)
-- Cascade delete behavior when Fall is deleted
-- String representation (__str__)
-"""
-
 class BeratungsterminModelTest(TestCase):
 
+    """
+    Tests for the Beratungstermin model.
+
+    Covered aspects:
+    - Successful creation with valid data
+    - Required fields and choice validation
+    - MinValueValidator on anzahl_beratungen
+    - Default values
+    - ForeignKey relations (Konto, Fall)
+    - Reverse relation from Fall (beratungstermine)
+    - Cascade delete behavior when Fall is deleted
+    - String representation (__str__)
+    """
     @classmethod
     def setUpTestData(cls):
         cls.konto = Konto.objects.create_user(
@@ -588,34 +586,40 @@ class BeratungsterminModelTest(TestCase):
         self.assertEqual(self.fall.beratungstermine.count(), 2)
 
     def test_cascade_delete_on_fall(self):
+        # Create a separate Fall for this destructive test
+        local_fall = Fall.objects.create(
+            klient=self.klient,
+            mitarbeiterin=self.konto,
+        )
         termin = Beratungstermin.objects.create(
-            beratungsstelle="LS",
-            termin_beratung=timezone.now().date(),
-            beratungsart="P",
-            fall=self.fall,
-        )
-
-        self.fall.delete()
-
+             beratungsstelle="LS",
+             termin_beratung=timezone.now().date(),
+             beratungsart="P",
+             fall=local_fall,
+         )
+ 
+        local_fall.delete()
+ 
         self.assertFalse(
-            Beratungstermin.objects.filter(beratungs_id=termin.beratungs_id).exists()
-        )
+             Beratungstermin.objects.filter(beratungs_id=termin.beratungs_id).exists()
+         )
 
-"""
-Tests for the Begleitung model.
-
-Covered aspects:
-- Successful creation with valid data
-- Required fields and choice validation
-- MinValueValidator on numeric fields
-- Default values
-- ForeignKey relations (KlientIn, Fall)
-- Reverse relation from Fall (begleitungen)
-- Cascade delete behavior on related objects
-- String representation (__str__)
-"""
 
 class BegleitungModelTest(TestCase):
+
+    """
+    Tests for the Begleitung model.
+
+    Covered aspects:
+    - Successful creation with valid data
+    - Required fields and choice validation
+    - MinValueValidator on numeric fields
+    - Default values
+    - ForeignKey relations (KlientIn, Fall)
+    - Reverse relation from Fall (begleitungen)
+    - Cascade delete behavior on related objects
+    - String representation (__str__)
+    """
 
     @classmethod
     def setUpTestData(cls):
@@ -735,49 +739,70 @@ class BegleitungModelTest(TestCase):
         self.assertEqual(self.fall.begleitungen.count(), 2)
 
     def test_cascade_delete_on_fall(self):
+        TestFall = Fall.objects.create(
+            klient=self.klient, 
+            mitarbeiterin=self.konto,
+        )
+
         begleitung = Begleitung.objects.create(
             klient=self.klient,
-            fall=self.fall,
+            fall=TestFall,
             art_begleitung="P",
         )
 
-        self.fall.delete()
-
+        TestFall.delete()
         self.assertFalse(
             Begleitung.objects.filter(begleitungs_id=begleitung.begleitungs_id).exists()
         )
 
     def test_cascade_delete_on_klient(self):
+        TestKlient = KlientIn.objects.create(
+            klient_rolle="B",
+            klient_alter=29,
+            klient_geschlechtsidentitaet="CW",
+            klient_sexualitaet="H",
+            klient_wohnort="LS",
+            klient_staatsangehoerigkeit="DE",
+            klient_beruf="Angestellte:r",
+            klient_schwerbehinderung="N",
+            klient_kontaktpunkt="Mail",
+            klient_dolmetschungsstunden=0,
+        )
+
+        TestFall = Fall.objects.create(
+            klient=self.klient, 
+            mitarbeiterin=self.konto,
+        )
+
+
         begleitung = Begleitung.objects.create(
-            klient=self.klient,
-            fall=self.fall,
+            klient=TestKlient,
+            fall=TestFall,
             art_begleitung="P"
         )
 
-        self.fall.delete()
-        self.klient.delete()
+        TestFall.delete()
+        TestKlient.delete()
 
         self.assertFalse(Begleitung.objects.filter(pk=begleitung.pk).exists())
-
-"""
-Tests for the Gewalttat model.
-
-Covered aspects:
-- Successful creation with valid data
-- Required fields and validation
-- Choice/enum field validation
-- MinValueValidator on numeric fields
-- Default values
-- ForeignKey relations (KlientIn, Fall)
-- Reverse relation from Fall (gewalttaten)
-- Cascade delete behavior on related objects
-- String representation (__str__)
-"""
-
 
 
 class GewalttatModelTest(TestCase):
 
+    """
+    Tests for the Gewalttat model.
+
+    Covered aspects:
+    - Successful creation with valid data
+    - Required fields and validation
+    - Choice/enum field validation
+    - MinValueValidator on numeric fields
+    - Default values
+    - ForeignKey relations (KlientIn, Fall)
+    - Reverse relation from Fall (gewalttaten)
+    - Cascade delete behavior on related objects
+    - String representation (__str__)
+    """
     @classmethod
     def setUpTestData(cls):
         cls.konto = Konto.objects.create_user(
@@ -938,9 +963,14 @@ class GewalttatModelTest(TestCase):
         self.assertEqual(self.fall.gewalttaten.count(), 2)
 
     def test_cascade_delete_on_fall(self):
+        TestFall = Fall.objects.create(
+            klient=self.klient, 
+            mitarbeiterin=self.konto,
+        )
+
         tat = Gewalttat.objects.create(
             klient=self.klient,
-            fall=self.fall,
+            fall=TestFall,
             tat_alter="J",
             tat_zeitraum="N",
             tat_anzahl_vorfaelle="E",
@@ -952,15 +982,28 @@ class GewalttatModelTest(TestCase):
             tat_spurensicherung="N",
         )
 
-        self.fall.delete()
+        TestFall.delete()
 
         self.assertFalse(
             Gewalttat.objects.filter(tat_id=tat.tat_id).exists()
         )
 
     def test_cascade_delete_on_klient(self):
+        klient = KlientIn.objects.create(
+            klient_rolle="B",
+            klient_alter=29,
+            klient_geschlechtsidentitaet="CW",
+            klient_sexualitaet="H",
+            klient_wohnort="LS",
+            klient_staatsangehoerigkeit="DE",
+            klient_beruf="Angestellte:r",
+            klient_schwerbehinderung="N",
+            klient_kontaktpunkt="Mail",
+            klient_dolmetschungsstunden=0,
+        ) 
+
         tat = Gewalttat.objects.create(
-            klient=self.klient,
+            klient=klient,
             fall=self.fall,
             tat_alter="J",
             tat_zeitraum="N",
@@ -974,25 +1017,26 @@ class GewalttatModelTest(TestCase):
         )
 
         self.fall.delete()
-        self.klient.delete()
+        klient.delete()
 
         self.assertFalse(
             Gewalttat.objects.filter(tat_id=tat.tat_id).exists()
         )
 
-"""
-Tests for the Gewaltfolge model.
-
-Covered aspects:
-- Successful creation with valid data
-- Enforcement of OneToOne relationship with Gewalttat
-- Required fields and validation
-- Choice/enum field validation
-- Cascade delete behavior from Gewalttat
-- String representation (__str__)
-"""
 
 class GewaltfolgeModelTest(TestCase):
+
+    """
+    Tests for the Gewaltfolge model.
+
+    Covered aspects:
+    - Successful creation with valid data
+    - Enforcement of OneToOne relationship with Gewalttat
+    - Required fields and validation
+    - Choice/enum field validation
+    - Cascade delete behavior from Gewalttat
+    - String representation (__str__)
+    """
 
     @classmethod
     def setUpTestData(cls):
@@ -1079,7 +1123,7 @@ class GewaltfolgeModelTest(TestCase):
             keine_angabe="N",
         )
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(IntegrityError):
             Gewaltfolge.objects.create(
                 gewalttat=self.tat,
                 psychische_folgen="A",
@@ -1137,8 +1181,21 @@ class GewaltfolgeModelTest(TestCase):
         self.assertEqual(folge.folgen_notizen, "")
 
     def test_cascade_delete_on_gewalttat(self):
+        gewalttat = Gewalttat.objects.create(
+            klient=self.klient,
+            fall=self.fall,
+            tat_alter="J",
+            tat_zeitraum="N",
+            tat_anzahl_vorfaelle="E",
+            tat_anzahl_taeter_innen="1",
+            tat_art="Test",
+            tatort="L",
+            tat_anzeige="N",
+            tat_medizinische_versorgung="J",
+            tat_spurensicherung="N",
+        )
         folge = Gewaltfolge.objects.create(
-            gewalttat=self.tat,
+            gewalttat=gewalttat,
             psychische_folgen="A",
             koerperliche_folgen="N",
             finanzielle_folgen="N",
@@ -1149,30 +1206,29 @@ class GewaltfolgeModelTest(TestCase):
             keine_angabe="N",
         )
 
-        tat_id = self.tat.pk
-        self.tat.delete()
+        tat_id = gewalttat.pk
+        gewalttat.delete()
 
         self.assertFalse(
             Gewaltfolge.objects.filter(gewalttat_id=tat_id).exists()
         )
 
-"""
-Tests for the Anfrage model.
-
-Covered aspects:
-- Successful creation with valid data
-- Required fields and validation
-- Choice/enum field validation
-- Default values
-- ForeignKey relation to Konto (mitarbeiterin)
-- OneToOne relations to Fall and Beratungstermin
-- Enforcement of OneToOne constraints
-- Deletion behavior (SET_NULL)
-- String representation (__str__)
-"""
-
-
 class AnfrageModelTest(TestCase):
+
+    """
+    Tests for the Anfrage model.
+
+    Covered aspects:
+    - Successful creation with valid data
+    - Required fields and validation
+    - Choice/enum field validation
+    - Default values
+    - ForeignKey relation to Konto (mitarbeiterin)
+    - OneToOne relations to Fall and Beratungstermin
+    - Enforcement of OneToOne constraints
+    - Deletion behavior (SET_NULL)
+    - String representation (__str__)
+    """
 
     @classmethod
     def setUpTestData(cls):
@@ -1271,7 +1327,7 @@ class AnfrageModelTest(TestCase):
             fall=self.fall,
         )
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(IntegrityError):
             Anfrage.objects.create(
                 anfrage_weg="Telefon",
                 anfrage_ort="LS",
@@ -1289,7 +1345,7 @@ class AnfrageModelTest(TestCase):
             beratungstermin=self.termin,
         )
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(IntegrityError):
             Anfrage.objects.create(
                 anfrage_weg="Telefon",
                 anfrage_ort="LS",
@@ -1299,43 +1355,58 @@ class AnfrageModelTest(TestCase):
             )
 
     def test_delete_fall_sets_null(self):
+        TestFall = Fall.objects.create(
+            klient=self.klient,
+            mitarbeiterin=self.konto,
+        )
         anfrage = Anfrage.objects.create(
             anfrage_weg="Mail",
             anfrage_ort="LS",
             anfrage_person="B",
             anfrage_art="B",
-            fall=self.fall,
+            fall=TestFall,
         )
 
-        self.fall.delete()
+        TestFall.delete()
         anfrage.refresh_from_db()
 
         self.assertIsNone(anfrage.fall)
 
     def test_delete_beratungstermin_sets_null(self):
+        TestTermin = Beratungstermin.objects.create(
+            beratungsstelle="LS",
+            termin_beratung=timezone.now().date(),
+            beratungsart="P",
+        )
         anfrage = Anfrage.objects.create(
             anfrage_weg="Mail",
             anfrage_ort="LS",
             anfrage_person="B",
             anfrage_art="B",
-            beratungstermin=self.termin,
+            beratungstermin=TestTermin,
         )
 
-        self.termin.delete()
+        TestTermin.delete()
         anfrage.refresh_from_db()
 
         self.assertIsNone(anfrage.beratungstermin)
 
     def test_delete_mitarbeiterin_sets_null(self):
+        TestKonto = Konto.objects.create_user(
+            mail_mb="test5@example.com",
+            password="securepassword",
+            vorname_mb="Max",
+            nachname_mb="Mustermann",
+        )
         anfrage = Anfrage.objects.create(
             anfrage_weg="Mail",
             anfrage_ort="LS",
             anfrage_person="B",
             anfrage_art="B",
-            mitarbeiterin=self.konto,
+            mitarbeiterin=TestKonto,
         )
 
-        self.konto.delete()
+        TestKonto.delete()
         anfrage.refresh_from_db()
 
         self.assertIsNone(anfrage.mitarbeiterin)
