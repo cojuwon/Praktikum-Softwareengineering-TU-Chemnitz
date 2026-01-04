@@ -1,8 +1,19 @@
-"""ViewSet für Anfrage-Management."""
+"""
+ViewSet für Anfrage-Management.
 
-from rest_framework import viewsets, permissions
+Implementiert die UML-Methoden:
+- anfrageAnlegen() -> create (POST)
+- anfrageBearbeiten() -> update/partial_update (PUT/PATCH)
+- anfrageSuchen() -> list/retrieve (GET)
+- anfrageLoeschen() -> destroy (DELETE)
+- mitarbeiterinZuweisen() -> custom action (via Admin)
+"""
 
-from api.models import Anfrage
+from rest_framework import viewsets, permissions, status
+from rest_framework.response import Response
+from rest_framework.decorators import action
+
+from api.models import Anfrage, Konto
 from api.serializers import AnfrageSerializer
 from api.permissions import DjangoModelPermissionsWithView, CanManageOwnData
 
@@ -11,24 +22,118 @@ class AnfrageViewSet(viewsets.ModelViewSet):
     """
     ViewSet für CRUD-Operationen auf Anfragen.
     
-    Berechtigungen:
+    UML-Mapping:
+    - anfrageAnlegen() -> POST /api/anfragen/ (create)
+    - anfrageBearbeiten() -> PUT/PATCH /api/anfragen/{id}/ (update/partial_update)
+    - anfrageSuchen() -> GET /api/anfragen/ oder /api/anfragen/{id}/ (list/retrieve)
+    - anfrageLoeschen() -> DELETE /api/anfragen/{id}/ (destroy)
+    - mitarbeiterinZuweisen() -> POST /api/anfragen/{id}/assign/ (custom action)
+    
+    Berechtigungen (via DjangoModelPermissionsWithView):
     - GET -> api.view_anfrage
     - POST -> api.add_anfrage
     - PUT/PATCH -> api.change_anfrage
     - DELETE -> api.delete_anfrage
+    
+    Object-Level Berechtigungen (via CanManageOwnData):
+    - Standard-User: Nur eigene Anfragen (mitarbeiterin == request.user)
+    - Admins / can_view_all_data: Alle Anfragen
     """
     queryset = Anfrage.objects.all()
     serializer_class = AnfrageSerializer
     permission_classes = [permissions.IsAuthenticated, DjangoModelPermissionsWithView, CanManageOwnData]
 
     def get_queryset(self):
-        """Filtert Anfragen basierend auf User-Berechtigungen."""
+        """
+        Filtert Anfragen basierend auf User-Berechtigungen.
+        
+        - Admins (rolle_mb='AD') sehen alle Anfragen
+        - User mit can_view_all_data Permission sehen alle Anfragen
+        - Andere User sehen nur ihre eigenen Anfragen (mitarbeiterin=user)
+        """
         user = self.request.user
-        base_qs = Anfrage.objects.select_related('beratungstermin')
+        base_qs = Anfrage.objects.select_related('beratungstermin', 'mitarbeiterin', 'fall')
+        
         if user.rolle_mb == 'AD' or user.has_perm('api.can_view_all_data'):
             return base_qs
         return base_qs.filter(mitarbeiterin=user)
 
+    def get_serializer_context(self):
+        """Erweitert den Serializer-Kontext um den aktuellen Request."""
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
     def perform_create(self, serializer):
-        """Setzt automatisch den aktuellen User als Mitarbeiter:in."""
+        """
+        anfrageAnlegen(): Erstellt neue Anfrage.
+        Setzt automatisch den aktuellen User als Mitarbeiter:in.
+        """
         serializer.save(mitarbeiterin=self.request.user)
+
+    def perform_update(self, serializer):
+        """
+        anfrageBearbeiten(): Aktualisiert bestehende Anfrage.
+        
+        Schutzlogik für das mitarbeiterin-Feld:
+        - Standard-User können die mitarbeiterin NICHT ändern (wird ignoriert)
+        - Nur User mit can_manage_users Permission können Anfragen neu zuweisen
+        - Admins können immer die mitarbeiterin ändern
+        """
+        user = self.request.user
+        instance = self.get_object()
+        
+        # Prüfe, ob User berechtigt ist, mitarbeiterin zu ändern
+        can_reassign = (
+            user.rolle_mb == 'AD' or 
+            user.has_perm('api.can_manage_users')
+        )
+        
+        if not can_reassign:
+            # Entferne mitarbeiterin aus validated_data, falls vorhanden
+            # So kann das Feld nicht manipuliert werden
+            serializer.validated_data.pop('mitarbeiterin', None)
+        
+        serializer.save()
+
+    @action(detail=True, methods=['post'], url_path='assign')
+    def assign_mitarbeiterin(self, request, pk=None):
+        """
+        mitarbeiterinZuweisen(): Custom Action zum Zuweisen einer Anfrage an eine:n Mitarbeiter:in.
+        
+        Nur für Admins oder User mit can_manage_users Permission.
+        
+        Request Body:
+        {
+            "mitarbeiterin_id": <int>
+        }
+        """
+        # Permission-Check
+        if not (request.user.rolle_mb == 'AD' or request.user.has_perm('api.can_manage_users')):
+            return Response(
+                {'detail': 'Nur Administratoren können Anfragen neu zuweisen.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        anfrage = self.get_object()
+        mitarbeiterin_id = request.data.get('mitarbeiterin_id')
+        
+        if not mitarbeiterin_id:
+            return Response(
+                {'detail': 'mitarbeiterin_id ist erforderlich.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            neue_mitarbeiterin = Konto.objects.get(pk=mitarbeiterin_id)
+        except Konto.DoesNotExist:
+            return Response(
+                {'detail': 'Mitarbeiter:in nicht gefunden.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        anfrage.mitarbeiterin = neue_mitarbeiterin
+        anfrage.save(update_fields=['mitarbeiterin'])
+        
+        serializer = self.get_serializer(anfrage)
+        return Response(serializer.data)
