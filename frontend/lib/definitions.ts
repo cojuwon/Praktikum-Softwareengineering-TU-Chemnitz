@@ -15,7 +15,7 @@ export enum AnfrageOrt {
 
 export enum AnfragePerson {
   F = 'Fachkraft',
-  A = 'Aneghörige:r',
+  A = 'Angehörige:r',
   B = 'Betroffene:r',
   Anonym = 'anonym',
   qB =  'queer Betroffene:r (qB)',
