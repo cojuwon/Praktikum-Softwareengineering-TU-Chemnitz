@@ -58,6 +58,64 @@ class AnfrageViewSet(viewsets.ModelViewSet):
             return base_qs
         return base_qs.filter(mitarbeiterin=user)
 
+    @action(detail=True, methods=['post'], url_path='assign-employee')
+    def assign_employee(self, request, pk=None):
+        """
+        Weist eine Anfrage einer Mitarbeiterin zu.
+        UML: mitarbeiterinZuweisen()
+        """
+        anfrage = self.get_object()
+        user_id = request.data.get('user_id')
+        
+        if not user_id:
+            return Response(
+                {'detail': 'user_id ist erforderlich.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        try:
+            user = Konto.objects.get(pk=user_id)
+        except Konto.DoesNotExist:
+            return Response(
+                {'detail': 'Benutzer nicht gefunden.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+            
+        anfrage.mitarbeiterin = user
+        anfrage.save()
+        
+        return Response(AnfrageSerializer(anfrage).data)
+
+    @action(detail=True, methods=['post'], url_path='create-consultation')
+    def create_consultation(self, request, pk=None):
+        """
+        Erstellt einen Beratungstermin aus einer Anfrage heraus.
+        UML: beratungterminZuweisen()
+        """
+        from api.models import Beratungstermin
+        from api.serializers import BeratungsterminSerializer
+        
+        anfrage = self.get_object()
+        
+        if anfrage.beratungstermin:
+            return Response(
+                {'detail': 'Anfrage hat bereits einen Beratungstermin.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        # Daten für den neuen Termin validieren
+        serializer = BeratungsterminSerializer(data=request.data)
+        if serializer.is_valid():
+            termin = serializer.save()
+            
+            # Verknüpfung herstellen
+            anfrage.beratungstermin = termin
+            anfrage.save()
+            
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     def get_serializer_context(self):
         """Erweitert den Serializer-Kontext um den aktuellen Request."""
         context = super().get_serializer_context()

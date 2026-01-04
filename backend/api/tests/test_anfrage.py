@@ -15,18 +15,56 @@ from api.models import Anfrage
 from api.tests.base import APITestCase
 
 
-class AnfrageCreateTestCase(APITestCase):
-    """Tests für das Erstellen von Anfragen (POST /api/anfragen/)."""
+class AnfrageCustomActionsTestCase(APITestCase):
+    """Tests für Custom Actions (assign_employee, create_consultation)."""
     
     def setUp(self):
         super().setUp()
-        # Standard-Payload für gültige Anfrage
+        self.anfrage = Anfrage.objects.create(
+            anfrage_weg="Telefon",
+            anfrage_ort="LS",
+            anfrage_person="B",
+            anfrage_art="B",
+            mitarbeiterin=self.basis_user
+        )
+        self.detail_url = f'/api/anfragen/{self.anfrage.pk}/'
         self.valid_data = {
-            'anfrage_weg': 'Telefon',
-            'anfrage_ort': 'LS',       # Leipzig Stadt
-            'anfrage_person': 'B',      # Betroffene:r
-            'anfrage_art': 'B',         # Beratungsbedarf
+            "anfrage_weg": "E-Mail",
+            "anfrage_ort": "LS",
+            "anfrage_person": "B",
+            "anfrage_art": "B",
+            "mitarbeiterin": self.basis_user.pk
         }
+
+    def test_assign_employee(self):
+        """Test assigning an employee to an inquiry."""
+        self.authenticate_as_basis()
+        url = f'{self.detail_url}assign-employee/'
+        
+        response = self.client.post(url, {'user_id': self.erweiterung_user.pk}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        self.anfrage.refresh_from_db()
+        self.assertEqual(self.anfrage.mitarbeiterin, self.erweiterung_user)
+
+    def test_create_consultation(self):
+        """Test creating a consultation from an inquiry."""
+        self.authenticate_as_basis()
+        url = f'{self.detail_url}create-consultation/'
+        
+        data = {
+            "beratungsstelle": "LS",
+            "termin_beratung": "2023-12-01",
+            "beratungsart": "P",
+            "anzahl_beratungen": 1
+        }
+        
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        self.anfrage.refresh_from_db()
+        self.assertIsNotNone(self.anfrage.beratungstermin)
+        self.assertEqual(str(self.anfrage.beratungstermin.termin_beratung), "2023-12-01")
     
     def test_basis_user_can_create_anfrage(self):
         """Basis-User mit add_anfrage Permission kann Anfrage erstellen."""
