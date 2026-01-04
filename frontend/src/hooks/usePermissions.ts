@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from './useAuth';
-import { Permission, Permissions } from '@/types/auth';
+import { Permission, Permissions } from '@/src/types/auth';
 
 /**
  * Hook für Permission-Handling im Frontend.

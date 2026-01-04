@@ -1,12 +1,30 @@
-import SideNav from '@/components/ui/dashboard/sidenav';
+'use client';
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+import { AuthProvider } from '@/src/hooks/useAuth';
+import { Sidebar, Header } from '@/src/components/dashboard';
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen flex-col md:flex-row md:overflow-hidden">
-      <div className="w-full flex-none md:w-64">
-        <SideNav />
+    <AuthProvider>
+      <div className="min-h-screen bg-slate-50/50 font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900">
+        {/* Sidebar */}
+        <Sidebar />
+
+        {/* Main Content - offset by sidebar width on desktop */}
+        <div className="lg:pl-64">
+          <main className="flex flex-col min-h-screen">
+            {/* Top Header */}
+            <Header />
+
+            {/* Content Area */}
+            <div className="flex-1 overflow-y-auto bg-slate-50/50 p-4 lg:p-8">
+              <div className="max-w-6xl mx-auto space-y-6">
+                {children}
+              </div>
+            </div>
+          </main>
+        </div>
       </div>
-      <div className="grow p-6 md:overflow-y-auto md:p-12">{children}</div>
-    </div>
+    </AuthProvider>
   );
 }

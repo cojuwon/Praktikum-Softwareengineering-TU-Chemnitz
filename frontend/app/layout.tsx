@@ -1,5 +1,10 @@
-import '@/components/ui/global.css';
+import '@/app/global.css';
 import { inter } from '@/components/ui/fonts';
+
+export const metadata = {
+  title: 'Bellis Statistik',
+  description: 'Statistiksystem für Fachberatungsstellen',
+};
 
 export default function RootLayout({
   children,
@@ -7,7 +12,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="de">
       <body className={`${inter.className} antialiased`}>{children}</body>
     </html>
   );
