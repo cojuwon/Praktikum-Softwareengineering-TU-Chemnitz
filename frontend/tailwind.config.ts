@@ -64,11 +64,11 @@ const config: Config = {
           '5': 'hsl(var(--chart-5))'
         }
       },
-      keyframes: {
-        shimmer: {
-          '100%': {
-            transform: 'translateX(100%)',
-          },
+    },
+    keyframes: {
+      shimmer: {
+        '100%': {
+          transform: 'translateX(100%)',
         },
       },
     },
