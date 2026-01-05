@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 import {
   LayoutDashboard,
   FileText,
@@ -11,6 +12,7 @@ import {
   Settings,
   LogOut,
   FolderOpen,
+  User,
 } from "lucide-react";
 
 interface NavItem {
@@ -54,12 +56,19 @@ const navItems: NavItem[] = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { logout, user } = useAuth();
 
   const isActive = (href: string) => {
     if (href === "/dashboard") {
       return pathname === "/dashboard";
     }
     return pathname.startsWith(href);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/login");
   };
 
   return (
@@ -96,9 +105,23 @@ export default function Sidebar() {
         </ul>
       </nav>
 
-      {/* Footer mit Logout */}
+      {/* Footer mit User Info und Logout */}
       <div className="sidebar-footer">
-        <button className="logout-button">
+        {user && (
+          <div className="user-info">
+            <div className="user-avatar">
+              <User className="w-5 h-5" />
+            </div>
+            <div className="user-details">
+              <span className="user-name">
+                {user.vorname_mb} {user.nachname_mb}
+              </span>
+              <span className="user-email">{user.mail_mb}</span>
+            </div>
+          </div>
+        )}
+        
+        <button className="logout-button" onClick={handleLogout}>
           <LogOut className="w-5 h-5" />
           <span>Abmelden</span>
         </button>

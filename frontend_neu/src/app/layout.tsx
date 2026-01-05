@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AuthProvider } from "@/hooks/useAuth";
 
 export const metadata: Metadata = {
   title: "Bellis e.V. Leipzig",
@@ -16,7 +17,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="de">
-      <body>{children}</body>
+      <body>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }
