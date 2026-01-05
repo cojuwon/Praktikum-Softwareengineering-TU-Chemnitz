@@ -20,6 +20,44 @@ export const STANDORT_CHOICES = {
 export type StandortCode = keyof typeof STANDORT_CHOICES;
 
 /**
+ * Anfrage Herkunft Choices (woher kommt die Anfrage)
+ * Spezifische Auswahl für "Anfrage aus" gemäß Anforderung
+ */
+export const ANFRAGE_HERKUNFT_CHOICES = {
+  'LS': 'Leipzig Stadt',
+  'LL': 'Leipzig Land',
+  'NS': 'Nordsachsen',
+  'S': 'Sachsen',
+  'A': 'andere',
+} as const;
+
+export type AnfrageHerkunftCode = keyof typeof ANFRAGE_HERKUNFT_CHOICES;
+
+/**
+ * Termin Ort Choices (Ort des Beratungstermins)
+ * Begrenzte Auswahl für Terminort gemäß Anforderung
+ */
+export const TERMIN_ORT_CHOICES = {
+  'LS': 'Leipzig Stadt',
+  'LL': 'Leipzig Land',
+  'NS': 'Nordsachsen',
+} as const;
+
+export type TerminOrtCode = keyof typeof TERMIN_ORT_CHOICES;
+
+/**
+ * Anfrageweg Choices (Wie kam die Anfrage rein)
+ */
+export const ANFRAGE_WEG_CHOICES = {
+  'T': 'Telefon',
+  'E': 'E-Mail',
+  'P': 'Persönlich',
+  'S': 'Sonstiges',
+} as const;
+
+export type AnfrageWegCode = keyof typeof ANFRAGE_WEG_CHOICES;
+
+/**
  * Anfrage Person Choices (ANFRAGE_PERSON_CHOICES aus Backend)
  */
 export const ANFRAGE_PERSON_CHOICES = {
@@ -92,6 +130,17 @@ export interface Beratungstermin {
 }
 
 /**
+ * Beratungsstelle Choices für Termin
+ */
+export const BERATUNGSSTELLE_CHOICES = {
+  'LS': 'Fachberatung Leipzig Stadt',
+  'NS': 'Nordsachsen',
+  'LL': 'Landkreis Leipzig',
+} as const;
+
+export type BeratungsstelleCode = keyof typeof BERATUNGSSTELLE_CHOICES;
+
+/**
  * Payload zum Erstellen einer neuen Anfrage
  */
 export interface AnfrageCreatePayload {
@@ -101,10 +150,9 @@ export interface AnfrageCreatePayload {
   anfrage_person: AnfragePersonCode;
   anfrage_art: AnfrageArtCode;
   beratungstermin_data?: {
-    termin_datum: string;
-    termin_uhrzeit: string;
-    beratungsstelle: string;
-    beratungsart: string;
+    termin_beratung: string; // Datum des Termins
+    beratungsstelle: BeratungsstelleCode; // Ort des Termins
+    beratungsart?: string;
   };
 }
 
@@ -149,4 +197,36 @@ export function getAnfragePersonLabel(code: AnfragePersonCode): string {
  */
 export function getAnfrageArtLabel(code: AnfrageArtCode): string {
   return ANFRAGE_ART_CHOICES[code] || code;
+}
+
+/**
+ * Hilfsfunktion zum Ermitteln des Labels für einen Anfrageweg
+ */
+export function getAnfrageWegLabel(code: AnfrageWegCode): string {
+  return ANFRAGE_WEG_CHOICES[code] || code;
+}
+
+/**
+ * Hilfsfunktion zum Ermitteln des Labels für eine Anfrage-Herkunft
+ */
+export function getAnfrageHerkunftLabel(code: AnfrageHerkunftCode): string {
+  return ANFRAGE_HERKUNFT_CHOICES[code] || code;
+}
+
+/**
+ * Hilfsfunktion zum Ermitteln des Labels für eine Beratungsstelle
+ */
+export function getBeratungsstelleLabel(code: BeratungsstelleCode): string {
+  return BERATUNGSSTELLE_CHOICES[code] || code;
+}
+
+/**
+ * Berechnet die Wartezeit in Tagen zwischen zwei Datumsangaben
+ */
+export function berechneWartezeit(anfrageDatum: string, terminDatum: string): number {
+  const anfrage = new Date(anfrageDatum);
+  const termin = new Date(terminDatum);
+  const diffTime = termin.getTime() - anfrage.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return Math.max(0, diffDays);
 }
