@@ -17,7 +17,7 @@ const sizeClasses = {
   md: 'max-w-lg',
   lg: 'max-w-2xl',
   xl: 'max-w-4xl',
-  '2xl': 'max-w-5xl',
+  '2xl': 'max-w-6xl', // Increased width significantly as requested
 };
 
 /**
@@ -35,55 +35,55 @@ const sizeClasses = {
  * </Dialog>
  * ```
  */
-export function Dialog({ 
-  isOpen, 
-  onClose, 
-  title, 
-  description, 
+export function Dialog({
+  isOpen,
+  onClose,
+  title,
+  description,
   children,
-  size = 'md' 
+  size = 'md'
 }: DialogProps) {
   if (!isOpen) return null;
 
   return (
     <Fragment>
       {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/50 z-40 transition-opacity"
+      <div
+        className="fixed inset-0 bg-black/60 z-40 transition-opacity backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
-      
+
       {/* Dialog */}
       <div className="fixed inset-0 z-50 overflow-y-auto">
-        <div className="flex min-h-full items-center justify-center p-4">
-          <div 
-            className={`relative bg-white rounded-xl shadow-xl w-full ${sizeClasses[size]} transform transition-all`}
+        <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
+          <div
+            className={`relative bg-white rounded-2xl shadow-2xl w-full ${sizeClasses[size]} transform transition-all flex flex-col my-8`}
             role="dialog"
             aria-modal="true"
             aria-labelledby="dialog-title"
           >
             {/* Header */}
-            <div className="flex items-start justify-between p-6 border-b border-gray-200">
-              <div>
-                <h2 id="dialog-title" className="text-xl font-semibold text-gray-900">
+            <div className="flex items-start justify-between px-14 pt-10 pb-8 border-b border-gray-100 shrink-0 rounded-t-2xl">
+              <div className="pr-8">
+                <h2 id="dialog-title" className="text-2xl font-bold text-gray-900 leading-tight">
                   {title}
                 </h2>
                 {description && (
-                  <p className="mt-1 text-sm text-gray-500">{description}</p>
+                  <p className="mt-2 text-base text-gray-500">{description}</p>
                 )}
               </div>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-500 transition-colors p-1 -m-1 rounded-lg hover:bg-gray-100"
+                className="text-gray-400 hover:text-gray-600 transition-colors p-2 -mr-2 rounded-full hover:bg-gray-100"
                 aria-label="Schließen"
               >
-                <X className="w-5 h-5" />
+                <X className="w-6 h-6" />
               </button>
             </div>
-            
+
             {/* Content */}
-            <div className="p-6">
+            <div className="w-full px-14">
               {children}
             </div>
           </div>
@@ -102,7 +102,7 @@ interface DialogFooterProps {
  */
 export function DialogFooter({ children }: DialogFooterProps) {
   return (
-    <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 -mx-6 -mb-6 px-6 py-4 bg-gray-50 rounded-b-xl">
+    <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-4 pt-10 border-t border-gray-100 px-14 py-10 bg-gray-50 rounded-b-2xl">
       {children}
     </div>
   );
