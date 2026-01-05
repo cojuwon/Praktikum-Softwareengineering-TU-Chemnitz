@@ -34,7 +34,7 @@ const navItems: NavItem[] = [
   },
   {
     label: "Anfragen",
-    href: "/dashboard/anfragen",
+    href: "/dashboard/anfrage",
     icon: <FileText className="w-5 h-5" />,
   },
   {

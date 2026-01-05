@@ -58,6 +58,8 @@ export const StandardPermissions = {
   ADD_ANFRAGE: 'api.add_anfrage',
   CHANGE_ANFRAGE: 'api.change_anfrage',
   DELETE_ANFRAGE: 'api.delete_anfrage',
+  VIEW_OWN_ANFRAGEN: 'api.can_view_own_anfragen',
+  VIEW_ALL_ANFRAGEN: 'api.can_view_all_anfragen',
   
   // Klientin
   VIEW_KLIENTIN: 'api.view_klientin',
@@ -69,3 +71,13 @@ export const StandardPermissions = {
   VIEW_STATISTIK: 'api.view_statistik',
   EXPORT_STATISTIK: 'api.can_export_statistik',
 };
+
+/**
+ * Alias für StandardPermissions (für kürzeren Import)
+ */
+export const Permissions = StandardPermissions;
+
+/**
+ * Type für eine einzelne Permission (Union aller Werte)
+ */
+export type Permission = typeof StandardPermissions[keyof typeof StandardPermissions];

@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import { 
   FolderOpen, 
   FileText, 
@@ -6,10 +9,29 @@ import {
   Clock,
   CheckCircle2
 } from "lucide-react";
+import { usePermissions } from '@/hooks/usePermissions';
+import { Permissions } from '@/types/auth';
+import { AnfrageFormDialog } from '@/components/anfrage';
 
 export default function DashboardPage() {
+  const { can } = usePermissions();
+  const [isAnfrageDialogOpen, setIsAnfrageDialogOpen] = useState(false);
+
+  // Permission Checks
+  const canAddAnfrage = can(Permissions.ADD_ANFRAGE);
+
   return (
     <div className="page-container">
+      {/* Anfrage Dialog */}
+      <AnfrageFormDialog 
+        isOpen={isAnfrageDialogOpen}
+        onClose={() => setIsAnfrageDialogOpen(false)}
+        onSuccess={() => {
+          // Optional: Statistiken aktualisieren oder Benachrichtigung
+          console.log('Anfrage erfolgreich erstellt');
+        }}
+      />
+
       {/* Header */}
       <header className="page-header">
         <div>
@@ -113,10 +135,15 @@ export default function DashboardPage() {
                 <FolderOpen className="w-5 h-5" />
                 <span>Neuer Fall</span>
               </button>
-              <button className="quick-action-btn">
-                <FileText className="w-5 h-5" />
-                <span>Neue Anfrage</span>
-              </button>
+              {canAddAnfrage && (
+                <button 
+                  className="quick-action-btn"
+                  onClick={() => setIsAnfrageDialogOpen(true)}
+                >
+                  <FileText className="w-5 h-5" />
+                  <span>Neue Anfrage</span>
+                </button>
+              )}
               <button className="quick-action-btn">
                 <Users className="w-5 h-5" />
                 <span>Klient:in anlegen</span>

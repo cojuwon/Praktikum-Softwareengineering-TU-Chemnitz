@@ -59,7 +59,10 @@ class Command(BaseCommand):
             ])
         
         # Preset Delete für Basis erlauben (da persönliche Einstellungen)
-        basis_permissions.append('delete_preset')
+        basis_permissions.extend([
+            'delete_preset',
+            'can_view_own_anfragen',
+        ])
         
         # Erweiterung-Berechtigungen: Alles von Basis + Delete + Custom Permissions
         erweiterung_permissions = basis_permissions.copy()

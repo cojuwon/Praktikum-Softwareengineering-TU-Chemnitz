@@ -332,6 +332,11 @@ class Anfrage(models.Model):
     class Meta:
         verbose_name = "Anfrage"
         verbose_name_plural = "Anfragen"
+        # Custom Permissions für Anfragen-Sichtbarkeit
+        permissions = [
+            ("can_view_own_anfragen", "Kann eigene Anfragen einsehen"),
+            ("can_view_all_anfragen", "Kann alle Anfragen einsehen"),
+        ]
         
     def __str__(self):
         return f"Anfrage {self.anfrage_id} ({self.anfrage_art})"

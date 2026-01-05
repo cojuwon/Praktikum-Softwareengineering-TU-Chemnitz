@@ -7,15 +7,25 @@ Implementiert die UML-Methoden:
 - anfrageSuchen() -> list/retrieve (GET)
 - anfrageLoeschen() -> destroy (DELETE)
 - mitarbeiterinZuweisen() -> custom action (via Admin)
+
+Suche, Filter und Sortierung:
+- GET /api/anfragen/?search=text -> Fuzzy-Textsuche über alle Felder
+- GET /api/anfragen/?mitarbeiterin=1 -> Nach Mitarbeiter:in filtern
+- GET /api/anfragen/?anfrage_art=B -> Nach Art filtern
+- GET /api/anfragen/?anfrage_ort=LS -> Nach Ort filtern
+- GET /api/anfragen/?anfrage_person=F -> Nach Person filtern
+- GET /api/anfragen/?datum_von=2024-01-01&datum_bis=2024-12-31 -> Nach Zeitraum filtern
+- GET /api/anfragen/?ordering=-anfrage_datum -> Sortierung
 """
 
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from django.db.models import Q
 
 from api.models import Anfrage, Konto
 from api.serializers import AnfrageSerializer
-from api.permissions import DjangoModelPermissionsWithView, CanManageOwnData
+from api.permissions import CanManageOwnData
 
 
 class AnfrageViewSet(viewsets.ModelViewSet):
@@ -29,34 +39,105 @@ class AnfrageViewSet(viewsets.ModelViewSet):
     - anfrageLoeschen() -> DELETE /api/anfragen/{id}/ (destroy)
     - mitarbeiterinZuweisen() -> POST /api/anfragen/{id}/assign/ (custom action)
     
-    Berechtigungen (via DjangoModelPermissionsWithView):
-    - GET -> api.view_anfrage
-    - POST -> api.add_anfrage
-    - PUT/PATCH -> api.change_anfrage
-    - DELETE -> api.delete_anfrage
+    Berechtigungen für Anfragen-Sichtbarkeit:
+    - api.can_view_all_anfragen -> Alle Anfragen sehen (Admins)
+    - api.can_view_own_anfragen -> Nur eigene Anfragen sehen (Standard-User)
+    - Keine der beiden Permissions -> Leere Liste
     
     Object-Level Berechtigungen (via CanManageOwnData):
     - Standard-User: Nur eigene Anfragen (mitarbeiterin == request.user)
-    - Admins / can_view_all_data: Alle Anfragen
+    - Admins / can_view_all_anfragen: Alle Anfragen
+    
+    Suche & Filter:
+    - search: Freitextsuche über anfrage_weg, mitarbeiterin_name, anfrage_art/ort/person Labels
+    - mitarbeiterin: Filter nach Mitarbeiter:in ID
+    - anfrage_art: Filter nach Art-Code (MS, VS, B, R, S)
+    - anfrage_ort: Filter nach Ort-Code (LS, LL, NS, S, D, A, K)
+    - anfrage_person: Filter nach Person-Code
+    - datum_von / datum_bis: Filter nach Datumsbereich
+    - ordering: Sortierung (anfrage_datum, anfrage_art, anfrage_ort, mitarbeiterin__nachname_mb)
     """
     queryset = Anfrage.objects.all()
     serializer_class = AnfrageSerializer
-    permission_classes = [permissions.IsAuthenticated, DjangoModelPermissionsWithView, CanManageOwnData]
+    permission_classes = [permissions.IsAuthenticated, CanManageOwnData]
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['anfrage_datum', 'anfrage_art', 'anfrage_ort', 'anfrage_person', 'anfrage_id']
+    ordering = ['-anfrage_datum']  # Default: neueste zuerst
 
     def get_queryset(self):
         """
-        Filtert Anfragen basierend auf User-Berechtigungen.
+        Filtert Anfragen basierend auf User-Berechtigungen und Query-Parametern.
         
-        - Admins (rolle_mb='AD') sehen alle Anfragen
-        - User mit can_view_all_data Permission sehen alle Anfragen
-        - Andere User sehen nur ihre eigenen Anfragen (mitarbeiterin=user)
+        Permission-Hierarchie:
+        1. Admins (rolle_mb='AD') oder can_view_all_anfragen -> alle Anfragen
+        2. can_view_own_anfragen -> nur eigene Anfragen (mitarbeiterin=user)
+        3. Keine Permission -> leere Liste
+        
+        Query-Parameter:
+        - search: Fuzzy-Textsuche
+        - mitarbeiterin: Filter nach Mitarbeiter:in ID
+        - anfrage_art: Filter nach Art
+        - anfrage_ort: Filter nach Ort
+        - anfrage_person: Filter nach Person
+        - datum_von / datum_bis: Filter nach Zeitraum
         """
         user = self.request.user
         base_qs = Anfrage.objects.select_related('beratungstermin', 'mitarbeiterin', 'fall')
         
-        if user.rolle_mb == 'AD' or user.has_perm('api.can_view_all_data'):
-            return base_qs
-        return base_qs.filter(mitarbeiterin=user)
+        # Permission-basierte Filterung
+        if user.rolle_mb == 'AD' or user.has_perm('api.can_view_all_anfragen'):
+            qs = base_qs
+        elif user.has_perm('api.can_view_own_anfragen'):
+            qs = base_qs.filter(mitarbeiterin=user)
+        else:
+            return base_qs.none()
+        
+        # === Zusätzliche Filter aus Query-Parametern ===
+        params = self.request.query_params
+        
+        # Fuzzy-Textsuche über mehrere Felder
+        search = params.get('search', '').strip()
+        if search:
+            qs = qs.filter(
+                Q(anfrage_weg__icontains=search) |
+                Q(anfrage_art__icontains=search) |
+                Q(anfrage_ort__icontains=search) |
+                Q(anfrage_person__icontains=search) |
+                Q(mitarbeiterin__vorname_mb__icontains=search) |
+                Q(mitarbeiterin__nachname_mb__icontains=search) |
+                Q(mitarbeiterin__mail_mb__icontains=search)
+            )
+        
+        # Filter nach Mitarbeiter:in
+        mitarbeiterin_id = params.get('mitarbeiterin')
+        if mitarbeiterin_id:
+            qs = qs.filter(mitarbeiterin_id=mitarbeiterin_id)
+        
+        # Filter nach Anfrage-Art
+        anfrage_art = params.get('anfrage_art')
+        if anfrage_art:
+            qs = qs.filter(anfrage_art=anfrage_art)
+        
+        # Filter nach Anfrage-Ort
+        anfrage_ort = params.get('anfrage_ort')
+        if anfrage_ort:
+            qs = qs.filter(anfrage_ort=anfrage_ort)
+        
+        # Filter nach Anfrage-Person
+        anfrage_person = params.get('anfrage_person')
+        if anfrage_person:
+            qs = qs.filter(anfrage_person=anfrage_person)
+        
+        # Filter nach Datumsbereich
+        datum_von = params.get('datum_von')
+        if datum_von:
+            qs = qs.filter(anfrage_datum__gte=datum_von)
+        
+        datum_bis = params.get('datum_bis')
+        if datum_bis:
+            qs = qs.filter(anfrage_datum__lte=datum_bis)
+        
+        return qs
 
     @action(detail=True, methods=['post'], url_path='assign-employee')
     def assign_employee(self, request, pk=None):
