@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -65,10 +66,17 @@ export default function Sidebar() {
     <aside className="sidebar">
       {/* Logo & Titel Bereich */}
       <div className="sidebar-header">
-        <div className="logo-placeholder">
-          <span className="logo-placeholder-text">Logo</span>
+        <div className="logo-container">
+          <Image
+            src="/bellis-favicon.png"
+            alt="Bellis e.V. Logo"
+            width={72}
+            height={72}
+            className="logo-image"
+            priority
+          />
         </div>
-        <h1 className="sidebar-title">Opferhilfe Sachsen</h1>
+        <h1 className="sidebar-title">Bellis e.V. Leipzig</h1>
       </div>
 
       {/* Navigation */}

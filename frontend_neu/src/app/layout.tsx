@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Opferhilfe Sachsen",
-  description: "Fallverwaltung für Opferhilfe Sachsen",
+  title: "Bellis e.V. Leipzig",
+  description: "Fallverwaltung für Bellis e.V. Leipzig - Beratung für Betroffene sexualisierter Gewalt",
+  icons: {
+    icon: "/bellis-favicon.png",
+  },
 };
 
 export default function RootLayout({
