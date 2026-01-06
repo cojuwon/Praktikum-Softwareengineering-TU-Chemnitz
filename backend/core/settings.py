@@ -34,7 +34,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'DEFAULT_KEY_NUR_IM_NOTFALL')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ["localhost"] #TODO Added localhost here temporairily -> should be changed for production
+ALLOWED_HOSTS = ["api:8000", "localhost", "api"] #TODO Added localhost here temporairily -> should be changed for production
 
 
 # Application definition

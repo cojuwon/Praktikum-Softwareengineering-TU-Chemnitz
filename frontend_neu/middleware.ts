@@ -4,17 +4,15 @@ import type { NextRequest } from 'next/server';
 const API_BASE_URL = process.env.DJANGO_INTERNAL_HOST 
   ? `${process.env.DJANGO_INTERNAL_HOST}/api`
   : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api');
-/**
- * Validates session with Django backend
- */
-async function validateSession(sessionCookie: string): Promise<boolean> {
+
+async function validateSession(token: string): Promise<boolean> {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/user/`, {
       method: 'GET',
       headers: {
-        'Cookie': `sessionid=${sessionCookie}`,
+        // Send the token in the Cookie header as expected by the backend
+        'Cookie': `app-auth=${token}`, 
       },
-      // Short timeout to avoid blocking
       signal: AbortSignal.timeout(3000),
     });
 
@@ -28,45 +26,36 @@ async function validateSession(sessionCookie: string): Promise<boolean> {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Login page is always public
   if (pathname === '/login') {
     return NextResponse.next();
   }
 
-  // For dashboard routes: Check and validate session
   if (pathname.startsWith('/dashboard')) {
-    const sessionCookie = request.cookies.get('sessionid');
+    // CHANGE: Check for 'app-auth' instead of 'sessionid'
+    const authCookie = request.cookies.get('app-auth'); 
     
-    console.log('[Middleware] Checking dashboard access:', {
-      path: pathname,
-      hasSessionCookie: !!sessionCookie,
-    });
 
-    // No cookie at all - immediate redirect
-    if (!sessionCookie) {
-      console.log('[Middleware] No session cookie, redirecting to login');
+
+    if (!authCookie) {
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);
     }
 
-    // Validate the session with backend
-    const isValid = await validateSession(sessionCookie.value);
+    const isValid = await validateSession(authCookie.value);
 
     if (!isValid) {
-      console.log('[Middleware] Invalid session, logging out');
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);
       const response = NextResponse.redirect(loginUrl);
       
-      // Clear invalid cookies
-      response.cookies.delete('sessionid');
-      response.cookies.delete('csrftoken');
+      // CHANGE: Clear the correct cookies
+      response.cookies.delete('app-auth');
+      response.cookies.delete('app-refresh-token'); // Clear refresh token too if present
       
       return response;
     }
 
-    console.log('[Middleware] Valid session, allowing access');
   }
 
   return NextResponse.next();
