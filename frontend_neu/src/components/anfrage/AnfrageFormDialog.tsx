@@ -221,6 +221,7 @@ export function AnfrageFormDialog({ isOpen, onClose, onSuccess }: AnfrageFormDia
       description="Dokumentieren Sie die eingehende Anfrage."
       size="2xl"
     >
+      <div className="p-6" style={{ padding: 10 }}>
       {success ? (
         // Success Message
         <div className="flex flex-col items-center justify-center py-16 animate-in fade-in zoom-in duration-300">
@@ -562,7 +563,9 @@ export function AnfrageFormDialog({ isOpen, onClose, onSuccess }: AnfrageFormDia
             </button>
           </DialogFooter>
         </form>
+        
       )}
+      </div>
     </Dialog>
   );
 }

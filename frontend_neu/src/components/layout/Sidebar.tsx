@@ -29,7 +29,7 @@ const navItems: NavItem[] = [
   },
   {
     label: "Fälle",
-    href: "/dashboard/faelle",
+    href: "/dashboard/fall",
     icon: <FolderOpen className="w-5 h-5" />,
   },
   {
@@ -39,7 +39,7 @@ const navItems: NavItem[] = [
   },
   {
     label: "Klient:innen",
-    href: "/dashboard/klientinnen",
+    href: "/dashboard/klient",
     icon: <Users className="w-5 h-5" />,
   },
   {
