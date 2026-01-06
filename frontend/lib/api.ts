@@ -9,7 +9,7 @@ export async function fetchAnfragenPages(query: string): Promise<number> {
   try {
     // Beispiel-API: /api/anfragen?search=...&page_size=10
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    const res = await fetch(`${backendUrl}/api/anfragen?search=${encodeURIComponent(query)}&page_size=${PAGE_SIZE}`, {
+    const res = await apiFetch(`${backendUrl}/api/anfragen?search=${encodeURIComponent(query)}&page_size=${PAGE_SIZE}`, {
       credentials: 'include'
     });
     if (!res.ok) {
@@ -28,7 +28,7 @@ export async function fetchAnfragenPages(query: string): Promise<number> {
 export async function fetchAnfrage(query: string, page: number) {
   try {
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    const res = await fetch(
+    const res = await apiFetch(
       `${backendUrl}/api/anfragen?search=${encodeURIComponent(query)}&page=${page}&page_size=${PAGE_SIZE}`,
       { credentials: 'include' }
     );
@@ -42,3 +42,37 @@ export async function fetchAnfrage(query: string, page: number) {
     return [];              // leeres Array statt Seitenzahl
   }
 }
+
+const backendUrl =
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+export async function apiFetch(
+  input: string,
+  init: RequestInit = {}
+) {
+  let res = await fetch(`${backendUrl}${input}`, {
+    ...init,
+    credentials: 'include',
+  });
+
+  // Access Token abgelaufen?
+  if (res.status === 401) {
+    const refreshRes = await fetch(`${backendUrl}/api/auth/token/refresh/`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+
+    if (!refreshRes.ok) {
+      throw new Error('Session abgelaufen');
+    }
+
+    // Retry ursprüngliche Anfrage
+    res = await fetch(`${backendUrl}${input}`, {
+      ...init,
+      credentials: 'include',
+    });
+  }
+
+  return res;
+}
+

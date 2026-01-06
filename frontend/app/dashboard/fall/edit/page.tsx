@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FallSearchForm } from "@/components/form/FallSearchForm";
+import { apiFetch } from "@/lib/api";
 
 export default function FallSuchePage() {
   const router = useRouter();
   const [results, setResults] = useState([]);
 
   const handleSearch = async (filters: any) => {
-    const res = await fetch("/api/fall/query", {
+    const res = await apiFetch("/api/fall/query", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(filters),

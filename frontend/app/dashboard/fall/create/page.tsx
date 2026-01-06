@@ -1,6 +1,7 @@
 "use client";
 
 import { DynamicForm, FieldDefinition } from "@/components/form/DynamicForm";
+import { apiFetch } from "@/lib/api";
 import { useState, useEffect } from "react";
 
 export default function FallPage() {
@@ -10,7 +11,7 @@ export default function FallPage() {
 
   /** FELDER LADEN */
   useEffect(() => {
-    fetch("/api/fall")
+    apiFetch("/api/fall")
       .then(res => res.json())
       .then(json => {
         const defs: FieldDefinition[] = json.fields.map((f: any) => ({
@@ -69,7 +70,7 @@ export default function FallPage() {
     // 3. Speichern
     // ------------------------------------------------------
     try {
-      const response = await fetch("/api/fall", {
+      const response = await apiFetch("/api/fall", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

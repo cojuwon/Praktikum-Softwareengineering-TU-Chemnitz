@@ -1,4 +1,5 @@
 // /app/api/users/me/route.ts
+import { apiFetch } from "@/lib/api";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -6,7 +7,7 @@ export async function GET(request: Request) {
   const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
   try {
-    const response = await fetch(`${backendUrl}/api/auth/user/`, {
+    const response = await apiFetch(`${backendUrl}/api/auth/user/`, {
       headers: {
         Cookie: cookies || "",
       },
