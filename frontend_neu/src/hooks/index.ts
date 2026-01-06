@@ -4,4 +4,4 @@ export { usePermissions } from './usePermissions';
 
 // Re-export types for convenience
 export type { User, AuthState, UserRole, Permission } from '@/types/auth';
-export { Permissions, StandardPermissions, CustomPermissions, UserRoleLabels } from '@/types/auth';
+export { Permissions, StandardPermissions, UserRoleLabels } from '@/types/auth';

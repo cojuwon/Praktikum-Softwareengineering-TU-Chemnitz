@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-
+const API_BASE_URL = process.env.DJANGO_INTERNAL_HOST 
+  ? `${process.env.DJANGO_INTERNAL_HOST}/api`
+  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api');
 /**
  * Validates session with Django backend
  */

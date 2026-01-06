@@ -15,25 +15,26 @@ import { z } from 'zod';
  * Basierend auf dem KlientIn-Model aus backend/api/models.py
  */
 const klientFormSchema = z.object({
-  klient_rolle: z.enum(['B', 'A', 'F'], {
-    errorMap: () => ({ message: 'Bitte wählen Sie eine Rolle aus' }),
-  }),
+  // errorMap entfernen
+  klient_rolle: z.enum(['B', 'A', 'F']),
+  
   klient_alter: z.number().min(0).max(200).nullable().optional(),
-  klient_geschlechtsidentitaet: z.enum(
-    ['CW', 'CM', 'TW', 'TM', 'TN', 'I', 'A', 'D', 'K'],
-    { errorMap: () => ({ message: 'Bitte wählen Sie eine Geschlechtsidentität aus' }) }
-  ),
-  klient_sexualitaet: z.enum(['L', 'S', 'B', 'AX', 'H', 'K'], {
-    errorMap: () => ({ message: 'Bitte wählen Sie eine Sexualität aus' }),
-  }),
-  klient_wohnort: z.enum(['LS', 'LL', 'NS', 'S', 'D', 'A', 'K'], {
-    errorMap: () => ({ message: 'Bitte wählen Sie einen Wohnort aus' }),
-  }),
+  
+  // errorMap entfernen
+  klient_geschlechtsidentitaet: z.enum(['CW', 'CM', 'TW', 'TM', 'TN', 'I', 'A', 'D', 'K']),
+  
+  // errorMap entfernen
+  klient_sexualitaet: z.enum(['L', 'S', 'B', 'AX', 'H', 'K']),
+  
+  // errorMap entfernen
+  klient_wohnort: z.enum(['LS', 'LL', 'NS', 'S', 'D', 'A', 'K']),
+  
   klient_staatsangehoerigkeit: z.string().max(100),
   klient_beruf: z.string().max(255),
-  klient_schwerbehinderung: z.enum(['J', 'N', 'KA'], {
-    errorMap: () => ({ message: 'Bitte wählen Sie aus' }),
-  }),
+  
+  // errorMap entfernen
+  klient_schwerbehinderung: z.enum(['J', 'N', 'KA']),
+  
   klient_schwerbehinderung_detail: z.string().max(500).optional().default(''),
   klient_kontaktpunkt: z.string().max(255),
   klient_dolmetschungsstunden: z.number().min(0).int().default(0),
@@ -200,10 +201,13 @@ export function KlientFormDialog({ isOpen, onClose, onSuccess }: KlientFormDialo
     } catch (err: unknown) {
       if (err instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {};
-        err.errors.forEach((error) => {
+        
+        // WICHTIG: Ändere .errors zu .issues
+        err.issues.forEach((error) => {
           const path = error.path.join('.');
           fieldErrors[path] = error.message;
         });
+        
         setErrors(fieldErrors);
         setError('Bitte füllen Sie alle erforderlichen Felder korrekt aus.');
       } else {

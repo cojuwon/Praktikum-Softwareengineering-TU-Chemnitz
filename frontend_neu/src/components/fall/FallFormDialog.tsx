@@ -16,9 +16,8 @@ import { z } from 'zod';
  */
 const fallFormSchema = z.object({
   klient_id: z.number().int().min(1, 'Bitte wählen Sie eine Klient:in aus'),
-  status: z.enum(['O', 'L', 'A', 'G'], {
-    errorMap: () => ({ message: 'Bitte wählen Sie einen Status aus' }),
-  }).optional().default('O'),
+  // Das zweite Argument mit errorMap wurde entfernt
+  status: z.enum(['O', 'L', 'A', 'G']).optional().default('O'),
   startdatum: z.string().date('Bitte geben Sie ein gültiges Datum ein'),
   notizen: z.string().max(5000).optional().default(''),
 });
@@ -132,10 +131,13 @@ export function FallFormDialog({
     } catch (err: unknown) {
       if (err instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {};
-        err.errors.forEach((error) => {
+        
+        // ÄNDERUNG: 'err.errors' -> 'err.issues'
+        err.issues.forEach((error) => {
           const path = error.path.join('.');
           fieldErrors[path] = error.message;
         });
+        
         setErrors(fieldErrors);
         setError('Bitte füllen Sie alle erforderlichen Felder korrekt aus.');
       } else {
