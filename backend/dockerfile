@@ -19,6 +19,14 @@ EXPOSE 8000
 CMD sh -c "while ! nc -z db 5432; do echo 'Warte auf DB...'; sleep 1; done; \
            echo 'DB ist bereit. Wende Migrationen an...'; \
            python manage.py migrate --noinput; \
+           \
+           echo '--- System Setup ---'; \
+           echo '1. Richte Gruppen ein...'; \
+           python manage.py setup_groups; \
+           echo '2. Erstelle Superuser...'; \
+           python manage.py setup_superuser; \
+           echo '--------------------'; \
+           \
            echo 'Sammle statische Dateien...'; \
            python manage.py collectstatic --noinput; \
            echo 'Starte Gunicorn...'; \

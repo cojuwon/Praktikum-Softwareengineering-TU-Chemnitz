@@ -4,8 +4,8 @@ ViewSet für Klient:innen-Management.
 Verwendet DjangoModelPermissions für automatische Permission-Prüfung.
 """
 
-from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
+from rest_framework import viewsets, permissions, status, filters
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from drf_spectacular.utils import extend_schema
@@ -14,6 +14,8 @@ from api.models import KlientIn, Begleitung
 from api.serializers import KlientInSerializer, BegleitungSerializer
 from api.permissions import DjangoModelPermissionsWithView
 
+
+from django_filters.rest_framework import DjangoFilterBackend
 
 class KlientInViewSet(viewsets.ModelViewSet):
     """
@@ -28,6 +30,25 @@ class KlientInViewSet(viewsets.ModelViewSet):
     queryset = KlientIn.objects.all()
     serializer_class = KlientInSerializer
     permission_classes = [permissions.IsAuthenticated, DjangoModelPermissionsWithView]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = {
+        'klient_rolle': ['exact'],
+        'klient_geschlechtsidentitaet': ['exact'],
+        'klient_alter': ['exact', 'gte', 'lte'],
+        'klient_beruf': ['icontains'],
+        'klient_staatsangehoerigkeit': ['icontains'],
+        'klient_wohnort': ['exact'],
+        'klient_schwerbehinderung': ['exact'],
+    }
+    search_fields = ['klient_code', 'klient_vorname', 'klient_nachname', 'klient_id'] # Optional text search
+    ordering_fields = ['klient_id', 'erstellt_am', 'klient_nachname']
+    ordering = ['-klient_id'] # Default: Newest first
+
+    def get_queryset(self):
+        """
+        TEMPORARY: Returns ALL clients for everyone to unblock UI issues.
+        """
+        return KlientIn.objects.all()
 
     @extend_schema(
         request={'application/json': {'type': 'object', 'properties': {'begleitung_id': {'type': 'integer'}}}},

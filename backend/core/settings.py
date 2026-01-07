@@ -34,7 +34,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'DEFAULT_KEY_NUR_IM_NOTFALL')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ["localhost"] #TODO Added localhost here temporairily -> should be changed for production
+ALLOWED_HOSTS = ["api:8000", "localhost", "api"] #TODO Added localhost here temporairily -> should be changed for production
 
 
 # Application definition
@@ -51,6 +51,8 @@ INSTALLED_APPS = [
 
     'rest_framework', 
     'rest_framework.authtoken',
+    'drf_spectacular',
+    'django_filters',
     'corsheaders',  
 
     'allauth',
@@ -60,7 +62,7 @@ INSTALLED_APPS = [
     'dj_rest_auth',
     'dj_rest_auth.registration',
 
-    'drf_spectacular',
+
     
     # Eigene Apps
     'api',
@@ -207,6 +209,15 @@ REST_AUTH_SERIALIZERS = {
 
 REST_AUTH_REGISTER_SERIALIZERS = {
     'REGISTER_SERIALIZER': 'api.serializers.CustomRegisterSerializer',
+}
+
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(hours=15),
+    'ROTATE_REFRESH_TOKENS': False, 
+    'BLACKLIST_AFTER_ROTATION': False,
+    'UPDATE_LAST_LOGIN': False,
 }
 
 # Einfaches JWT Setup (keine E-Mail Verifizierung für den Anfang)

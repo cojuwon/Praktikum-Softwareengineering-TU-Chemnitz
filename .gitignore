@@ -2,3 +2,5 @@
 .env
 .idea
 .venv
+/release
+release.zip
