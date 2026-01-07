@@ -1,2 +1,6 @@
 .DS_Store
 .env
+.idea
+.venv
+/release
+release.zip

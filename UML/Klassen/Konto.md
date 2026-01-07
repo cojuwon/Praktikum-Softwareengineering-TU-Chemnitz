@@ -10,6 +10,7 @@
 | preset_ids    | int[]        | Zugeordnete Filtereinstellungen                   |
 | anfragen_ids  | int[]        | Anfragen, die von diesem Konto bearbeitet wurden  |
 | fall_ids      | int[]        | Fälle, die von diesem Konto bearbeitet wurden     |
+| passwort      | String       | Passwort, das vom User angelegt wird              |
 
 # Methoden:
 kontoAnlegen()

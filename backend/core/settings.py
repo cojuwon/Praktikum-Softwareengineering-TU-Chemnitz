@@ -12,6 +12,14 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import dotenv
+import warnings
+
+dotenv.load_dotenv()
+
+# Suppress deprecation warnings from dj_rest_auth (uses old allauth API internally)
+warnings.filterwarnings('ignore', message='app_settings.USERNAME_REQUIRED is deprecated')
+warnings.filterwarnings('ignore', message='app_settings.EMAIL_REQUIRED is deprecated')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +34,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'DEFAULT_KEY_NUR_IM_NOTFALL')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["api:8000", "localhost", "api"] #TODO Added localhost here temporairily -> should be changed for production
 
 
 # Application definition
@@ -38,14 +46,40 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Dritte-Anbieter-Apps (z.B. Django Rest Framework)
+
+    'django.contrib.sites',
+
     'rest_framework', 
+    'rest_framework.authtoken',
+    'drf_spectacular',
+    'django_filters',
+    'corsheaders',  
+
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
+
+
     
     # Eigene Apps
-    'api', # <-- Deine neue API-App!
+    'api',
+]
+
+SITE_ID = 1
+
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of allauth
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -53,6 +87,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -128,6 +163,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -148,8 +185,84 @@ REST_FRAMEWORK = {
     
     # Konfiguriert, wie Authentifizierungs-Header gelesen werden
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
-        # Später: Token-basierte Authentifizierung für Next.js
-        # 'rest_framework.authentication.TokenAuthentication', 
-    )
+        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+    ),
+
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
+
+AUTH_USER_MODEL = 'api.Konto'
+
+REST_AUTH = {
+    'USE_JWT': True,
+    'JWT_AUTH_COOKIE': 'app-auth',         # Name des Access-Token Cookies
+    'JWT_AUTH_REFRESH_COOKIE': 'app-refresh-token',
+    'JWT_AUTH_HTTPONLY': True,                # JavaScript kann Cookie nicht lesen (Sicherheit!)
+    'SESSION_LOGIN': False,
+    'USER_DETAILS_SERIALIZER': 'api.serializers.KontoMeSerializer', # Mit Berechtigungen & Gruppen
+}
+
+REST_AUTH_SERIALIZERS = {
+    'LOGIN_SERIALIZER': 'api.serializers.CustomLoginSerializer',
+    'USER_DETAILS_SERIALIZER': 'api.serializers.KontoMeSerializer', # Mit Berechtigungen & Gruppen
+}
+
+REST_AUTH_REGISTER_SERIALIZERS = {
+    'REGISTER_SERIALIZER': 'api.serializers.CustomRegisterSerializer',
+}
+
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(hours=15),
+    'ROTATE_REFRESH_TOKENS': False, 
+    'BLACKLIST_AFTER_ROTATION': False,
+    'UPDATE_LAST_LOGIN': False,
+}
+
+# Einfaches JWT Setup (keine E-Mail Verifizierung für den Anfang)
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
+
+ACCOUNT_LOGIN_METHODS = {'email'}
+
+ACCOUNT_USER_MODEL_EMAIL_FIELD = 'mail_mb'
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+
+# --- CORS (Damit Next.js auf Port 3000 zugreifen darf) ---
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+CORS_ALLOW_CREDENTIALS = True # Wichtig für Cookies!
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
+
+
+
+if DEBUG:
+    # In development, allow embedding from anywhere (e.g., Next.js on localhost:3000)
+    X_FRAME_OPTIONS = 'ALLOWALL'
+
+    # Also helpful for dev: Disable the middleware entirely if headers are stubborn
+    MIDDLEWARE.remove('django.middleware.clickjacking.XFrameOptionsMiddleware')
+
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8000",
+    ]
+    CORS_ALLOW_CREDENTIALS = True # Wichtig für Cookies!
+    CSRF_TRUSTED_ORIGINS = ["http://localhost:3000", "http://localhost:8000"]
+
+
+else:
+    # In production, be strict!
+    X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+    CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    ]
+    CORS_ALLOW_CREDENTIALS = True # Wichtig für Cookies!
+    CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]

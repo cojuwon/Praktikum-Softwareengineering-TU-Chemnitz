@@ -1,0 +1,278 @@
+"""
+ViewSet für Anfrage-Management.
+
+Implementiert die UML-Methoden:
+- anfrageAnlegen() -> create (POST)
+- anfrageBearbeiten() -> update/partial_update (PUT/PATCH)
+- anfrageSuchen() -> list/retrieve (GET)
+- anfrageLoeschen() -> destroy (DELETE)
+- mitarbeiterinZuweisen() -> custom action (via Admin)
+
+Suche, Filter und Sortierung:
+- GET /api/anfragen/?search=text -> Fuzzy-Textsuche über alle Felder
+- GET /api/anfragen/?mitarbeiterin=1 -> Nach Mitarbeiter:in filtern
+- GET /api/anfragen/?anfrage_art=B -> Nach Art filtern
+- GET /api/anfragen/?anfrage_ort=LS -> Nach Ort filtern
+- GET /api/anfragen/?anfrage_person=F -> Nach Person filtern
+- GET /api/anfragen/?datum_von=2024-01-01&datum_bis=2024-12-31 -> Nach Zeitraum filtern
+- GET /api/anfragen/?ordering=-anfrage_datum -> Sortierung
+"""
+
+from rest_framework import viewsets, permissions, status, filters
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from django.db.models import Q
+
+from api.models import Anfrage, Konto
+from api.serializers import AnfrageSerializer
+from api.permissions import CanManageOwnData
+
+
+class AnfrageViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet für CRUD-Operationen auf Anfragen.
+    
+    UML-Mapping:
+    - anfrageAnlegen() -> POST /api/anfragen/ (create)
+    - anfrageBearbeiten() -> PUT/PATCH /api/anfragen/{id}/ (update/partial_update)
+    - anfrageSuchen() -> GET /api/anfragen/ oder /api/anfragen/{id}/ (list/retrieve)
+    - anfrageLoeschen() -> DELETE /api/anfragen/{id}/ (destroy)
+    - mitarbeiterinZuweisen() -> POST /api/anfragen/{id}/assign/ (custom action)
+    
+    Berechtigungen für Anfragen-Sichtbarkeit:
+    - api.can_view_all_anfragen -> Alle Anfragen sehen (Admins)
+    - api.can_view_own_anfragen -> Nur eigene Anfragen sehen (Standard-User)
+    - Keine der beiden Permissions -> Leere Liste
+    
+    Object-Level Berechtigungen (via CanManageOwnData):
+    - Standard-User: Nur eigene Anfragen (mitarbeiterin == request.user)
+    - Admins / can_view_all_anfragen: Alle Anfragen
+    
+    Suche & Filter:
+    - search: Freitextsuche über anfrage_weg, mitarbeiterin_name, anfrage_art/ort/person Labels
+    - mitarbeiterin: Filter nach Mitarbeiter:in ID
+    - anfrage_art: Filter nach Art-Code (MS, VS, B, R, S)
+    - anfrage_ort: Filter nach Ort-Code (LS, LL, NS, S, D, A, K)
+    - anfrage_person: Filter nach Person-Code
+    - datum_von / datum_bis: Filter nach Datumsbereich
+    - ordering: Sortierung (anfrage_datum, anfrage_art, anfrage_ort, mitarbeiterin__nachname_mb)
+    """
+    queryset = Anfrage.objects.all()
+    serializer_class = AnfrageSerializer
+    permission_classes = [permissions.IsAuthenticated, CanManageOwnData]
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['anfrage_datum', 'anfrage_art', 'anfrage_ort', 'anfrage_person', 'anfrage_id']
+    ordering = ['-anfrage_datum']  # Default: neueste zuerst
+
+    def get_queryset(self):
+        """
+        Filtert Anfragen basierend auf User-Berechtigungen und Query-Parametern.
+        
+        Permission-Hierarchie:
+        1. Admins (rolle_mb='AD') oder can_view_all_anfragen -> alle Anfragen
+        2. can_view_own_anfragen -> nur eigene Anfragen (mitarbeiterin=user)
+        3. Keine Permission -> leere Liste
+        
+        Query-Parameter:
+        - search: Fuzzy-Textsuche
+        - mitarbeiterin: Filter nach Mitarbeiter:in ID
+        - anfrage_art: Filter nach Art
+        - anfrage_ort: Filter nach Ort
+        - anfrage_person: Filter nach Person
+        - datum_von / datum_bis: Filter nach Zeitraum
+        """
+        user = self.request.user
+        base_qs = Anfrage.objects.select_related('beratungstermin', 'mitarbeiterin', 'fall')
+        
+        # Permission-basierte Filterung
+        if user.rolle_mb == 'AD' or user.has_perm('api.can_view_all_anfragen'):
+            qs = base_qs
+        elif user.has_perm('api.can_view_own_anfragen'):
+            qs = base_qs.filter(mitarbeiterin=user)
+        else:
+            return base_qs.none()
+        
+        # === Zusätzliche Filter aus Query-Parametern ===
+        params = self.request.query_params
+        
+        # Fuzzy-Textsuche über mehrere Felder
+        search = params.get('search', '').strip()
+        if search:
+            qs = qs.filter(
+                Q(anfrage_weg__icontains=search) |
+                Q(anfrage_art__icontains=search) |
+                Q(anfrage_ort__icontains=search) |
+                Q(anfrage_person__icontains=search) |
+                Q(mitarbeiterin__vorname_mb__icontains=search) |
+                Q(mitarbeiterin__nachname_mb__icontains=search) |
+                Q(mitarbeiterin__mail_mb__icontains=search)
+            )
+        
+        # Filter nach Mitarbeiter:in
+        mitarbeiterin_id = params.get('mitarbeiterin')
+        if mitarbeiterin_id:
+            qs = qs.filter(mitarbeiterin_id=mitarbeiterin_id)
+        
+        # Filter nach Anfrage-Art
+        anfrage_art = params.get('anfrage_art')
+        if anfrage_art:
+            qs = qs.filter(anfrage_art=anfrage_art)
+        
+        # Filter nach Anfrage-Ort
+        anfrage_ort = params.get('anfrage_ort')
+        if anfrage_ort:
+            qs = qs.filter(anfrage_ort=anfrage_ort)
+        
+        # Filter nach Anfrage-Person
+        anfrage_person = params.get('anfrage_person')
+        if anfrage_person:
+            qs = qs.filter(anfrage_person=anfrage_person)
+        
+        # Filter nach Datumsbereich
+        datum_von = params.get('datum_von')
+        if datum_von:
+            qs = qs.filter(anfrage_datum__gte=datum_von)
+        
+        datum_bis = params.get('datum_bis')
+        if datum_bis:
+            qs = qs.filter(anfrage_datum__lte=datum_bis)
+        
+        return qs
+
+    @action(detail=True, methods=['post'], url_path='assign-employee')
+    def assign_employee(self, request, pk=None):
+        """
+        Weist eine Anfrage einer Mitarbeiterin zu.
+        UML: mitarbeiterinZuweisen()
+        """
+        anfrage = self.get_object()
+        user_id = request.data.get('user_id')
+        
+        if not user_id:
+            return Response(
+                {'detail': 'user_id ist erforderlich.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        try:
+            user = Konto.objects.get(pk=user_id)
+        except Konto.DoesNotExist:
+            return Response(
+                {'detail': 'Benutzer nicht gefunden.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+            
+        anfrage.mitarbeiterin = user
+        anfrage.save()
+        
+        return Response(AnfrageSerializer(anfrage).data)
+
+    @action(detail=True, methods=['post'], url_path='create-consultation')
+    def create_consultation(self, request, pk=None):
+        """
+        Erstellt einen Beratungstermin aus einer Anfrage heraus.
+        UML: beratungterminZuweisen()
+        """
+        from api.models import Beratungstermin
+        from api.serializers import BeratungsterminSerializer
+        
+        anfrage = self.get_object()
+        
+        if anfrage.beratungstermin:
+            return Response(
+                {'detail': 'Anfrage hat bereits einen Beratungstermin.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        # Daten für den neuen Termin validieren
+        serializer = BeratungsterminSerializer(data=request.data)
+        if serializer.is_valid():
+            termin = serializer.save()
+            
+            # Verknüpfung herstellen
+            anfrage.beratungstermin = termin
+            anfrage.save()
+            
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_serializer_context(self):
+        """Erweitert den Serializer-Kontext um den aktuellen Request."""
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
+    def perform_create(self, serializer):
+        """
+        anfrageAnlegen(): Erstellt neue Anfrage.
+        Setzt automatisch den aktuellen User als Mitarbeiter:in.
+        """
+        serializer.save(mitarbeiterin=self.request.user)
+
+    def perform_update(self, serializer):
+        """
+        anfrageBearbeiten(): Aktualisiert bestehende Anfrage.
+        
+        Schutzlogik für das mitarbeiterin-Feld:
+        - Standard-User können die mitarbeiterin NICHT ändern (wird ignoriert)
+        - Nur User mit can_manage_users Permission können Anfragen neu zuweisen
+        - Admins können immer die mitarbeiterin ändern
+        """
+        user = self.request.user
+        instance = self.get_object()
+        
+        # Prüfe, ob User berechtigt ist, mitarbeiterin zu ändern
+        can_reassign = (
+            user.rolle_mb == 'AD' or 
+            user.has_perm('api.can_manage_users')
+        )
+        
+        if not can_reassign:
+            # Entferne mitarbeiterin aus validated_data, falls vorhanden
+            # So kann das Feld nicht manipuliert werden
+            serializer.validated_data.pop('mitarbeiterin', None)
+        
+        serializer.save()
+
+    @action(detail=True, methods=['post'], url_path='assign')
+    def assign_mitarbeiterin(self, request, pk=None):
+        """
+        mitarbeiterinZuweisen(): Custom Action zum Zuweisen einer Anfrage an eine:n Mitarbeiter:in.
+        
+        Nur für Admins oder User mit can_manage_users Permission.
+        
+        Request Body:
+        {
+            "mitarbeiterin_id": <int>
+        }
+        """
+        # Permission-Check
+        if not (request.user.rolle_mb == 'AD' or request.user.has_perm('api.can_manage_users')):
+            return Response(
+                {'detail': 'Nur Administratoren können Anfragen neu zuweisen.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        anfrage = self.get_object()
+        mitarbeiterin_id = request.data.get('mitarbeiterin_id')
+        
+        if not mitarbeiterin_id:
+            return Response(
+                {'detail': 'mitarbeiterin_id ist erforderlich.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            neue_mitarbeiterin = Konto.objects.get(pk=mitarbeiterin_id)
+        except Konto.DoesNotExist:
+            return Response(
+                {'detail': 'Mitarbeiter:in nicht gefunden.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        anfrage.mitarbeiterin = neue_mitarbeiterin
+        anfrage.save(update_fields=['mitarbeiterin'])
+        
+        serializer = self.get_serializer(anfrage)
+        return Response(serializer.data)

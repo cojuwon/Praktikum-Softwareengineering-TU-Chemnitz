@@ -1,0 +1,124 @@
+"""ViewSet für Eingabefeld-Management."""
+
+from rest_framework import viewsets, permissions, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema, OpenApiTypes
+from datetime import datetime
+
+from api.models import Eingabefeld
+from api.serializers import EingabefeldSerializer
+from api.permissions import DjangoModelPermissionsWithView
+
+class EingabefeldViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet für CRUD-Operationen auf Eingabefelder.
+    """
+    queryset = Eingabefeld.objects.all()
+    serializer_class = EingabefeldSerializer
+    permission_classes = [permissions.IsAuthenticated, DjangoModelPermissionsWithView]
+
+    @extend_schema(
+        request=OpenApiTypes.OBJECT,
+        responses={200: EingabefeldSerializer},
+        description="Setzt den Wert des Eingabefeldes basierend auf dem Typ."
+    )
+    @action(detail=True, methods=['post', 'patch'], url_path='set-value')
+    def set_value(self, request, pk=None):
+        """
+        Setzt den Wert des Eingabefeldes.
+        Erwartet {'wert': 'Neuer Wert'} im Body.
+        Validiert den Wert basierend auf dem Typ des Feldes.
+        """
+        eingabefeld = self.get_object()
+        
+        # Explizite Berechtigungsprüfung für 'change'
+        if not request.user.has_perm('api.change_eingabefeld'):
+             return Response(
+                {"detail": "Sie haben keine Berechtigung, dieses Eingabefeld zu bearbeiten."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        if 'wert' not in request.data:
+            return Response(
+                {"detail": "Das Feld 'wert' ist erforderlich."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        wert = request.data.get('wert')
+        
+        # Validierung basierend auf Typ
+        if wert is not None and str(wert).strip():
+            if eingabefeld.typ == 'Zahl':
+                try:
+                    float(wert)
+                except ValueError:
+                    return Response(
+                        {"detail": "Der Wert muss eine Zahl sein."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            elif eingabefeld.typ == 'Datum':
+                # Versuche verschiedene Datumsformate
+                valid_date = False
+                for fmt in ('%Y-%m-%d', '%d.%m.%Y'):
+                    try:
+                        datetime.strptime(str(wert), fmt)
+                        valid_date = True
+                        break
+                    except ValueError:
+                        continue
+                
+                if not valid_date:
+                    return Response(
+                        {"detail": "Der Wert muss ein gültiges Datum sein (YYYY-MM-DD oder DD.MM.YYYY)."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+        # Wert speichern
+        eingabefeld.wert = str(wert) if wert is not None else ""
+        eingabefeld.save()
+        
+        serializer = self.get_serializer(eingabefeld)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        responses={200: OpenApiTypes.OBJECT},
+        description="Liest den Wert des Eingabefeldes typgerecht aus."
+    )
+    @action(detail=True, methods=['get'], url_path='get-value')
+    def get_value(self, request, pk=None):
+        """
+        Gibt den Wert des Eingabefeldes zurück, konvertiert in den entsprechenden Datentyp.
+        Rückgabeformat: {'wert': <konvertierter_wert>, 'typ': <typ>}
+        """
+        eingabefeld = self.get_object()
+        
+        # Berechtigungsprüfung erfolgt implizit durch DjangoModelPermissionsWithView für GET (view_eingabefeld)
+        
+        raw_value = eingabefeld.wert
+        converted_value = raw_value
+        
+        if raw_value and str(raw_value).strip():
+            if eingabefeld.typ == 'Zahl':
+                try:
+                    # Versuche erst int, dann float
+                    if '.' in raw_value or ',' in raw_value:
+                        converted_value = float(raw_value.replace(',', '.'))
+                    else:
+                        converted_value = int(raw_value)
+                except ValueError:
+                    # Fallback auf String, falls Parsing fehlschlägt (sollte nicht passieren)
+                    converted_value = raw_value
+            elif eingabefeld.typ == 'Datum':
+                # Datum wird als String zurückgegeben, aber Frontend erwartet ISO
+                # Hier könnten wir es parsen und als echtes Date-Objekt zurückgeben,
+                # aber JSON serialisiert es eh wieder zu String.
+                # Wir lassen es als String, da es bereits validiert wurde.
+                converted_value = raw_value
+        else:
+            converted_value = None
+
+        return Response({
+            'wert': converted_value,
+            'typ': eingabefeld.typ
+        }, status=status.HTTP_200_OK)

@@ -10,6 +10,8 @@ services:
     # Lädt alle DB-Zugangsdaten aus der .env-Datei
     env_file:
       - .env 
+    ports:
+      - "5432:5432"
     networks:
       - webnet
 
@@ -26,8 +28,10 @@ services:
       
     # 🔒 SICHERHEIT: Der Port ist nur INTERN für andere Container erreichbar.
     # Externe Zugriffe (z.B. über localhost:8000) werden blockiert.
-    expose:
-      - "8000" 
+    # expose:
+    #  - "8000" (FOR DEVELOPMENT, we will expose this port so Swagger can be accessed)
+    ports: 
+      - "8000:8000" 
       
     env_file:
       - .env
@@ -39,7 +43,7 @@ services:
   # 3. NEXT.JS FRONTEND SERVICE (SSR/Proxy)
   frontend:
     build:
-      context: ./frontend     
+      context: ./frontend_neu     
       dockerfile: Dockerfile
     container_name: nextjs_frontend
     
