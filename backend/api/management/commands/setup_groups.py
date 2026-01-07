@@ -62,6 +62,7 @@ class Command(BaseCommand):
         basis_permissions.extend([
             'delete_preset',
             'can_view_own_anfragen',
+            'view_own_klientin',
         ])
         
         # Erweiterung-Berechtigungen: Alles von Basis + Delete + Custom Permissions
@@ -74,6 +75,7 @@ class Command(BaseCommand):
             'can_share_preset',
             'can_export_statistik',
             'can_share_statistik',
+            'view_all_klientin',
         ])
 
         # Admin-Berechtigungen: Alles + User Management

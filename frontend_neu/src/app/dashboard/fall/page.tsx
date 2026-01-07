@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { FallFormDialog } from '@/components/fall/FallFormDialog';
 import {
   Table,
@@ -12,91 +12,47 @@ import {
 } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
 import { Search, Plus, Filter, MoreHorizontal } from 'lucide-react';
-
-/**
- * Mock-Daten für Fälle
- */
-interface MockFall {
-  id: number;
-  titel: string;
-  klient_id: number;
-  klient_name: string;
-  status: 'O' | 'L' | 'A' | 'G';
-  startdatum: string;
-  notizen?: string;
-}
-
-const MOCK_FALLE: MockFall[] = [
-  {
-    id: 101,
-    titel: 'Fall - Gewalt in Beziehung',
-    klient_id: 1,
-    klient_name: 'Sarah M.',
-    status: 'L',
-    startdatum: '2025-11-15',
-    notizen: 'Wird regelmäßig betreut',
-  },
-  {
-    id: 102,
-    titel: 'Fall - Häusliche Gewalt',
-    klient_id: 2,
-    klient_name: 'Thomas K.',
-    status: 'O',
-    startdatum: '2025-12-10',
-    notizen: 'Eben eingegangen',
-  },
-  {
-    id: 103,
-    titel: 'Fall - Körperverletzung',
-    klient_id: 3,
-    klient_name: 'Lisa B.',
-    status: 'L',
-    startdatum: '2025-10-01',
-  },
-  {
-    id: 104,
-    titel: 'Fall - Begleitung zur Polizei',
-    klient_id: 4,
-    klient_name: 'Anna Schmidt',
-    status: 'A',
-    startdatum: '2025-09-20',
-  },
-];
-
-const STATUS_MAP = {
-  O: { label: 'Offen', variant: 'warning' as const },
-  L: { label: 'Laufend', variant: 'info' as const },
-  A: { label: 'Abgeschlossen', variant: 'success' as const },
-  G: { label: 'Gelöscht', variant: 'danger' as const },
-};
-
-const STATUS_FILTER_OPTIONS = [
-  { value: '', label: 'Alle Statusse' },
-  { value: 'O', label: 'Offen' },
-  { value: 'L', label: 'Laufend' },
-  { value: 'A', label: 'Abgeschlossen' },
-  { value: 'G', label: 'Gelöscht' },
-];
+import apiClient from '@/lib/api-client';
+import { usePermissions } from '@/hooks/usePermissions';
 
 /**
  * Fallübersicht - Hauptseite
- *
- * Zeigt eine Übersicht aller Fälle mit Filterung nach Status
- * und Suchfunktion. Ermöglicht das Erstellen neuer Fälle.
  */
 export default function FallPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [falle, setFalle] = useState<MockFall[]>(MOCK_FALLE);
+  const [falle, setFalle] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load Fälle from API
+  const fetchFaelle = async () => {
+    setIsLoading(true);
+    try {
+      const response = await apiClient.get('/faelle/');
+      setFalle(Array.isArray(response.data) ? response.data : (response.data as any).results || []);
+    } catch (error) {
+      console.error('Fehler beim Laden der Fälle:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFaelle();
+  }, []);
 
   // Gefilterte Fälle basierend auf Suchbegriff und Status
+  // Note: Status logic is approximated as Backend doesn't have status field yet
   const filteredFalle = useMemo(() => {
     let result = falle;
 
-    // Nach Status filtern
+    // Nach Status filtern (Client-Side Logic derived from assignments)
     if (statusFilter) {
-      result = result.filter((f) => f.status === statusFilter);
+      result = result.filter((f) => {
+        const status = f.mitarbeiterin ? 'L' : 'O';
+        return status === statusFilter;
+      });
     }
 
     // Nach Suchbegriff filtern
@@ -104,40 +60,21 @@ export default function FallPage() {
       const term = searchTerm.toLowerCase();
       result = result.filter(
         (f) =>
-          f.titel.toLowerCase().includes(term) ||
-          f.klient_name.toLowerCase().includes(term) ||
-          f.notizen?.toLowerCase().includes(term)
+          f.fall_id.toString().includes(term) ||
+          (f.klient_detail?.klient_rolle || '').toLowerCase().includes(term) ||
+          (f.klient_detail?.klient_beruf || '').toLowerCase().includes(term)
       );
     }
 
     return result;
   }, [searchTerm, statusFilter, falle]);
 
-  // Liste der Klienten für den Dialog
-  const klientenListe = useMemo(() => {
-    // Extrahiere unique Klienten aus den Fällen und Mock-Klienten
-    return [
-      { id: 1, label: 'Sarah M.' },
-      { id: 2, label: 'Thomas K.' },
-      { id: 3, label: 'Lisa B.' },
-      { id: 4, label: 'Anna Schmidt' },
-      { id: 5, label: 'Michael J.' },
-    ];
-  }, []);
-
   const handleDialogSuccess = () => {
-    // Hier würde man die Liste neu laden
-    console.log('Fall erfolgreich erstellt. Liste wird aktualisiert...');
+    fetchFaelle();
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('de-DE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
-  };
+  // Mock-Liste für Dialog (dieser sollte idealerweise auch API-Daten nutzen)
+  const klientenListe = useMemo(() => [], []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -162,7 +99,7 @@ export default function FallPage() {
             </div>
             <input
               type="text"
-              placeholder="Suche nach Titel, Klient, Notizen..."
+              placeholder="Suche nach Fall-ID, Klient..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
@@ -179,11 +116,9 @@ export default function FallPage() {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none bg-white"
             >
-              {STATUS_FILTER_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
+              <option value="">Alle Statusse</option>
+              <option value="O">Offen (Keine Mitarbeiterin)</option>
+              <option value="L">Laufend (Zugewiesen)</option>
             </select>
           </div>
 
@@ -207,31 +142,37 @@ export default function FallPage() {
                   <TableHead>Titel</TableHead>
                   <TableHead>Klient:in</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Startdatum</TableHead>
-                  <TableHead>Notizen</TableHead>
+                  <TableHead>Info</TableHead>
                   <TableHead className="text-center">Aktionen</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredFalle.map((fall) => {
-                  const statusInfo = STATUS_MAP[fall.status];
+                  const status = fall.mitarbeiterin ? 'L' : 'O';
+                  const statusLabel = status === 'L' ? 'Laufend' : 'Offen';
+                  const variant = status === 'L' ? 'info' : 'warning';
+
                   return (
-                    <TableRow key={fall.id}>
+                    <TableRow key={fall.fall_id}>
                       <TableCell className="font-medium text-gray-900">
-                        #{fall.id}
+                        #{fall.fall_id}
                       </TableCell>
                       <TableCell className="font-medium">
-                        {fall.titel}
+                        Fall #{fall.fall_id}
                       </TableCell>
-                      <TableCell>{fall.klient_name}</TableCell>
                       <TableCell>
-                        <Badge variant={statusInfo.variant}>
-                          {statusInfo.label}
+                        {fall.klient_detail ?
+                          `Klient #${fall.klient} (${fall.klient_detail.klient_rolle})` :
+                          `Klient #${fall.klient}`
+                        }
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={variant}>
+                          {statusLabel}
                         </Badge>
                       </TableCell>
-                      <TableCell>{formatDate(fall.startdatum)}</TableCell>
-                      <TableCell className="text-gray-600 text-sm max-w-xs truncate">
-                        {fall.notizen || '–'}
+                      <TableCell className="text-gray-600 text-sm">
+                        {fall.mitarbeiterin ? `Betreut von User #${fall.mitarbeiterin}` : 'Unzugewiesen'}
                       </TableCell>
                       <TableCell className="text-center">
                         <button
@@ -249,49 +190,12 @@ export default function FallPage() {
           ) : (
             <div className="p-8 text-center">
               <p className="text-gray-500">
-                {searchTerm || statusFilter
-                  ? 'Keine Fälle gefunden, die Ihren Filterkriterien entsprechen.'
+                {searchTerm
+                  ? 'Keine Fälle gefunden.'
                   : 'Keine Fälle vorhanden.'}
               </p>
-              {(searchTerm || statusFilter) && (
-                <button
-                  onClick={() => {
-                    setSearchTerm('');
-                    setStatusFilter('');
-                  }}
-                  className="text-blue-600 hover:text-blue-700 font-medium mt-2"
-                >
-                  Filter zurücksetzen
-                </button>
-              )}
             </div>
           )}
-        </div>
-
-        {/* Statistiken Footer */}
-        <div className="mt-6 flex flex-col sm:flex-row justify-between items-start sm:items-center text-sm text-gray-600 gap-4">
-          <p>
-            Zeige{' '}
-            <span className="font-medium text-gray-900">
-              {filteredFalle.length}
-            </span>{' '}
-            von{' '}
-            <span className="font-medium text-gray-900">{falle.length}</span>{' '}
-            Fällen
-          </p>
-
-          {/* Status-Übersicht */}
-          <div className="flex flex-wrap gap-4">
-            {Object.entries(STATUS_MAP).map(([key, value]) => {
-              const count = falle.filter((f) => f.status === key).length;
-              return (
-                <div key={key} className="flex items-center gap-2">
-                  <Badge variant={value.variant}>{count}</Badge>
-                  <span className="text-gray-600">{value.label}</span>
-                </div>
-              );
-            })}
-          </div>
         </div>
       </div>
 

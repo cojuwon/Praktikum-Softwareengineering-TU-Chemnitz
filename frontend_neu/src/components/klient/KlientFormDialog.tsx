@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { Dialog, DialogFooter } from '@/components/ui/Dialog';
 import {
   AlertCircle,
@@ -9,6 +9,7 @@ import {
   Users,
 } from 'lucide-react';
 import { z } from 'zod';
+import apiClient from '@/lib/api-client';
 
 /**
  * Zod Schema für Klient:in-Formular
@@ -17,24 +18,24 @@ import { z } from 'zod';
 const klientFormSchema = z.object({
   // errorMap entfernen
   klient_rolle: z.enum(['B', 'A', 'F']),
-  
+
   klient_alter: z.number().min(0).max(200).nullable().optional(),
-  
+
   // errorMap entfernen
   klient_geschlechtsidentitaet: z.enum(['CW', 'CM', 'TW', 'TM', 'TN', 'I', 'A', 'D', 'K']),
-  
+
   // errorMap entfernen
   klient_sexualitaet: z.enum(['L', 'S', 'B', 'AX', 'H', 'K']),
-  
+
   // errorMap entfernen
   klient_wohnort: z.enum(['LS', 'LL', 'NS', 'S', 'D', 'A', 'K']),
-  
+
   klient_staatsangehoerigkeit: z.string().max(100),
   klient_beruf: z.string().max(255),
-  
+
   // errorMap entfernen
   klient_schwerbehinderung: z.enum(['J', 'N', 'KA']),
-  
+
   klient_schwerbehinderung_detail: z.string().max(500).optional().default(''),
   klient_kontaktpunkt: z.string().max(255),
   klient_dolmetschungsstunden: z.number().min(0).int().default(0),
@@ -48,15 +49,16 @@ interface KlientFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  initialData?: KlientFormData & { klient_id?: number };
 }
 
-const KLIENT_ROLLE_CHOICES = [
+export const KLIENT_ROLLE_CHOICES = [
   { value: 'B', label: 'Betroffene:r' },
   { value: 'A', label: 'Angehörige:r' },
   { value: 'F', label: 'Fachkraft' },
 ];
 
-const KLIENT_GESCHLECHT_CHOICES = [
+export const KLIENT_GESCHLECHT_CHOICES = [
   { value: 'CW', label: 'cis weiblich' },
   { value: 'CM', label: 'cis männlich' },
   { value: 'TW', label: 'trans weiblich' },
@@ -77,7 +79,7 @@ const KLIENT_SEXUALITAET_CHOICES = [
   { value: 'K', label: 'keine Angabe' },
 ];
 
-const KLIENT_WOHNORT_CHOICES = [
+export const KLIENT_WOHNORT_CHOICES = [
   { value: 'LS', label: 'Leipzig Stadt' },
   { value: 'LL', label: 'Leipzig Land' },
   { value: 'NS', label: 'Nordsachsen' },
@@ -93,25 +95,7 @@ const JA_NEIN_KA_CHOICES = [
   { value: 'KA', label: 'keine Angabe' },
 ];
 
-/**
- * Dialog-Formular zum Erstellen einer neuen Klient:in
- * 
- * Felder:
- * - Rolle (Pflichtfeld)
- * - Alter (optional)
- * - Geschlechtsidentität (Pflichtfeld)
- * - Sexualität (Pflichtfeld)
- * - Wohnort (Pflichtfeld)
- * - Staatsangehörigkeit (Pflichtfeld)
- * - Beruf (Pflichtfeld)
- * - Schwerbehinderung (Pflichtfeld)
- * - Detail Schwerbehinderung (optional, abhängig von Schwerbehinderung)
- * - Kontaktpunkt (Pflichtfeld)
- * - Dolmetschungsstunden (optional)
- * - Dolmetschungssprachen (optional)
- * - Notizen (optional)
- */
-export function KlientFormDialog({ isOpen, onClose, onSuccess }: KlientFormDialogProps) {
+export function KlientFormDialog({ isOpen, onClose, onSuccess, initialData }: KlientFormDialogProps) {
   const [formData, setFormData] = useState<Partial<KlientFormData>>({
     klient_rolle: 'B',
     klient_alter: undefined,
@@ -132,6 +116,24 @@ export function KlientFormDialog({ isOpen, onClose, onSuccess }: KlientFormDialo
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // Load initial data when dialog opens
+  useEffect(() => {
+    if (isOpen && initialData) {
+      setFormData(initialData);
+    } else if (isOpen) {
+      // Reset to default if creating new
+      setFormData({
+        klient_rolle: 'B',
+        klient_geschlechtsidentitaet: 'CW',
+        klient_sexualitaet: 'H',
+        klient_wohnort: 'LS',
+        klient_schwerbehinderung: 'N',
+        klient_dolmetschungsstunden: 0,
+        // ... defaults
+      });
+    }
+  }, [isOpen, initialData]);
 
   const handleClose = () => {
     setFormData({
@@ -190,8 +192,13 @@ export function KlientFormDialog({ isOpen, onClose, onSuccess }: KlientFormDialo
       // Zod Validierung
       const validated = klientFormSchema.parse(formData);
 
-      // Vorerst nur in Konsole ausgeben
-      console.log('✅ Klient:in-Formular erfolgreich validiert:', validated);
+      if (initialData?.klient_id) {
+        // UPDATE
+        await apiClient.put(`/klienten/${initialData.klient_id}/`, validated);
+      } else {
+        // CREATE
+        await apiClient.post('/klienten/', validated);
+      }
 
       setSuccess(true);
       setTimeout(() => {
@@ -201,19 +208,19 @@ export function KlientFormDialog({ isOpen, onClose, onSuccess }: KlientFormDialo
     } catch (err: unknown) {
       if (err instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {};
-        
+
         // WICHTIG: Ändere .errors zu .issues
         err.issues.forEach((error) => {
           const path = error.path.join('.');
           fieldErrors[path] = error.message;
         });
-        
+
         setErrors(fieldErrors);
         setError('Bitte füllen Sie alle erforderlichen Felder korrekt aus.');
       } else {
-        console.error('Fehler beim Erstellen der Klient:in:', err);
+        console.error('Fehler beim Speichern der Klient:in:', err);
         setError(
-          'Die Klient:in konnte nicht erstellt werden. Bitte versuchen Sie es erneut.'
+          'Die Klient:in konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.'
         );
       }
     } finally {
@@ -272,11 +279,10 @@ export function KlientFormDialog({ isOpen, onClose, onSuccess }: KlientFormDialo
                   name="klient_rolle"
                   value={formData.klient_rolle || 'B'}
                   onChange={handleChange}
-                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
-                    errors.klient_rolle
-                      ? 'border-red-500'
-                      : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${errors.klient_rolle
+                    ? 'border-red-500'
+                    : 'border-gray-300'
+                    }`}
                 >
                   {KLIENT_ROLLE_CHOICES.map((choice) => (
                     <option key={choice.value} value={choice.value}>
@@ -331,11 +337,10 @@ export function KlientFormDialog({ isOpen, onClose, onSuccess }: KlientFormDialo
                     name="klient_geschlechtsidentitaet"
                     value={formData.klient_geschlechtsidentitaet || 'CW'}
                     onChange={handleChange}
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
-                      errors.klient_geschlechtsidentitaet
-                        ? 'border-red-500'
-                        : 'border-gray-300'
-                    }`}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${errors.klient_geschlechtsidentitaet
+                      ? 'border-red-500'
+                      : 'border-gray-300'
+                      }`}
                   >
                     {KLIENT_GESCHLECHT_CHOICES.map((choice) => (
                       <option key={choice.value} value={choice.value}>
@@ -362,11 +367,10 @@ export function KlientFormDialog({ isOpen, onClose, onSuccess }: KlientFormDialo
                     name="klient_sexualitaet"
                     value={formData.klient_sexualitaet || 'H'}
                     onChange={handleChange}
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
-                      errors.klient_sexualitaet
-                        ? 'border-red-500'
-                        : 'border-gray-300'
-                    }`}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${errors.klient_sexualitaet
+                      ? 'border-red-500'
+                      : 'border-gray-300'
+                      }`}
                   >
                     {KLIENT_SEXUALITAET_CHOICES.map((choice) => (
                       <option key={choice.value} value={choice.value}>
@@ -396,11 +400,10 @@ export function KlientFormDialog({ isOpen, onClose, onSuccess }: KlientFormDialo
                     name="klient_wohnort"
                     value={formData.klient_wohnort || 'LS'}
                     onChange={handleChange}
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
-                      errors.klient_wohnort
-                        ? 'border-red-500'
-                        : 'border-gray-300'
-                    }`}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${errors.klient_wohnort
+                      ? 'border-red-500'
+                      : 'border-gray-300'
+                      }`}
                   >
                     {KLIENT_WOHNORT_CHOICES.map((choice) => (
                       <option key={choice.value} value={choice.value}>
@@ -430,11 +433,10 @@ export function KlientFormDialog({ isOpen, onClose, onSuccess }: KlientFormDialo
                     onChange={handleChange}
                     placeholder="z.B. Deutsch"
                     maxLength={100}
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
-                      errors.klient_staatsangehoerigkeit
-                        ? 'border-red-500'
-                        : 'border-gray-300'
-                    }`}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${errors.klient_staatsangehoerigkeit
+                      ? 'border-red-500'
+                      : 'border-gray-300'
+                      }`}
                   />
                   {errors.klient_staatsangehoerigkeit && (
                     <p className="text-red-500 text-sm mt-1">
@@ -460,11 +462,10 @@ export function KlientFormDialog({ isOpen, onClose, onSuccess }: KlientFormDialo
                   onChange={handleChange}
                   placeholder="z.B. Softwaren-Entwickler:in"
                   maxLength={255}
-                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
-                    errors.klient_beruf
-                      ? 'border-red-500'
-                      : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${errors.klient_beruf
+                    ? 'border-red-500'
+                    : 'border-gray-300'
+                    }`}
                 />
                 {errors.klient_beruf && (
                   <p className="text-red-500 text-sm mt-1">
@@ -493,11 +494,10 @@ export function KlientFormDialog({ isOpen, onClose, onSuccess }: KlientFormDialo
                   name="klient_schwerbehinderung"
                   value={formData.klient_schwerbehinderung || 'N'}
                   onChange={handleChange}
-                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
-                    errors.klient_schwerbehinderung
-                      ? 'border-red-500'
-                      : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${errors.klient_schwerbehinderung
+                    ? 'border-red-500'
+                    : 'border-gray-300'
+                    }`}
                 >
                   {JA_NEIN_KA_CHOICES.map((choice) => (
                     <option key={choice.value} value={choice.value}>
@@ -550,11 +550,10 @@ export function KlientFormDialog({ isOpen, onClose, onSuccess }: KlientFormDialo
                   onChange={handleChange}
                   placeholder="z.B. Polizei, Freund:in, Online-Recherche"
                   maxLength={255}
-                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
-                    errors.klient_kontaktpunkt
-                      ? 'border-red-500'
-                      : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${errors.klient_kontaktpunkt
+                    ? 'border-red-500'
+                    : 'border-gray-300'
+                    }`}
                 />
                 {errors.klient_kontaktpunkt && (
                   <p className="text-red-500 text-sm mt-1">

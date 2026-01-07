@@ -104,6 +104,8 @@ Die Anfragen-Seite ist immer zugänglich, zeigt aber unterschiedliche Inhalte ba
 |------------|-------------|--------------|
 | `api.can_view_all_anfragen` | Alle Anfragen | Admins sehen alle Anfragen im System |
 | `api.can_view_own_anfragen` | Eigene Anfragen | Standard-User sehen nur ihre zugewiesenen Anfragen |
+| `api.view_all_klientin` | Alle Klienten | Admins/Erweiterte User sehen alle Klienten |
+| `api.view_own_klientin` | Eigene Klienten | Standard-User sehen nur Klienten, die ihnen via Fall zugeordnet sind |
 | Keine Permission | Leere Seite | Hinweis "Keine Berechtigung" wird angezeigt |
 
 **Backend-Filterung (ViewSet):**

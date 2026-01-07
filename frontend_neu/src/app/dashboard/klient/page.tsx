@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { KlientFormDialog } from '@/components/klient/KlientFormDialog';
+import { useState, useMemo, useEffect } from 'react';
+import { KlientFormDialog, KLIENT_GESCHLECHT_CHOICES, KLIENT_ROLLE_CHOICES, KLIENT_WOHNORT_CHOICES } from '@/components/klient/KlientFormDialog';
 import {
   Table,
   TableBody,
@@ -10,69 +10,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/Table';
-import { Search, Plus, MoreHorizontal } from 'lucide-react';
+import { Search, Plus, MoreHorizontal, Filter } from 'lucide-react';
+import { usePermissions } from '@/hooks/usePermissions';
+import apiClient from '@/lib/api-client';
+import { Switch } from '@/components/ui/Switch';
 
-/**
- * Mock-Daten für Klienten
- */
-interface MockKlient {
-  id: number;
-  rolle: string;
-  alter?: number;
-  geschlecht: string;
-  sexualitaet: string;
-  wohnort: string;
-  staatsangehoerigkeit: string;
-  beruf: string;
-  kontaktpunkt: string;
-}
 
-const MOCK_KLIENTEN: MockKlient[] = [
-  {
-    id: 1,
-    rolle: 'Betroffene:r',
-    alter: 28,
-    geschlecht: 'cis weiblich',
-    sexualitaet: 'heterosexuell',
-    wohnort: 'Leipzig Stadt',
-    staatsangehoerigkeit: 'Deutsch',
-    beruf: 'Grafiker:in',
-    kontaktpunkt: 'Polizei',
-  },
-  {
-    id: 2,
-    rolle: 'Angehörige:r',
-    alter: 45,
-    geschlecht: 'cis männlich',
-    sexualitaet: 'heterosexuell',
-    wohnort: 'Leipzig Land',
-    staatsangehoerigkeit: 'Deutsch',
-    beruf: 'Handwerker:in',
-    kontaktpunkt: 'Freund:in',
-  },
-  {
-    id: 3,
-    rolle: 'Betroffene:r',
-    alter: 32,
-    geschlecht: 'trans weiblich',
-    sexualitaet: 'lesbisch',
-    wohnort: 'Nordsachsen',
-    staatsangehoerigkeit: 'Deutsch',
-    beruf: 'Sozialarbeiter:in',
-    kontaktpunkt: 'Online-Recherche',
-  },
-  {
-    id: 4,
-    rolle: 'Fachkraft',
-    alter: 52,
-    geschlecht: 'cis weiblich',
-    sexualitaet: 'heterosexuell',
-    wohnort: 'Leipzig Stadt',
-    staatsangehoerigkeit: 'Deutsch',
-    beruf: 'Psycholog:in',
-    kontaktpunkt: 'Beratungsstelle',
-  },
-];
 
 /**
  * Klientenverwaltung - Übersichtsseite
@@ -81,9 +24,54 @@ const MOCK_KLIENTEN: MockKlient[] = [
  * und Möglichkeit, neue Klienten zu erstellen.
  */
 export default function KlientenPage() {
+  const { can, Permissions } = usePermissions();
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [klienten, setKlienten] = useState<MockKlient[]>(MOCK_KLIENTEN);
+  const [klienten, setKlienten] = useState<any[]>([]);
+  const [showAll, setShowAll] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedKlient, setSelectedKlient] = useState<any>(null);
+
+  // Permission Checks
+  const canViewAll = can(Permissions.VIEW_ALL_KLIENTIN);
+
+  const fetchKlienten = async () => {
+    setIsLoading(true);
+    try {
+      const params: any = {};
+      // Nur wenn User berechtigt ist und explizit "Alle" sehen will
+      if (canViewAll && showAll) {
+        params.view = 'all';
+      }
+      const response = await apiClient.get('/klienten/', { params });
+      setKlienten(Array.isArray(response.data) ? response.data : (response.data as any).results || []);
+    } catch (error) {
+      console.error('Fehler beim Laden der Klienten:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Reload when filter toggles or initially
+    fetchKlienten();
+  }, [showAll, canViewAll]);
+
+  const handleDialogSuccess = () => {
+    fetchKlienten();
+    setIsDialogOpen(false);
+    setSelectedKlient(null);
+  };
+
+  const handleCreate = () => {
+    setSelectedKlient(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleEdit = (klient: any) => {
+    setSelectedKlient(klient);
+    setIsDialogOpen(true);
+  };
 
   // Gefilterte Klienten basierend auf Suchbegriff
   const filteredKlienten = useMemo(() => {
@@ -91,19 +79,13 @@ export default function KlientenPage() {
 
     const term = searchTerm.toLowerCase();
     return klienten.filter((k) =>
-      k.rolle.toLowerCase().includes(term) ||
-      k.beruf.toLowerCase().includes(term) ||
-      k.wohnort.toLowerCase().includes(term) ||
-      k.staatsangehoerigkeit.toLowerCase().includes(term) ||
-      k.kontaktpunkt.toLowerCase().includes(term)
+      (k.klient_rolle || '').toLowerCase().includes(term) ||
+      (k.klient_beruf || '').toLowerCase().includes(term) ||
+      (k.klient_wohnort || '').toLowerCase().includes(term) ||
+      (k.klient_staatsangehoerigkeit || '').toLowerCase().includes(term) ||
+      (k.klient_kontaktpunkt || '').toLowerCase().includes(term)
     );
   }, [searchTerm, klienten]);
-
-  const handleDialogSuccess = () => {
-    // Hier würde man die Liste neu laden
-    // z.B. durch einen API-Call oder setzen neuer Mock-Daten
-    console.log('Klient:in erfolgreich erstellt. Liste wird aktualisiert...');
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -135,9 +117,23 @@ export default function KlientenPage() {
             />
           </div>
 
+          {/* Show All Toggle (Admin/Erweitert) */}
+          {canViewAll && (
+            <div className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg">
+              <Switch
+                checked={showAll}
+                onCheckedChange={setShowAll}
+                id="show-all-toggle"
+              />
+              <label htmlFor="show-all-toggle" className="text-sm font-medium text-gray-700 cursor-pointer">
+                Alle anzeigen
+              </label>
+            </div>
+          )}
+
           {/* Button "Neuer Klient" */}
           <button
-            onClick={() => setIsDialogOpen(true)}
+            onClick={handleCreate}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
           >
             <Plus className="w-5 h-5" />
@@ -163,28 +159,33 @@ export default function KlientenPage() {
               </TableHeader>
               <TableBody>
                 {filteredKlienten.map((klient) => (
-                  <TableRow key={klient.id}>
+                  <TableRow key={klient.klient_id}>
                     <TableCell className="font-medium text-gray-900">
-                      #{klient.id}
+                      #{klient.klient_id}
                     </TableCell>
-                    <TableCell>{klient.rolle}</TableCell>
                     <TableCell>
-                      {klient.alter ? `${klient.alter} Jahre` : '–'}
+                      {KLIENT_ROLLE_CHOICES.find(c => c.value === klient.klient_rolle)?.label || klient.klient_rolle}
+                    </TableCell>
+                    <TableCell>
+                      {klient.klient_alter ? `${klient.klient_alter} Jahre` : '–'}
                     </TableCell>
                     <TableCell className="text-gray-600">
-                      {klient.geschlecht}
+                      {KLIENT_GESCHLECHT_CHOICES.find(c => c.value === klient.klient_geschlechtsidentitaet)?.label || klient.klient_geschlechtsidentitaet}
                     </TableCell>
-                    <TableCell>{klient.wohnort}</TableCell>
-                    <TableCell className="text-gray-600">
-                      {klient.beruf}
+                    <TableCell>
+                      {KLIENT_WOHNORT_CHOICES.find(c => c.value === klient.klient_wohnort)?.label || klient.klient_wohnort}
                     </TableCell>
                     <TableCell className="text-gray-600">
-                      {klient.kontaktpunkt}
+                      {klient.klient_beruf}
+                    </TableCell>
+                    <TableCell className="text-gray-600">
+                      {klient.klient_kontaktpunkt}
                     </TableCell>
                     <TableCell className="text-center">
                       <button
-                        className="inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:bg-gray-100 rounded-lg transition"
-                        title="Weitere Optionen"
+                        onClick={() => handleEdit(klient)}
+                        className="inline-flex items-center justify-center w-8 h-8 text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                        title="Bearbeiten"
                       >
                         <MoreHorizontal className="w-4 h-4" />
                       </button>
@@ -231,6 +232,7 @@ export default function KlientenPage() {
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         onSuccess={handleDialogSuccess}
+        initialData={selectedKlient}
       />
     </div>
   );

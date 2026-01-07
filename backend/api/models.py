@@ -183,6 +183,10 @@ class KlientIn(models.Model):
     class Meta:
         verbose_name = "Klient:in"
         verbose_name_plural = "Klient:innen"
+        permissions = [
+            ("view_own_klientin", "Kann eigene Klienten einsehen"),
+            ("view_all_klientin", "Kann alle Klienten einsehen"),
+        ]
 
     def __str__(self):
         return f"Klient:in {self.klient_id}"

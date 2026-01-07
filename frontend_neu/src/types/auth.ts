@@ -67,6 +67,8 @@ export const StandardPermissions = {
   ADD_KLIENTIN: 'api.add_klientin',
   CHANGE_KLIENTIN: 'api.change_klientin',
   DELETE_KLIENTIN: 'api.delete_klientin',
+  VIEW_OWN_KLIENTIN: 'api.view_own_klientin',
+  VIEW_ALL_KLIENTIN: 'api.view_all_klientin',
 
   // Statistik
   VIEW_STATISTIK: 'api.view_statistik',
