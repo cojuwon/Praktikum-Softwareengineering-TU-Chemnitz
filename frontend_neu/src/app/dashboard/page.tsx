@@ -21,6 +21,11 @@ export default function DashboardPage() {
   const [isAnfrageDialogOpen, setIsAnfrageDialogOpen] = useState(false);
   const [termins, setTermins] = useState<Beratungstermin[]>([]);
   const [isLoadingTermine, setIsLoadingTermine] = useState(true);
+  const [activeTab, setActiveTab] = useState<'faelle' | 'anfragen'>('faelle');
+
+  // Derived state for tabs
+  const terminsFaelle = termins.filter(t => t.fall !== null && t.fall !== undefined);
+  const terminsAnfragen = termins.filter(t => t.fall === null || t.fall === undefined);
 
   // Permission Checks
   const canAddAnfrage = can(Permissions.ADD_ANFRAGE);
@@ -125,28 +130,49 @@ export default function DashboardPage() {
       {/* Content Grid */}
       <div className="content-grid">
         {/* Meine nächsten Termine Widget */}
+        {/* Meine nächsten Termine Widget */}
         <section className="card col-span-1 lg:col-span-2">
-          <div className="card-header flex justify-between items-center">
-            <h2 className="card-title">Meine nächsten Termine</h2>
-            <button className="text-sm text-primary-600 hover:text-primary-700 font-medium">
+          <div className="card-header flex justify-between items-center border-b border-gray-100 pb-0">
+            <div className="flex gap-6">
+              <button
+                onClick={() => setActiveTab('faelle')}
+                className={`pb-4 text-sm font-semibold transition-colors relative ${activeTab === 'faelle'
+                  ? 'text-primary-600 border-b-2 border-primary-600'
+                  : 'text-gray-500 hover:text-gray-700'
+                  }`}
+              >
+                Termine aus Fällen
+              </button>
+              <button
+                onClick={() => setActiveTab('anfragen')}
+                className={`pb-4 text-sm font-semibold transition-colors relative ${activeTab === 'anfragen'
+                  ? 'text-primary-600 border-b-2 border-primary-600'
+                  : 'text-gray-500 hover:text-gray-700'
+                  }`}
+              >
+                Termine aus Anfragen
+              </button>
+            </div>
+            <button className="text-sm text-primary-600 hover:text-primary-700 font-medium pb-4">
               Alle anzeigen
             </button>
           </div>
-          <div className="card-content">
+
+          <div className="card-content pt-4">
             {isLoadingTermine ? (
               <div className="space-y-3">
                 {[1, 2, 3].map(i => (
                   <div key={i} className="h-16 bg-gray-50 rounded-lg animate-pulse" />
                 ))}
               </div>
-            ) : termins.length === 0 ? (
+            ) : (activeTab === 'faelle' ? terminsFaelle : terminsAnfragen).length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <Clock className="w-10 h-10 mx-auto mb-2 text-gray-300" />
-                <p>Keine anstehenden Termine</p>
+                <p>Keine anstehenden Termine in {activeTab === 'faelle' ? 'Fällen' : 'Anfragen'}</p>
               </div>
             ) : (
               <ul className="space-y-3">
-                {termins.map((t) => (
+                {(activeTab === 'faelle' ? terminsFaelle : terminsAnfragen).map((t) => (
                   <li key={t.termin_id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-100">
                     <div className="flex items-center gap-4">
                       <div className="flex flex-col items-center justify-center w-12 h-12 bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -160,11 +186,15 @@ export default function DashboardPage() {
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-gray-900">
-                            {t.klient_display || `Termin #${t.termin_id}`}
+                            {t.klient_display || (t.fall ? `Fall #${t.fall}` : `Anfrage Kontakt`)}
                           </span>
-                          {t.fall && (
+                          {t.fall ? (
                             <span className="text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-full font-medium">
                               Fall
+                            </span>
+                          ) : (
+                            <span className="text-xs px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded-full font-medium">
+                              Anfrage
                             </span>
                           )}
                         </div>
@@ -180,12 +210,21 @@ export default function DashboardPage() {
                         </div>
                       </div>
                     </div>
-                    <a
-                      href={t.fall ? `/dashboard/fall/${t.fall}` : '#'}
-                      className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors"
-                    >
-                      Details
-                    </a>
+                    {t.fall ? (
+                      <a
+                        href={`/dashboard/fall/${t.fall}`}
+                        className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                      >
+                        Zum Fall
+                      </a>
+                    ) : (
+                      <button
+                        className="px-3 py-1.5 text-sm font-medium text-gray-400 bg-white border border-gray-100 rounded-lg cursor-default"
+                        disabled
+                      >
+                        Anfrage
+                      </button>
+                    )}
                   </li>
                 ))}
               </ul>

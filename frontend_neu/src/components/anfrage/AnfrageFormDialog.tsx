@@ -576,12 +576,11 @@ export function AnfrageFormDialog({ isOpen, onClose, onSuccess, editData }: Anfr
                     </div>
                   </div>
 
-                  {/* Info-Box für Statistik */}
-                  <div className="md:col-span-2 p-4 bg-green-50 rounded-xl border border-green-100 flex gap-3">
-                    <HelpCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-green-800 leading-relaxed">
-                      <strong>Statistik-Hinweis:</strong> Die Wartezeit zwischen Anfrage und Termin wird automatisch
-                      berechnet und in der Statistik erfasst.
+                  {/* Hinweis für Fall-Erstellung */}
+                  <div className="md:col-span-2 p-4 bg-blue-50 rounded-xl border border-blue-100 flex gap-3">
+                    <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-blue-800 leading-relaxed">
+                      <strong>Wichtiger Hinweis:</strong> Wenn ein Termin vergeben wird, sollte anschließend ein entsprechender Fall und eine Klient:in angelegt werden.
                     </p>
                   </div>
                 </div>
