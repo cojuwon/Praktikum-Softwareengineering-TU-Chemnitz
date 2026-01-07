@@ -46,13 +46,14 @@ export const StandardPermissions = {
   ADD_KONTO: 'api.add_konto',
   CHANGE_KONTO: 'api.change_konto',
   DELETE_KONTO: 'api.delete_konto',
-  
+  CAN_CHANGE_INACTIVITY_SETTINGS: 'api.can_change_inactivity_settings',
+
   // Fall
   VIEW_FALL: 'api.view_fall',
   ADD_FALL: 'api.add_fall',
   CHANGE_FALL: 'api.change_fall',
   DELETE_FALL: 'api.delete_fall',
-  
+
   // Anfrage
   VIEW_ANFRAGE: 'api.view_anfrage',
   ADD_ANFRAGE: 'api.add_anfrage',
@@ -60,13 +61,13 @@ export const StandardPermissions = {
   DELETE_ANFRAGE: 'api.delete_anfrage',
   VIEW_OWN_ANFRAGEN: 'api.can_view_own_anfragen',
   VIEW_ALL_ANFRAGEN: 'api.can_view_all_anfragen',
-  
+
   // Klientin
   VIEW_KLIENTIN: 'api.view_klientin',
   ADD_KLIENTIN: 'api.add_klientin',
   CHANGE_KLIENTIN: 'api.change_klientin',
   DELETE_KLIENTIN: 'api.delete_klientin',
-  
+
   // Statistik
   VIEW_STATISTIK: 'api.view_statistik',
   EXPORT_STATISTIK: 'api.can_export_statistik',

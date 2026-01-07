@@ -467,6 +467,7 @@ interface PermissionGateProps {
 |------------|--------------|
 | `api.can_view_own_anfragen` | Erlaubt Benutzern, ihre eigenen Anfragen zu sehen. |
 | `api.can_view_all_anfragen` | Erlaubt Admins, alle Anfragen im System zu sehen. |
+| `api.can_change_inactivity_settings` | Erlaubt das Ändern von Inaktivitäts-Einstellungen (Timeout). |
 **Hinweis:** Diese Permissions sind erforderlich für die GET-Anfragen an die `/api/anfragen/` Endpoint.
 
 
