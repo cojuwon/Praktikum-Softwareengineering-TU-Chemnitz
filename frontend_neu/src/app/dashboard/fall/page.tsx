@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import Link from 'next/link';
 import { FallFormDialog } from '@/components/fall/FallFormDialog';
 import {
   Table,
@@ -182,7 +183,9 @@ export default function FallPage() {
                         #{fall.fall_id}
                       </TableCell>
                       <TableCell className="font-medium">
-                        Fall #{fall.fall_id}
+                        <Link href={`/dashboard/fall/${fall.fall_id}`} className="text-blue-600 hover:underline">
+                          Fall #{fall.fall_id}
+                        </Link>
                       </TableCell>
                       <TableCell>
                         {fall.klient_detail ?
@@ -196,7 +199,10 @@ export default function FallPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-gray-600 text-sm">
-                        {fall.mitarbeiterin ? `Betreut von User #${fall.mitarbeiterin}` : 'Unzugewiesen'}
+                        {fall.mitarbeiterin_detail ?
+                          `Betreut von ${fall.mitarbeiterin_detail.vorname_mb} ${fall.mitarbeiterin_detail.nachname_mb}` :
+                          (fall.mitarbeiterin ? `Betreut von User #${fall.mitarbeiterin}` : 'Unzugewiesen')
+                        }
                       </TableCell>
                       <TableCell className="text-center">
                         <button

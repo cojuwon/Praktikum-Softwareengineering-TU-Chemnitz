@@ -144,8 +144,10 @@ class CanManageOwnData(permissions.BasePermission):
             if request.user.has_perm('api.can_view_all_data'):
                 return True
         
-        # Prüfe ob das Objekt direkt dem User zugewiesen ist
+        # Prüfe ob das Objekt direkt dem User zugewiesen ist (als Mitarbeiterin oder Berater)
         if hasattr(obj, 'mitarbeiterin') and obj.mitarbeiterin == request.user:
+            return True
+        if hasattr(obj, 'berater') and obj.berater == request.user:
             return True
         
         # Prüfe ob das Objekt zu einem Fall gehört, der dem User zugewiesen ist

@@ -252,6 +252,10 @@ class Beratungstermin(models.Model):
     class Meta:
         verbose_name = "Beratungstermin"
         verbose_name_plural = "Beratungstermine"
+        permissions = [
+            ("view_own_beratungstermin", "Kann eigene Beratungstermine einsehen"),
+            ("view_all_beratungstermin", "Kann alle Beratungstermine einsehen"),
+        ]
         
     def __str__(self):
         return f"Beratungstermin {self.beratungs_id} am {self.termin_beratung}"

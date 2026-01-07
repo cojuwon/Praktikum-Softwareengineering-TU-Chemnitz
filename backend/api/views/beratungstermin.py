@@ -26,11 +26,29 @@ class BeratungsterminViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, DjangoModelPermissionsWithView, CanManageOwnData]
 
     def get_queryset(self):
-        """Filtert Beratungstermine basierend auf User-Berechtigungen."""
+        """
+        Filtert Beratungstermine basierend auf User-Berechtigungen.
+        """
         user = self.request.user
-        if user.rolle_mb == 'AD' or user.has_perm('api.can_view_all_data'):
-            return Beratungstermin.objects.all()
-        return Beratungstermin.objects.filter(berater=user)
+        queryset = Beratungstermin.objects.all()
+
+        # Check permission to view all
+        can_view_all = (
+            user.rolle_mb == 'AD' 
+            or user.has_perm('api.view_all_beratungstermin') 
+            or user.has_perm('api.can_view_all_data')
+        )
+
+        # Explicit request for all data
+        if can_view_all and self.request.query_params.get('view') == 'all':
+            return queryset
+            
+        # Filter by own appointments
+        if user.has_perm('api.view_own_beratungstermin') or can_view_all:
+             return queryset.filter(berater=user)
+        
+        # No permission
+        return queryset.none()
 
     def perform_create(self, serializer):
         """
