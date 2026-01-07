@@ -76,7 +76,7 @@ export function ClientFilterToolbar({
                     <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                     <input
                         type="text"
-                        placeholder="Suchen (Name, ID, Code)..."
+                        placeholder="Suche nach ID..."
                         className="w-full pl-9 pr-4 py-2 text-sm border-none bg-gray-50 rounded-md focus:ring-2 focus:ring-blue-100 outline-none"
                         onChange={(e) => handleFilterChange('search', e.target.value)}
                     />

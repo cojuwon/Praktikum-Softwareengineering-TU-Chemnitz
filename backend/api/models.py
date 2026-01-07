@@ -220,9 +220,18 @@ class Fall(models.Model):
     klient = models.ForeignKey(KlientIn, on_delete=models.PROTECT, verbose_name="Zugeordnete Klient:in")
     mitarbeiterin = models.ForeignKey(Konto, on_delete=models.SET_NULL, null=True, verbose_name="Zuständige Mitarbeiter:in")
     
+    # Neue Felder:
+    status = models.CharField(max_length=2, choices=[('O', 'Offen'), ('L', 'Laufend'), ('A', 'Abgeschlossen'), ('G', 'Gelöscht')], default='O', verbose_name="Status")
+    startdatum = models.DateField(default=timezone.now, verbose_name="Startdatum")
+    notizen = models.TextField(blank=True, verbose_name="Notizen")
+
     class Meta:
         verbose_name = "Fall"
         verbose_name_plural = "Fälle"
+        permissions = [
+            ("view_own_fall", "Kann eigene Fälle einsehen"),
+            ("view_all_fall", "Kann alle Fälle einsehen"),
+        ]
 
     def __str__(self):
         return f"Fall {self.fall_id} (Klient: {self.klient.klient_id})"
