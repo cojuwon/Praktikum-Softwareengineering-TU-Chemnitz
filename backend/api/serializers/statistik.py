@@ -10,3 +10,4 @@ class StatistikSerializer(serializers.ModelSerializer):
     class Meta:
         model = Statistik
         fields = '__all__'
+        read_only_fields = ['creator', 'ergebnis', 'creation_date']

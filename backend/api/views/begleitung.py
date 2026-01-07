@@ -1,6 +1,8 @@
 """ViewSet für Begleitung-Management."""
 
 from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from api.models import Begleitung
 from api.serializers import BegleitungSerializer
@@ -27,3 +29,33 @@ class BegleitungViewSet(viewsets.ModelViewSet):
         if user.rolle_mb == 'AD' or user.has_perm('api.can_view_all_data'):
             return Begleitung.objects.all()
         return Begleitung.objects.filter(fall__mitarbeiterin=user)
+
+    @action(detail=True, methods=['post', 'patch'], url_path='update-referral')
+    def update_referral(self, request, pk=None):
+        """
+        Aktualisiert Verweisungsdaten.
+        UML: verweisungAnlegen() / verweisungBearbeiten()
+        """
+        begleitung = self.get_object()
+        anzahl = request.data.get('anzahl_verweisungen')
+        art = request.data.get('art_verweisungen')
+        
+        if anzahl is not None:
+            begleitung.anzahl_verweisungen = anzahl
+        if art is not None:
+            begleitung.art_verweisungen = art
+            
+        begleitung.save()
+        return Response(BegleitungSerializer(begleitung).data)
+
+    @action(detail=True, methods=['post', 'delete'], url_path='delete-referral')
+    def delete_referral(self, request, pk=None):
+        """
+        Löscht Verweisungsdaten.
+        UML: verweisungLoeschen()
+        """
+        begleitung = self.get_object()
+        begleitung.anzahl_verweisungen = 0
+        begleitung.art_verweisungen = ""
+        begleitung.save()
+        return Response(BegleitungSerializer(begleitung).data)

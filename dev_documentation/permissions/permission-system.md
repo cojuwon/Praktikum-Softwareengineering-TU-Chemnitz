@@ -69,6 +69,24 @@ class Konto(AbstractBaseUser, PermissionsMixin):
             ("can_view_all_data", "Kann alle Daten einsehen"),
         ]
 
+class Anfrage(models.Model):
+    # ... Felder ...
+    
+    class Meta:
+        permissions = [
+            ("can_view_own_anfragen", "Kann eigene Anfragen einsehen"),
+            ("can_view_all_anfragen", "Kann alle Anfragen einsehen"),
+        ]
+
+class Fall(models.Model):
+    # ... Felder ...
+    
+    class Meta:
+        permissions = [
+            ("view_own_fall", "Kann eigene Fälle sehen"),
+            ("view_all_fall", "Kann alle Fälle sehen"),
+        ]
+
 class Statistik(models.Model):
     # ... Felder ...
     
@@ -85,6 +103,42 @@ class Preset(models.Model):
         permissions = [
             ("can_share_preset", "Kann Presets mit anderen teilen"),
         ]
+```
+
+### 1b. Anfragen Permission-Logik
+
+Die Anfragen-Seite ist immer zugänglich, zeigt aber unterschiedliche Inhalte basierend auf Permissions:
+
+| Permission | Sichtbarkeit | Beschreibung |
+|------------|-------------|--------------|
+| `api.can_view_all_anfragen` | Alle Anfragen | Admins sehen alle Anfragen im System |
+| `api.can_view_own_anfragen` | Eigene Anfragen | Standard-User sehen nur ihre zugewiesenen Anfragen |
+| `api.view_all_klientin` | Alle Klienten | Admins/Erweiterte User sehen alle Klienten |
+| `api.view_own_klientin` | Eigene Klienten | Standard-User sehen nur Klienten, die ihnen via Fall zugeordnet sind |
+| Keine Permission | Leere Seite | Hinweis "Keine Berechtigung" wird angezeigt |
+
+**Backend-Filterung (ViewSet):**
+```python
+def get_queryset(self):
+    user = self.request.user
+    # Admins oder "alle" Permission -> alles sehen
+    if user.rolle_mb == 'AD' or user.has_perm('api.can_view_all_anfragen'):
+        return Anfrage.objects.all()
+    # "eigene" Permission -> nur eigene
+    if user.has_perm('api.can_view_own_anfragen'):
+        return Anfrage.objects.filter(mitarbeiterin=user)
+    # Keine Permission -> leere Liste
+    return Anfrage.objects.none()
+```
+
+**Frontend-Konstanten:**
+```typescript
+// frontend/src/types/auth.ts
+export const Permissions = {
+  VIEW_OWN_ANFRAGEN: 'api.can_view_own_anfragen',
+  VIEW_ALL_ANFRAGEN: 'api.can_view_all_anfragen',
+  // ...
+};
 ```
 
 ### 2. Permission Classes
@@ -197,9 +251,22 @@ python manage.py setup_groups
 
 | Gruppe | Permissions |
 |--------|-------------|
-| **Basis** | `view_*`, `add_*`, `change_*` für alle Models |
-| **Erweiterung** | Basis + `delete_*` + `can_share_preset`, `can_export_statistik`, `can_share_statistik` |
-| **Admin** | Erweiterung + `can_manage_users`, `can_assign_roles`, `can_view_all_data` |
+| **Basis** | `view_*`, `add_*`, `change_*` + `delete_preset`, `can_view_own_anfragen`, `view_own_klientin`, `view_own_fall`, `view_own_beratungstermin` |
+| **Erweiterung** | Basis + `delete_*` + `can_share_preset`, `can_export_statistik`, `can_share_statistik`, `view_all_klientin`, `view_all_fall`, `view_all_beratungstermin` |
+| **Admin** | Erweiterung + `can_manage_users`, `can_assign_roles`, `can_view_all_data`, `can_change_inactivity_settings` |
+
+### 6. Automatische Rollen-Synchronisation
+
+**Datei:** `backend/api/signals.py`
+
+Das Backend synchronisiert automatisch die Django-Gruppenzugehörigkeit basierend auf dem Feld `rolle_mb` im `Konto`-Model:
+
+- Rolle `B`  -> Fügt User zur Gruppe **Basis** hinzu
+- Rolle `E`  -> Fügt User zur Gruppe **Erweiterung** hinzu
+- Rolle `AD` -> Fügt User zur Gruppe **Admin** hinzu
+
+Dies geschieht via `post_save` Signal, sodass Änderungen im Admin-Panel oder via API sofort übernommen werden.
+
 
 ---
 
@@ -400,7 +467,7 @@ interface PermissionGateProps {
 |----------|-----|------|-----------|--------|
 | `/api/faelle/` | `view_fall` | `add_fall` | `change_fall` | `delete_fall` |
 | `/api/klienten/` | `view_klientin` | `add_klientin` | `change_klientin` | `delete_klientin` |
-| `/api/anfragen/` | `view_anfrage` | `add_anfrage` | `change_anfrage` | `delete_anfrage` |
+| `/api/anfragen/` | `SEE CUSTOM PERMS BELOW` | `add_anfrage` | `change_anfrage` | `delete_anfrage` |
 | `/api/beratungstermine/` | `view_beratungstermin` | `add_beratungstermin` | `change_beratungstermin` | `delete_beratungstermin` |
 | `/api/statistiken/` | `view_statistik` | `add_statistik` | `change_statistik` | `delete_statistik` |
 | `/api/presets/` | `view_preset` | `add_preset` | `change_preset` | `delete_preset` |
@@ -417,6 +484,20 @@ interface PermissionGateProps {
 | `/api/presets/{id}/share/` | POST | `can_share_preset` | Preset teilen |
 | `/api/statistiken/{id}/export/` | GET | `can_export_statistik` | Statistik exportieren |
 | `/api/statistiken/{id}/share/` | POST | `can_share_statistik` | Statistik teilen |
+
+### Custom Permissions
+
+| Permission | Beschreibung |
+|------------|--------------|
+| `api.can_view_own_anfragen` | Erlaubt Benutzern, ihre eigenen Anfragen zu sehen. |
+| `api.can_view_all_anfragen` | Erlaubt Admins, alle Anfragen im System zu sehen. |
+| `api.can_change_inactivity_settings` | Erlaubt das Ändern von Inaktivitäts-Einstellungen (Timeout). |
+**Hinweis:** Diese Permissions sind erforderlich für die GET-Anfragen an die `/api/anfragen/` Endpoint.
+
+
+
+| `api.view_own_fall` | Erlaubt Benutzern, ihre eigenen Fälle zu sehen. |
+| `api.view_all_fall` | Erlaubt Admins/Erweiterten Usern, alle Fälle im System zu sehen. |
 
 ---
 

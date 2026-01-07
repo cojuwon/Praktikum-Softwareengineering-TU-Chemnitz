@@ -45,7 +45,7 @@ class Command(BaseCommand):
         models = [
             'konto', 'klientin', 'fall', 'anfrage', 
             'beratungstermin', 'begleitung', 'gewalttat', 
-            'gewaltfolge', 'preset', 'statistik'
+            'gewaltfolge', 'preset', 'statistik', 'eingabefeld'
         ]
 
         # Basis-Berechtigungen: View + Add + Change für die meisten Models
@@ -58,6 +58,15 @@ class Command(BaseCommand):
                 f'change_{model}',
             ])
         
+        # Preset Delete für Basis erlauben (da persönliche Einstellungen)
+        basis_permissions.extend([
+            'delete_preset',
+            'can_view_own_anfragen',
+            'view_own_klientin',
+            'view_own_fall',
+            'view_own_beratungstermin',
+        ])
+        
         # Erweiterung-Berechtigungen: Alles von Basis + Delete + Custom Permissions
         erweiterung_permissions = basis_permissions.copy()
         for model in models:
@@ -68,6 +77,9 @@ class Command(BaseCommand):
             'can_share_preset',
             'can_export_statistik',
             'can_share_statistik',
+            'view_all_klientin',
+            'view_all_fall',
+            'view_all_beratungstermin',
         ])
 
         # Admin-Berechtigungen: Alles + User Management
@@ -76,6 +88,7 @@ class Command(BaseCommand):
             'can_manage_users',
             'can_assign_roles',
             'can_view_all_data',
+            'can_change_inactivity_settings',
         ])
 
         # --- BERECHTIGUNGEN ZUWEISEN ---
