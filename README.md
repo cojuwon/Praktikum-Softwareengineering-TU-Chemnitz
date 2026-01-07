@@ -1,162 +1,38 @@
-# Praktikum-Softwareengineering-TU-Chemnitz
+In diesem Projekt gibt es ein Django Backend (im Ordner Backend) und zwei Frontends (Ordner "frontend" und "frontend_neu")
+Dabei ist in "frontend" das Frontend, welches vom Frontend Team erstellt wurde und in "frontend_neu" das Redesign-Frontend, welches spontan noch von Eric und Jonathan erstellt wurde.
 
-Praktikum Softwareengineering an der TU Chemnitz im Wintersemester 2025/26
+Diese Readme ist temporär für das MVP.
 
-**To-Do's auf GoogleDocs:**  
-https://docs.google.com/document/d/1HVR-9rVzsoVTS44D9Iv6oBJSmQ-rRtRpz1IJbFZy2sQ/edit?tab=t.0
 
----
 
-## 🚀 Projektstart & Workflows
+# Ausführen
+Das ganze Projekt läuft zurzeit in einem Docker Stack. Die benötigte docker-compose steht hier schon bereit.
 
-Es gibt zwei empfohlene Wege, um das Projekt lokal zu starten:
+# Initial Setup
+- Eventuell müssen in der settings.py (innerhalb des Backends) die Datenbank Einstellungen angepasst werden und eine .env erstellt werden. eine ".env.example" liegt bei.
+- die ".env.example" kopieren zu ".env" und die Werte und Secrets nach belieben (sicher) anpassen
+- Im Backend muss ein Superuser angelegt werden. Dies geschieht, indem im "django_api" Container "python manage.py createsuperuser" ausgeführt wird. Hier wird dann Email und Passwort vergeben.
+- anschließend ist, um erstmalig (temporär fürs MVP) die Berechtigungen festzulegen auch im "django_api" container "python manage.py setup_groups" auszuführen.
+- Zurzeit hat dieser Superuser in der Anwendung nur Admin-Rechte, wenn diese ihm Manuell noch zugewiesen werden. Dies geschieht über localhost:8000/admin - hier kann sich mit dem neu erstellten Superuser Account eingeloggt werden und anschließend diesem die Gruppe "Admin" zugewiesen werden. (Wenn die Gruppe im Admin-Panel nicht erscheint, wurde der obere Schritt nicht richtig ausgeführt)
 
-- **Workflow 1:** Startet die gesamte Anwendung (DB, Backend, Frontend) in Docker. Ideal für finale Tests.
-- **Workflow 2:** Startet nur die Datenbank in Docker. Frontend & Backend laufen lokal mit Live-Reload (für Entwicklung empfohlen).
 
----
+# API 
+- Die API lässt sich über "localhost:8000/api/docs" testen. Hier kann zurzeit manuell ein User hinzugefügt werden, indem unter AUTH "POST /api/auth/registration/" ausgeführt wird. Dem User wird hier die Rolle Benutzer zugewiesen. Damit dieser aber Rechte bekommt, muss ihm die Rolle "Benutzer" zurzeit auch noch über das Admin-Dashboard ("localhost:8000/admin") als Gruppe zugewiesen werden.
+- Debugging: Wenn die Permissions funktionieren, werden diese beim Login als API response auch an das Frontend übergeben. Wenn hier der Permissions Array leer sein sollte, sind dem User noch keine Permissions zugewiesen.
 
-# Workflow 1: Alles über Docker Compose (Produktionssimulation)
+# Frontend aufrufen
+- Das Frontend ist, wenn alle drei Docker Container (DB, API und Frontend) laufen, unter localhost:3000 erreichbar. Nachdem wie oben beschrieben ein Nutzer erstellt wurde, kann sich dieser einloggen
 
-Dieser Workflow baut und startet das gesamte System (Frontend, Backend, DB) in Docker-Containern.
 
----
+# Weitere Informationen
+- Das Anlegen eines neuen Nutzers über das Admin Dashboard funktionert nicht vollständig, dieser muss zuerst per API angelegt werden (wegen dem Passwort). Im Admin Dashboard wird das Passwort nur verschlüsselt gespeichert - gibt man hier direkt "Freitext" ein Passwort ein, funktioniert deswegen der Login damit nicht. Nachdem der Nutzer initial über die API angelegt wurde, kann er auch über das Admin Dashboard bearbeitet werden.
 
-## I. Projekt Vorbereitung
 
-### 1. Code klonen
-```bash
-git clone https://github.com/cojuwon/Praktikum-Softwareengineering-TU-Chemnitz
-cd Praktikum-Softwareengineering-TU-Chemnitz
-```
-
-### 2. Umgebung kopieren
-```bash
-cp .env.example .env
-```
-
-### 3. Konfiguration anpassen
-Passe Passwörter, Keys und DB-Namen in der `.env` Datei an.
-
----
-
-## II. System starten & initialisieren
-
-### Starten & Bauen
-```bash
-docker compose up --build -d
-```
-
----
-
-## III. Zugriff & Verwaltung
-
-| Dienst | Adresse |
-|--------|---------|
-| Frontend (Next.js) | http://localhost:3000 |
-
-### Entwickler-Aktionen
-
-**System stoppen**
-```bash
-docker compose down
-```
-
----
-
-## ⚠️ Migration-Workflow (Wichtig!)
-
-**Migrationen werden NICHT automatisch im Container erstellt.** Der Container wendet nur bereits vorhandene Migration-Dateien an (`migrate`), erstellt aber keine neuen (`makemigrations`).
-
-### Warum?
-
-Das Ausführen von `makemigrations` beim Container-Start ist unsicher:
-- Kann zu inkonsistenten Migrations-Dateien zwischen Entwicklern führen
-- Erschwert Code-Reviews von Datenbankänderungen
-- Kann in Produktionsumgebungen unerwartete Schema-Änderungen verursachen
-
-### Korrekter Workflow bei Model-Änderungen:
-
-**1. Lokale Entwicklungsumgebung nutzen (empfohlen)**
-```bash
-# Im backend/ Verzeichnis mit aktiviertem venv
-python manage.py makemigrations
-python manage.py migrate
-```
-
-**2. Oder via Docker (nur DB läuft)**
-```bash
-docker compose up db -d
-cd backend
-python manage.py makemigrations
-python manage.py migrate
-```
-
-**3. Migration-Dateien committen**
-```bash
-git add backend/api/migrations/
-git commit -m "Add migration for <Beschreibung>"
-```
-
-**4. Nach Push:** Andere Entwickler und Container wenden die Migrationen automatisch an.
-
----
-
-# Workflow 2: Lokale Entwicklung (Empfohlen für Entwickler)
-
-Nur die Datenbank läuft in Docker – Frontend & Backend laufen auf deinem PC.  
-Ermöglicht Live-Reload und einfaches Debugging.
-
----
-
-## I. Voraussetzungen
-
-- Git  
-- Docker & Docker Compose  
-- Node.js + npm  
-- Python 3.11+ + pip  
-
----
-
-## II. Projekt Vorbereitung (nur einmal nötig)
-
-### Klonen & Setup
-```bash
-git clone https://github.com/cojuwon/Praktikum-Softwareengineering-TU-Chemnitz
-cd Praktikum-Softwareengineering-TU-Chemnitz
-cp .env.example .env
-```
-
-### Datenbank-Port freigeben
-
-**docker-compose.yml – db Service erweitern:**
-```yaml
-services:
-  db:
-    image: postgres:15-alpine
-    container_name: postgres_db
-    restart: unless-stopped
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    env_file:
-      - .env
-    ports:
-      - "5432:5432" # Füge diese Zeile hinzu, um den Datenbank-Port freizugeben
-    networks:
-      - webnet
-```
-
-### `.env` Datei anpassen
-```env
-DB_HOST=localhost
-DB_PORT=5432
-```
-
----
+# Um den Code manuell zu testen:
 
 ## III. System starten (Entwicklungsmodus)
 
-Du benötigst **3 Terminals**.
+Es werden **3 Terminals** benötigt.
 
 ---
 
@@ -196,16 +72,3 @@ npm run dev
 Frontend erreichbar unter: **http://localhost:3000**
 
 ---
-
-## IV. Zugriff & Stoppen
-
-### URLs
-- **Frontend:** http://localhost:3000  
-- **Backend API:** http://localhost:8000
-
-### System stoppen
-- In Terminal 2 & 3: `Strg+C`  
-- In Terminal 1: `Strg+C` (Datenbank stoppen)
-
----
-
