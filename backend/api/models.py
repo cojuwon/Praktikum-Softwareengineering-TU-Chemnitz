@@ -164,7 +164,7 @@ class KlientIn(models.Model):
     )
     klient_geschlechtsidentitaet = models.CharField(max_length=2, choices=KLIENT_GESCHLECHT_CHOICES, verbose_name="Geschlechtsidentität")
     klient_sexualitaet = models.CharField(max_length=2, choices=KLIENT_SEXUALITAET_CHOICES, verbose_name="Sexualität")
-    klient_wohnort = models.CharField(max_length=2, choices=STANDORT_CHOICES, verbose_name="Wohnort") # max_length auf 2 korrigiert
+    klient_wohnort = models.CharField(max_length=2, choices=STANDORT_CHOICES, verbose_name="Wohnort")
     klient_staatsangehoerigkeit = models.CharField(max_length=100, verbose_name="Staatsangehörigkeit")
     klient_beruf = models.CharField(max_length=255, verbose_name="Beruf")
     
@@ -176,7 +176,7 @@ class KlientIn(models.Model):
     )
 
     klient_kontaktpunkt = models.CharField(max_length=255, verbose_name="Kontaktpunkt (Quelle)")
-    klient_dolmetschungsstunden = models.IntegerField(default=0, verbose_name="Dolmetschungsstunden", validators=[MinValueValidator(0)])
+    # klient_dolmetschungsstunden entfernt (jetzt in Beratungstermin/Begleitung)
     klient_dolmetschungssprachen = models.CharField(max_length=255, blank=True, verbose_name="Dolmetschungssprachen")
     klient_notizen = models.TextField(blank=True, verbose_name="Notizen")
     erstellt_am = models.DateTimeField(auto_now_add=True, verbose_name="Erstellt am")
@@ -236,18 +236,29 @@ class Fall(models.Model):
     def __str__(self):
         return f"Fall {self.fall_id} (Klient: {self.klient.klient_id})"
 
-
 class Beratungstermin(models.Model):
+    STATUS_CHOICES = [
+        ('g', 'geplant'),
+        ('s', 'stattgefunden'),
+        ('a', 'ausgefallen'),
+    ]
+
     beratungs_id = models.BigAutoField(primary_key=True)
     beratungsstelle = models.CharField(max_length=2, choices=BERATUNGSSTELLE_CHOICES, verbose_name="Beratungsstelle")
-    anzahl_beratungen = models.IntegerField(default=1, verbose_name="Anzahl Beratungen", validators=[MinValueValidator(0)])
-    termin_beratung = models.DateField(verbose_name="Datum des Beratungstermins")
+    # termin_beratung ist jetzt DateTime explizit
+    termin_beratung = models.DateTimeField(verbose_name="Zeitpunkt des Beratungstermins")
+    dauer = models.IntegerField(default=60, verbose_name="Dauer (Minuten)", validators=[MinValueValidator(0)])
+    
+    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='g', verbose_name="Status")
+    dolmetscher_stunden = models.DecimalField(max_digits=5, decimal_places=2, default=0.00, verbose_name="Dolmetscher-Stunden")
+    anzahl_beratungen = models.IntegerField(default=1, verbose_name="Anzahl Beratungen (Statistik)", validators=[MinValueValidator(0)])
+    
     beratungsart = models.CharField(max_length=2, choices=BERATUNGSART_CHOICES, verbose_name="Durchführungsart")
     notizen_beratung = models.TextField(blank=True, verbose_name="Notizen")
     
     # Beziehungen:
     berater = models.ForeignKey(Konto, on_delete=models.SET_NULL, null=True, verbose_name="Berater:in")
-    fall = models.ForeignKey(Fall, on_delete=models.CASCADE, null=True, related_name='beratungstermine', verbose_name="Zugeordneter Fall")
+    fall = models.ForeignKey('Fall', on_delete=models.CASCADE, null=True, related_name='beratungstermine', verbose_name="Zugeordneter Fall")
     
     class Meta:
         verbose_name = "Beratungstermin"
@@ -263,21 +274,21 @@ class Beratungstermin(models.Model):
 
 class Begleitung(models.Model):
     begleitungs_id = models.BigAutoField(primary_key=True)
-    anzahl_begleitungen = models.IntegerField(default=1, verbose_name="Anzahl Begleitungen", validators=[MinValueValidator(0)])
-    art_begleitung = models.CharField(max_length=2, choices=BEGLEITUNG_ART_CHOICES, verbose_name="Art der Begleitung")
-    anzahl_verweisungen = models.IntegerField(default=0, verbose_name="Anzahl Verweisungen", validators=[MinValueValidator(0)])
-    art_verweisungen = models.CharField(max_length=2, choices=VERWEISUNG_ART_CHOICES, blank=True, verbose_name="Art der Verweisungen")
+    datum = models.DateField(default=timezone.now, verbose_name="Datum")
+    einrichtung = models.CharField(max_length=255, verbose_name="Einrichtung (z.B. Polizei, Gericht)")
+    dolmetscher_stunden = models.DecimalField(max_digits=5, decimal_places=2, default=0.00, verbose_name="Dolmetscher-Stunden")
+    notizen = models.TextField(blank=True, verbose_name="Notizen")
     
     # Beziehungen:
     klient = models.ForeignKey(KlientIn, on_delete=models.CASCADE, verbose_name="Klient:in")
-    fall = models.ForeignKey(Fall, on_delete=models.CASCADE, null=True, related_name='begleitungen', verbose_name="Zugeordneter Fall")
+    fall = models.ForeignKey('Fall', on_delete=models.CASCADE, null=True, related_name='begleitungen', verbose_name="Zugeordneter Fall")
     
     class Meta:
         verbose_name = "Begleitung/Verweisung"
         verbose_name_plural = "Begleitungen/Verweisungen"
         
     def __str__(self):
-        return f"Begleitung {self.begleitungs_id} für Klient {self.klient.klient_id}"
+        return f"Begleitung zu {self.einrichtung} am {self.datum}"
 
 
 class Gewalttat(models.Model):
@@ -300,7 +311,7 @@ class Gewalttat(models.Model):
 
     # Beziehungen:
     klient = models.ForeignKey(KlientIn, on_delete=models.CASCADE, verbose_name="Klient:in")
-    fall = models.ForeignKey(Fall, on_delete=models.CASCADE, null=True, related_name='gewalttaten', verbose_name="Zugeordneter Fall") 
+    fall = models.ForeignKey('Fall', on_delete=models.CASCADE, null=True, related_name='gewalttaten', verbose_name="Zugeordneter Fall") 
     
     class Meta:
         verbose_name = "Gewalttat"
@@ -346,7 +357,7 @@ class Anfrage(models.Model):
     # Beziehungen:
     beratungstermin = models.OneToOneField(Beratungstermin, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Zugeordneter Beratungstermin")
     mitarbeiterin = models.ForeignKey(Konto, on_delete=models.SET_NULL, null=True, verbose_name="Zuständige Mitarbeiter:in")
-    fall = models.OneToOneField(Fall, on_delete=models.SET_NULL, null=True, blank=True, related_name='ursprung_anfrage', verbose_name="Zugeordneter Fall")
+    fall = models.OneToOneField('Fall', on_delete=models.SET_NULL, null=True, blank=True, related_name='ursprung_anfrage', verbose_name="Zugeordneter Fall")
     
     class Meta:
         verbose_name = "Anfrage"

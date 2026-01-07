@@ -1,57 +1,135 @@
 'use client';
 
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
+/**
+ * Utility function to get a cookie value by name
+ */
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    return parts.pop()?.split(';').shift() || null;
+  }
+  return null;
+}
 
 /**
  * API Client für die Kommunikation mit dem Django Backend.
  * 
- * Konfiguration:
- * - Basis-URL aus Umgebungsvariable oder Fallback auf localhost:8000
- * - withCredentials: true für automatisches Senden von Session-Cookies
- * - Response Interceptor für automatische Weiterleitung bei 401
- * 
- * @example
- * ```tsx
- * import { apiClient } from '@/lib/api-client';
- * 
- * // GET Request
- * const response = await apiClient.get('/anfrage/');
- * 
- * // POST Request
- * const response = await apiClient.post('/anfrage/', data);
- * ```
+ * Features:
+ * - Automatisches Senden von Session-Cookies (withCredentials)
+ * - CSRF Token für modifizierende Requests
+ * - Automatisches Token-Refresh bei 401 Fehlern
+ * - Weiterleitung zur Login-Seite bei endgültigen Auth-Fehlern
  */
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api',
-  withCredentials: true, // Wichtig: Session-Cookies automatisch mitsenden
+  baseURL: API_BASE_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
+// Track if we're currently refreshing to prevent race conditions
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value: unknown) => void;
+  reject: (reason?: unknown) => void;
+  config: InternalAxiosRequestConfig;
+}> = [];
+
+const processQueue = (error: Error | null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      // Retry the request
+      apiClient.request(prom.config).then(prom.resolve).catch(prom.reject);
+    }
+  });
+  failedQueue = [];
+};
+
 /**
- * Response Interceptor für globales Error Handling.
- * Bei 401 Unauthorized wird der User zur Login-Seite weitergeleitet.
+ * Request Interceptor für CSRF Token.
+ */
+apiClient.interceptors.request.use(
+  (config) => {
+    const csrfToken = getCookie('csrftoken');
+    if (csrfToken && config.method && ['post', 'put', 'patch', 'delete'].includes(config.method.toLowerCase())) {
+      config.headers['X-CSRFToken'] = csrfToken;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+/**
+ * Response Interceptor für Token Refresh und Error Handling.
  */
 apiClient.interceptors.response.use(
-  // Bei erfolgreicher Response: einfach durchreichen
   (response) => response,
-  
-  // Bei Error: 401 abfangen und zur Login-Seite weiterleiten
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
+    const originalRequest = error.config;
+
+    // Skip if we don't have a config or if it's already been retried
+    if (!originalRequest || (originalRequest as any)._retry) {
+      return Promise.reject(error);
+    }
+
+    // Handle 401 errors by trying to refresh the token
     if (error.response?.status === 401) {
-      // Nur im Browser (nicht auf Server) weiterleiten
-      if (typeof window !== 'undefined') {
-        // Aktuelle URL als Redirect-Parameter speichern
-        const currentPath = window.location.pathname;
-        const loginUrl = `/login${currentPath !== '/' ? `?redirect=${encodeURIComponent(currentPath)}` : ''}`;
-        
-        // Weiterleitung zur Login-Seite
-        window.location.href = loginUrl;
+      // Prevent retry loops on refresh endpoint itself
+      if (originalRequest.url?.includes('/auth/token/refresh/')) {
+        // Refresh failed, redirect to login
+        if (typeof window !== 'undefined') {
+          const currentPath = window.location.pathname;
+          window.location.href = `/login${currentPath !== '/' ? `?redirect=${encodeURIComponent(currentPath)}` : ''}`;
+        }
+        return Promise.reject(error);
+      }
+
+      // If we're already refreshing, queue this request
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject, config: originalRequest });
+        });
+      }
+
+      (originalRequest as any)._retry = true;
+      isRefreshing = true;
+
+      try {
+        // Attempt to refresh the token
+        await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {}, {
+          withCredentials: true,
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        // Token refreshed successfully, process queued requests
+        processQueue(null);
+
+        // Retry the original request
+        return apiClient.request(originalRequest);
+      } catch (refreshError) {
+        // Refresh failed, clear queue and redirect to login
+        processQueue(refreshError as Error);
+
+        if (typeof window !== 'undefined') {
+          const currentPath = window.location.pathname;
+          window.location.href = `/login${currentPath !== '/' ? `?redirect=${encodeURIComponent(currentPath)}` : ''}`;
+        }
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
-    
-    // Error weiter nach oben propagieren für lokales Handling
+
+    // For other errors, just reject
     return Promise.reject(error);
   }
 );

@@ -13,6 +13,7 @@ import {
   LogOut,
   FolderOpen,
   User,
+  ShieldAlert,
 } from "lucide-react";
 
 interface NavItem {
@@ -107,6 +108,18 @@ export default function Sidebar() {
 
       {/* Footer mit User Info und Logout */}
       <div className="sidebar-footer">
+        {/* Admin Link - nur für Admins sichtbar */}
+        {user && (user.rolle_mb === 'AD' || user.permissions?.includes('api.can_manage_users')) && (
+          <Link
+            href="/dashboard/admin"
+            className={`nav-item ${isActive("/dashboard/admin") ? "nav-item-active" : ""}`}
+            style={{ marginBottom: '0.5rem' }}
+          >
+            <span className="nav-icon"><ShieldAlert className="w-5 h-5" /></span>
+            <span className="nav-label">Admin</span>
+          </Link>
+        )}
+
         {user && (
           <div className="user-info">
             <div className="user-avatar">
@@ -120,7 +133,7 @@ export default function Sidebar() {
             </div>
           </div>
         )}
-        
+
         <button className="logout-button" onClick={handleLogout}>
           <LogOut className="w-5 h-5" />
           <span>Abmelden</span>

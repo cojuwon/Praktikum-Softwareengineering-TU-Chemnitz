@@ -12,7 +12,7 @@ class KontoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Konto
         fields = ('id', 'vorname_mb', 'nachname_mb', 'mail_mb', 'rolle_mb')
-        read_only_fields = ('id', 'mail_mb', 'rolle_mb')
+        read_only_fields = ('id',)
 
 
 class KontoMeSerializer(serializers.ModelSerializer):

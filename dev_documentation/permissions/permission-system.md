@@ -251,9 +251,22 @@ python manage.py setup_groups
 
 | Gruppe | Permissions |
 |--------|-------------|
-| **Basis** | `view_*`, `add_*`, `change_*` für alle Models |
-| **Erweiterung** | Basis + `delete_*` + `can_share_preset`, `can_export_statistik`, `can_share_statistik` |
-| **Admin** | Erweiterung + `can_manage_users`, `can_assign_roles`, `can_view_all_data` |
+| **Basis** | `view_*`, `add_*`, `change_*` + `delete_preset`, `can_view_own_anfragen`, `view_own_klientin`, `view_own_fall`, `view_own_beratungstermin` |
+| **Erweiterung** | Basis + `delete_*` + `can_share_preset`, `can_export_statistik`, `can_share_statistik`, `view_all_klientin`, `view_all_fall`, `view_all_beratungstermin` |
+| **Admin** | Erweiterung + `can_manage_users`, `can_assign_roles`, `can_view_all_data`, `can_change_inactivity_settings` |
+
+### 6. Automatische Rollen-Synchronisation
+
+**Datei:** `backend/api/signals.py`
+
+Das Backend synchronisiert automatisch die Django-Gruppenzugehörigkeit basierend auf dem Feld `rolle_mb` im `Konto`-Model:
+
+- Rolle `B`  -> Fügt User zur Gruppe **Basis** hinzu
+- Rolle `E`  -> Fügt User zur Gruppe **Erweiterung** hinzu
+- Rolle `AD` -> Fügt User zur Gruppe **Admin** hinzu
+
+Dies geschieht via `post_save` Signal, sodass Änderungen im Admin-Panel oder via API sofort übernommen werden.
+
 
 ---
 

@@ -18,7 +18,7 @@ import {
   KLIENT_GESCHLECHT_CHOICES,
   KLIENT_WOHNORT_CHOICES
 } from '@/components/klient/KlientFormDialog';
-import { ClientFilterToolbar, ClientFilters, ClientColumnVisibility } from '@/components/klient/ClientFilterToolbar';
+import { AsyncClientSelect } from '@/components/ui/AsyncClientSelect';
 
 // --- SCHEMA & TYPES ---
 
@@ -69,22 +69,8 @@ export function FallFormDialog({
     notizen: '',
   });
 
-  // Client Search State
-  const [foundClients, setFoundClients] = useState<KlientOption[]>([]);
+  // Selected Client
   const [selectedClient, setSelectedClient] = useState<KlientOption | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
-
-  // Filter State
-  const [clientFilters, setClientFilters] = useState<ClientFilters>({});
-  const [columnVisibility, setColumnVisibility] = useState<ClientColumnVisibility>({
-    role: true,
-    age: true,
-    gender: true,
-    job: true,
-    nationality: false, // hidden by default to save space
-    residence: false,
-    created: true
-  });
 
   // New Client Form State
   const [newClientData, setNewClientData] = useState<Partial<KlientFormData>>({
@@ -113,7 +99,6 @@ export function FallFormDialog({
       klient_schwerbehinderung: 'N',
       klient_dolmetschungsstunden: 0,
     });
-    setClientFilters({});
     setSelectedClient(null);
     setErrors({});
     setError(null);
@@ -125,54 +110,6 @@ export function FallFormDialog({
     resetForm();
     onClose();
   };
-
-  // Search logic
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const searchClients = useCallback(async (filters: ClientFilters = {}) => {
-    setIsSearching(true);
-    try {
-      // Build query params
-      const params: Record<string, any> = {};
-
-      if (filters.search) params.search = filters.search;
-      if (filters.klient_rolle) params.klient_rolle = filters.klient_rolle;
-      if (filters.klient_geschlechtsidentitaet) params.klient_geschlechtsidentitaet = filters.klient_geschlechtsidentitaet;
-      if (filters.klient_alter_gte) params.klient_alter__gte = filters.klient_alter_gte;
-      if (filters.klient_alter_lte) params.klient_alter__lte = filters.klient_alter_lte;
-      if (filters.klient_beruf) params.klient_beruf__icontains = filters.klient_beruf; // fuzzy
-      if (filters.klient_staatsangehoerigkeit) params.klient_staatsangehoerigkeit__icontains = filters.klient_staatsangehoerigkeit;
-      if (filters.klient_wohnort) params.klient_wohnort = filters.klient_wohnort;
-
-      const response = await apiClient.get('/klienten/', { params });
-      const data = response.data.results || response.data; // Handle pagination
-
-      const mapped = data.map((k: any) => ({
-        id: k.klient_id,
-        label: `${k.klient_code || 'Klient #' + k.klient_id} - ${k.klient_vorname || ''} ${k.klient_nachname || ''}`.trim() || `Klient #${k.klient_id}`, // Fallback
-        // Store raw data for display
-        raw: k
-      }));
-      setFoundClients(mapped.slice(0, 50)); // Limit results
-    } catch (err) {
-      console.error("Search failed", err);
-      // Fallback or empty list
-      setFoundClients([]);
-    } finally {
-      setIsSearching(false);
-    }
-  }, []);
-
-  // Effect to load initial list or debounce search
-  useEffect(() => {
-    if (isOpen && activeTab === 'existing') {
-      // Initial load or filter update
-      // Debounce only text search if needed, but for now we debounce everything slightly
-      const timer = setTimeout(() => {
-        searchClients(clientFilters);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen, activeTab, clientFilters, searchClients]);
 
 
   const handleFallChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -299,71 +236,29 @@ export function FallFormDialog({
                 <div className="space-y-4">
 
                   {/* NEW FILTER TOOLBAR */}
-                  <ClientFilterToolbar
-                    onFilterChange={setClientFilters}
-                    onVisibilityChange={setColumnVisibility}
-                    initialVisibility={columnVisibility}
-                  />
-
-                  <div className="border border-gray-200 rounded-lg max-h-60 overflow-y-auto">
-                    {isSearching ? (
-                      <div className="p-4 text-center text-gray-500"><Loader2 className="w-5 h-5 animate-spin mx-auto" /></div>
-                    ) : foundClients.length === 0 ? (
-                      <div className="p-4 text-center text-gray-500 text-sm">Keine Klient:innen gefunden.</div>
-                    ) : (
-                      <ul className="divide-y divide-gray-100">
-                        {foundClients.map(client => {
-                          const k = client.raw || {};
-                          // Helper to get label from choices
-                          const getLabel = (choices: any[], val: string) => choices.find(c => c.value === val)?.label || val;
-
-                          const rolle = getLabel(KLIENT_ROLLE_CHOICES, k.klient_rolle);
-                          const geschlecht = getLabel(KLIENT_GESCHLECHT_CHOICES, k.klient_geschlechtsidentitaet);
-                          const alter = k.klient_alter ? `${k.klient_alter} Jahre` : 'k.A.';
-                          const beruf = k.klient_beruf || '-';
-                          const erstellt = k.erstellt_am ? new Date(k.erstellt_am).toLocaleDateString('de-DE') : '-';
-                          const wohnort = getLabel(KLIENT_WOHNORT_CHOICES, k.klient_wohnort);
-                          const nationalitaet = k.klient_staatsangehoerigkeit || '-';
-
-                          return (
-                            <li
-                              key={client.id}
-                              className={`p-3 cursor-pointer hover:bg-blue-50 flex justify-between items-start ${selectedClient?.id === client.id ? 'bg-blue-50 border-l-4 border-blue-600' : ''}`}
-                              onClick={() => {
-                                setSelectedClient(client);
-                                setErrors({ ...errors, klient_id: '' });
-                              }}
-                            >
-                              <div className="flex-1">
-                                <div className="font-medium text-gray-900 flex items-center gap-2">
-                                  {client.label}
-                                  <span className="text-xs font-normal px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">
-                                    ID: {k.klient_id}
-                                  </span>
-                                </div>
-                                <div className="text-sm text-gray-500 mt-1 grid grid-cols-2 gap-x-4 gap-y-1">
-                                  {columnVisibility.role && <span><span className="font-medium">Rolle:</span> {rolle}</span>}
-                                  {columnVisibility.age && <span><span className="font-medium">Alter:</span> {alter}</span>}
-                                  {columnVisibility.gender && <span><span className="font-medium">Geschlecht:</span> {geschlecht}</span>}
-                                  {columnVisibility.job && <span><span className="font-medium">Beruf:</span> {beruf}</span>}
-                                  {columnVisibility.residence && <span><span className="font-medium">Wohnort:</span> {wohnort}</span>}
-                                  {columnVisibility.nationality && <span><span className="font-medium">Nationalität:</span> {nationalitaet}</span>}
-
-                                  {columnVisibility.created && (
-                                    <span className="col-span-2 text-xs text-gray-400 mt-1">
-                                      Erstellt am: {erstellt}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                              {selectedClient?.id === client.id && <CheckCircle2 className="w-5 h-5 text-blue-600 mt-1" />}
-                            </li>
-                          )
-                        })}
-                      </ul>
-                    )}
+                  <div className="space-y-4">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Klient:in suchen & auswählen
+                    </label>
+                    <AsyncClientSelect
+                      value={selectedClient?.id}
+                      onChange={(val) => {
+                        if (val) {
+                          // Since AsyncClientSelect only returns ID, we might need more data if we display it, 
+                          // but for the form ID is enough. 
+                          // To keep existing logic working (selectedClient object), we create a minimal object.
+                          setSelectedClient({ id: val, label: `Klient #${val}` });
+                          setErrors({ ...errors, klient_id: '' });
+                        } else {
+                          setSelectedClient(null);
+                        }
+                      }}
+                    />
+                    <p className="text-sm text-gray-500">
+                      Suchen Sie nach Name oder ID.
+                    </p>
                   </div>
-                  {errors.klient_id && <p className="text-red-500 text-sm">{errors.klient_id}</p>}
+                  {errors.klient_id && <p className="text-red-500 text-sm mt-1">{errors.klient_id}</p>}
                 </div>
               ) : (
                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">

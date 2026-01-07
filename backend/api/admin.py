@@ -39,7 +39,7 @@ class FallAdmin(admin.ModelAdmin):
 
 @admin.register(Begleitung)
 class BegleitungAdmin(admin.ModelAdmin):
-    list_display = ('begleitungs_id', 'klient', 'anzahl_begleitungen', 'art_begleitung')
+    list_display = ('begleitungs_id', 'klient', 'datum', 'einrichtung')
 
 @admin.register(Beratungstermin)
 class BeratungsterminAdmin(admin.ModelAdmin):
