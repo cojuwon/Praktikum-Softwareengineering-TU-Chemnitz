@@ -14,22 +14,32 @@ import { Badge } from '@/components/ui/Badge';
 import { Search, Plus, Filter, MoreHorizontal } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import { usePermissions } from '@/hooks/usePermissions';
+import { Switch } from '@/components/ui/Switch';
 
 /**
  * Fallübersicht - Hauptseite
  */
 export default function FallPage() {
+  const { can, Permissions } = usePermissions();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [falle, setFalle] = useState<any[]>([]);
+  const [showAll, setShowAll] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Permission Checks
+  const canViewAll = can(Permissions.VIEW_ALL_FALL);
 
   // Load Fälle from API
   const fetchFaelle = async () => {
     setIsLoading(true);
     try {
-      const response = await apiClient.get('/faelle/');
+      const params: any = {};
+      if (canViewAll && showAll) {
+        params.view = 'all';
+      }
+      const response = await apiClient.get('/faelle/', { params });
       setFalle(Array.isArray(response.data) ? response.data : (response.data as any).results || []);
     } catch (error) {
       console.error('Fehler beim Laden der Fälle:', error);
@@ -40,7 +50,7 @@ export default function FallPage() {
 
   useEffect(() => {
     fetchFaelle();
-  }, []);
+  }, [showAll, canViewAll]);
 
   // Gefilterte Fälle basierend auf Suchbegriff und Status
   // Note: Status logic is approximated as Backend doesn't have status field yet
@@ -121,6 +131,20 @@ export default function FallPage() {
               <option value="L">Laufend (Zugewiesen)</option>
             </select>
           </div>
+
+          {/* Toggle "Alle anzeigen" (Nur für User mit Berechtigung) */}
+          {canViewAll && (
+            <div className="flex items-center gap-3 px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm">
+              <Switch
+                id="show-all-switch"
+                checked={showAll}
+                onCheckedChange={setShowAll}
+              />
+              <label htmlFor="show-all-switch" className="text-sm font-medium text-gray-700 cursor-pointer select-none">
+                Alle Fälle
+              </label>
+            </div>
+          )}
 
           {/* Button "Neuer Fall" */}
           <button

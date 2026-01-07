@@ -53,6 +53,8 @@ export const StandardPermissions = {
   ADD_FALL: 'api.add_fall',
   CHANGE_FALL: 'api.change_fall',
   DELETE_FALL: 'api.delete_fall',
+  VIEW_OWN_FALL: 'api.view_own_fall',
+  VIEW_ALL_FALL: 'api.view_all_fall',
 
   // Anfrage
   VIEW_ANFRAGE: 'api.view_anfrage',

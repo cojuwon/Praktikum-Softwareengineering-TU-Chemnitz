@@ -15,7 +15,7 @@ import apiClient from '@/lib/api-client';
  * Zod Schema für Klient:in-Formular
  * Basierend auf dem KlientIn-Model aus backend/api/models.py
  */
-const klientFormSchema = z.object({
+export const klientFormSchema = z.object({
   // errorMap entfernen
   klient_rolle: z.enum(['B', 'A', 'F']),
 
@@ -43,7 +43,7 @@ const klientFormSchema = z.object({
   klient_notizen: z.string().max(5000).optional().default(''),
 });
 
-type KlientFormData = z.infer<typeof klientFormSchema>;
+export type KlientFormData = z.infer<typeof klientFormSchema>;
 
 interface KlientFormDialogProps {
   isOpen: boolean;

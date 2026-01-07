@@ -15,6 +15,8 @@ from api.serializers import KlientInSerializer, BegleitungSerializer
 from api.permissions import DjangoModelPermissionsWithView
 
 
+from django_filters.rest_framework import DjangoFilterBackend
+
 class KlientInViewSet(viewsets.ModelViewSet):
     """
     ViewSet für CRUD-Operationen auf Klient:innen.
@@ -28,6 +30,17 @@ class KlientInViewSet(viewsets.ModelViewSet):
     queryset = KlientIn.objects.all()
     serializer_class = KlientInSerializer
     permission_classes = [permissions.IsAuthenticated, DjangoModelPermissionsWithView]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        'klient_rolle': ['exact'],
+        'klient_geschlechtsidentitaet': ['exact'],
+        'klient_alter': ['exact', 'gte', 'lte'],
+        'klient_beruf': ['icontains'],
+        'klient_staatsangehoerigkeit': ['icontains'],
+        'klient_wohnort': ['exact'],
+        'klient_schwerbehinderung': ['exact'],
+    }
+    search_fields = ['klient_code', 'klient_vorname', 'klient_nachname', 'klient_id'] # Optional text search
 
     def get_queryset(self):
         """

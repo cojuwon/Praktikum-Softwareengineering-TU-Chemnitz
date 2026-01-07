@@ -179,6 +179,7 @@ class KlientIn(models.Model):
     klient_dolmetschungsstunden = models.IntegerField(default=0, verbose_name="Dolmetschungsstunden", validators=[MinValueValidator(0)])
     klient_dolmetschungssprachen = models.CharField(max_length=255, blank=True, verbose_name="Dolmetschungssprachen")
     klient_notizen = models.TextField(blank=True, verbose_name="Notizen")
+    erstellt_am = models.DateTimeField(auto_now_add=True, verbose_name="Erstellt am")
 
     class Meta:
         verbose_name = "Klient:in"

@@ -78,6 +78,15 @@ class Anfrage(models.Model):
             ("can_view_all_anfragen", "Kann alle Anfragen einsehen"),
         ]
 
+class Fall(models.Model):
+    # ... Felder ...
+    
+    class Meta:
+        permissions = [
+            ("view_own_fall", "Kann eigene Fälle sehen"),
+            ("view_all_fall", "Kann alle Fälle sehen"),
+        ]
+
 class Statistik(models.Model):
     # ... Felder ...
     
@@ -472,6 +481,10 @@ interface PermissionGateProps {
 | `api.can_change_inactivity_settings` | Erlaubt das Ändern von Inaktivitäts-Einstellungen (Timeout). |
 **Hinweis:** Diese Permissions sind erforderlich für die GET-Anfragen an die `/api/anfragen/` Endpoint.
 
+
+
+| `api.view_own_fall` | Erlaubt Benutzern, ihre eigenen Fälle zu sehen. |
+| `api.view_all_fall` | Erlaubt Admins/Erweiterten Usern, alle Fälle im System zu sehen. |
 
 ---
 

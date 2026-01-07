@@ -51,17 +51,25 @@ class FallViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """
         Filtert Fälle basierend auf User-Berechtigungen.
-        Admins und User mit can_view_all_data sehen alle Fälle.
-        Andere User sehen nur ihre eigenen Fälle.
+        - Admin/Erweiterung (view_all_fall) + ?view=all -> Alle
+        - Sonst -> Nur zugewiesene Fälle
         """
         user = self.request.user
+        queryset = Fall.objects.all()
         
-        # Admins und User mit spezieller Berechtigung sehen alles
-        if user.rolle_mb == 'AD' or user.has_perm('api.can_view_all_data'):
-            return Fall.objects.all()
+        # Check permission to view all
+        can_view_all = user.rolle_mb == 'AD' or user.has_perm('api.view_all_fall') or user.has_perm('api.can_view_all_data')
         
-        # Andere User sehen nur ihre zugewiesenen Fälle
-        return Fall.objects.filter(mitarbeiterin=user)
+        # Explicit request for all data
+        if can_view_all and self.request.query_params.get('view') == 'all':
+            return queryset
+            
+        # Default / Fallback: Filter by own cases
+        if user.has_perm('api.view_own_fall') or can_view_all:
+             return queryset.filter(mitarbeiterin=user)
+        
+        # No permission
+        return queryset.none()
 
     def perform_create(self, serializer):
         """

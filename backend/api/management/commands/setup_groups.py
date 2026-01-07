@@ -63,6 +63,7 @@ class Command(BaseCommand):
             'delete_preset',
             'can_view_own_anfragen',
             'view_own_klientin',
+            'view_own_fall',
         ])
         
         # Erweiterung-Berechtigungen: Alles von Basis + Delete + Custom Permissions
@@ -76,6 +77,7 @@ class Command(BaseCommand):
             'can_export_statistik',
             'can_share_statistik',
             'view_all_klientin',
+            'view_all_fall',
         ])
 
         # Admin-Berechtigungen: Alles + User Management

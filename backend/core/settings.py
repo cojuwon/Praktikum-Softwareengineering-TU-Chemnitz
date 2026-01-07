@@ -51,6 +51,8 @@ INSTALLED_APPS = [
 
     'rest_framework', 
     'rest_framework.authtoken',
+    'drf_spectacular',
+    'django_filters',
     'corsheaders',  
 
     'allauth',
@@ -60,7 +62,7 @@ INSTALLED_APPS = [
     'dj_rest_auth',
     'dj_rest_auth.registration',
 
-    'drf_spectacular',
+
     
     # Eigene Apps
     'api',
