@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
 import { apiClient } from '@/lib/api-client';
 import { Permissions } from '@/types/auth';
-import { 
-  Anfrage, 
-  AnfrageListResponse, 
+import {
+  Anfrage,
+  AnfrageListResponse,
   formatDatum,
   getStandortLabel,
   getAnfragePersonLabel,
@@ -16,17 +16,19 @@ import {
   ANFRAGE_PERSON_CHOICES
 } from '@/types/anfrage';
 import { AnfrageFormDialog } from '@/components/anfrage';
-import { 
-  AlertCircle, 
-  CheckCircle2, 
-  Clock, 
+import {
+  AlertCircle,
+  CheckCircle2,
+  Clock,
   Loader2,
   Plus,
   ShieldAlert,
   Filter,
   X,
   Eye,
-  User
+  User,
+  Trash2,
+  Edit2
 } from 'lucide-react';
 
 // Types für Filter und Sortierung
@@ -77,21 +79,21 @@ const initialFilters: AnfrageFilters = {
  */
 export default function AnfragePage() {
   const { can } = usePermissions();
-  
+
   // Data State
   const [anfragen, setAnfragen] = useState<Anfrage[]>([]);
   const [mitarbeiterList, setMitarbeiterList] = useState<Mitarbeiterin[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Filter State
   const [filters, setFilters] = useState<AnfrageFilters>(initialFilters);
   const [showFilters, setShowFilters] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  
+
   // Dialog State
   const [isAnfrageDialogOpen, setIsAnfrageDialogOpen] = useState(false);
 
@@ -100,11 +102,17 @@ export default function AnfragePage() {
   const hasViewOwnPermission = can(Permissions.VIEW_OWN_ANFRAGEN);
   const hasAnyViewPermission = hasViewAllPermission || hasViewOwnPermission;
   const hasAddPermission = can(Permissions.ADD_ANFRAGE);
+  const hasDeletePermission = can(Permissions.DELETE_ANFRAGE);
+  const hasChangePermission = can(Permissions.CHANGE_ANFRAGE);
+
+  // State for Edit/Delete
+  const [selectedAnfrage, setSelectedAnfrage] = useState<Anfrage | null>(null);
+  const [isDeleting, setIsDeleting] = useState<number | null>(null);
 
   // Build query string from filters
   const buildQueryString = useCallback(() => {
     const params = new URLSearchParams();
-    
+
     if (filters.search) params.set('search', filters.search);
     if (filters.mitarbeiterin) params.set('mitarbeiterin', filters.mitarbeiterin);
     if (filters.anfrage_art) params.set('anfrage_art', filters.anfrage_art);
@@ -112,10 +120,10 @@ export default function AnfragePage() {
     if (filters.anfrage_person) params.set('anfrage_person', filters.anfrage_person);
     if (filters.datum_von) params.set('datum_von', filters.datum_von);
     if (filters.datum_bis) params.set('datum_bis', filters.datum_bis);
-    
+
     // Standardsortierung nach Datum absteigend
     params.set('ordering', '-anfrage_datum');
-    
+
     return params.toString();
   }, [filters]);
 
@@ -129,12 +137,12 @@ export default function AnfragePage() {
     try {
       setIsSearching(true);
       setError(null);
-      
+
       const queryString = buildQueryString();
       const url = `/anfragen/${queryString ? `?${queryString}` : ''}`;
-      
+
       const response = await apiClient.get<Anfrage[] | AnfrageListResponse>(url);
-      
+
       const data = response.data;
       if (Array.isArray(data)) {
         setAnfragen(data);
@@ -155,7 +163,7 @@ export default function AnfragePage() {
   // Fetch Mitarbeiter:innen für Filter-Dropdown (nur für Admins)
   const fetchMitarbeiter = useCallback(async () => {
     if (!hasViewAllPermission) return;
-    
+
     try {
       const response = await apiClient.get<Mitarbeiterin[]>('/konten/');
       if (Array.isArray(response.data)) {
@@ -170,7 +178,7 @@ export default function AnfragePage() {
   useEffect(() => {
     fetchAnfragen();
     fetchMitarbeiter();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Debounced search - refetch when filters change
@@ -183,7 +191,7 @@ export default function AnfragePage() {
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   // Filter handlers
@@ -194,6 +202,28 @@ export default function AnfragePage() {
   const clearFilters = () => {
     setFilters(initialFilters);
     setCurrentPage(1);
+  };
+
+  // Actions
+  const handleEdit = (anfrage: Anfrage) => {
+    setSelectedAnfrage(anfrage);
+    setIsAnfrageDialogOpen(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('Möchten Sie diese Anfrage wirklich löschen?')) return;
+
+    setIsDeleting(id);
+    try {
+      await apiClient.delete(`/anfragen/${id}/`);
+      // Update list locally
+      setAnfragen(prev => prev.filter(a => a.anfrage_id !== id));
+    } catch (err) {
+      console.error('Fehler beim Löschen:', err);
+      setError('Fehler beim Löschen der Anfrage');
+    } finally {
+      setIsDeleting(null);
+    }
   };
 
   const hasActiveFilters = useMemo(() => {
@@ -232,7 +262,7 @@ export default function AnfragePage() {
             <p className="page-subtitle">Übersicht der Anfragen</p>
           </div>
         </header>
-        
+
         <div className="flex flex-col items-center justify-center min-h-[300px]">
           <Loader2 className="w-10 h-10 text-primary-600 animate-spin mb-4" />
           <p className="text-gray-500">Anfragen werden geladen...</p>
@@ -251,7 +281,7 @@ export default function AnfragePage() {
             <p className="page-subtitle">Übersicht der Anfragen</p>
           </div>
         </header>
-        
+
         <div className="flex flex-col items-center justify-center min-h-[300px]">
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 max-w-md text-center">
             <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-3" />
@@ -267,8 +297,15 @@ export default function AnfragePage() {
       {/* Anfrage Dialog */}
       <AnfrageFormDialog
         isOpen={isAnfrageDialogOpen}
-        onClose={() => setIsAnfrageDialogOpen(false)}
-        onSuccess={fetchAnfragen}
+        onClose={() => {
+          setIsAnfrageDialogOpen(false);
+          setSelectedAnfrage(null);
+        }}
+        onSuccess={() => {
+          fetchAnfragen();
+          setSelectedAnfrage(null);
+        }}
+        editData={selectedAnfrage}
       />
 
       {/* Header */}
@@ -292,7 +329,7 @@ export default function AnfragePage() {
           <ShieldAlert className="w-16 h-16 text-gray-300 mb-4" />
           <h2 className="text-lg font-medium text-gray-700 mb-2">Keine Berechtigung</h2>
           <p className="text-gray-500 text-center max-w-md">
-            Sie haben keine Berechtigung, Anfragen einzusehen. 
+            Sie haben keine Berechtigung, Anfragen einzusehen.
             Bitte wenden Sie sich an Ihre:n Administrator:in, wenn Sie Zugriff benötigen.
           </p>
         </div>
@@ -321,15 +358,14 @@ export default function AnfragePage() {
                 </button>
               )}
             </div>
-            
+
             {/* Filter Button */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors ${
-                showFilters || hasActiveFilters
-                  ? 'text-primary-600'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors ${showFilters || hasActiveFilters
+                ? 'text-primary-600'
+                : 'text-gray-600 hover:text-gray-900'
+                }`}
             >
               <Filter className="w-4 h-4" />
               Filter
@@ -339,7 +375,7 @@ export default function AnfragePage() {
                 </span>
               )}
             </button>
-            
+
             {/* Ansicht Button */}
             <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors">
               <Eye className="w-4 h-4" />
@@ -520,9 +556,9 @@ export default function AnfragePage() {
                     <td colSpan={hasViewAllPermission ? 8 : 7} className="px-4 py-12 text-center text-gray-500">
                       <Clock className="w-10 h-10 mx-auto mb-3 text-gray-300" />
                       <p className="font-medium">
-                        {hasActiveFilters 
+                        {hasActiveFilters
                           ? 'Keine Anfragen gefunden'
-                          : hasViewOwnPermission && !hasViewAllPermission 
+                          : hasViewOwnPermission && !hasViewAllPermission
                             ? 'Sie haben noch keine eigenen Anfragen'
                             : 'Keine Anfragen vorhanden'}
                       </p>
@@ -533,8 +569,8 @@ export default function AnfragePage() {
                   </tr>
                 ) : (
                   paginatedAnfragen.map((anfrage) => (
-                    <tr 
-                      key={anfrage.anfrage_id} 
+                    <tr
+                      key={anfrage.anfrage_id}
                       className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors"
                     >
                       <td className="px-4 py-3 text-sm text-gray-900">
@@ -583,14 +619,42 @@ export default function AnfragePage() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-sm">
-                        <button
-                          className="font-medium text-primary-600 hover:text-primary-700"
-                          onClick={() => {
-                            console.log('Details:', anfrage.anfrage_id);
-                          }}
-                        >
-                          Details
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            className="p-1 text-gray-500 hover:text-primary-600 transition-colors"
+                            onClick={() => {
+                              console.log('Details:', anfrage.anfrage_id);
+                            }}
+                            title="Details"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+
+                          {hasChangePermission && (
+                            <button
+                              className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                              onClick={() => handleEdit(anfrage)}
+                              title="Bearbeiten"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                          )}
+
+                          {hasDeletePermission && (
+                            <button
+                              className="p-1 text-gray-500 hover:text-red-600 transition-colors"
+                              onClick={() => handleDelete(anfrage.anfrage_id)}
+                              disabled={isDeleting === anfrage.anfrage_id}
+                              title="Löschen"
+                            >
+                              {isDeleting === anfrage.anfrage_id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-4 h-4" />
+                              )}
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -609,11 +673,11 @@ export default function AnfragePage() {
               >
                 ← Vorherige
               </button>
-              
+
               <span className="text-sm text-gray-500">
                 Seite {currentPage}
               </span>
-              
+
               <button
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}

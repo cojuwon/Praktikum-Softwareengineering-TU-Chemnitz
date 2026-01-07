@@ -82,6 +82,7 @@ class Command(BaseCommand):
             'can_manage_users',
             'can_assign_roles',
             'can_view_all_data',
+            'can_change_inactivity_settings',
         ])
 
         # --- BERECHTIGUNGEN ZUWEISEN ---

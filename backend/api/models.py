@@ -146,6 +146,7 @@ class Konto(AbstractBaseUser, PermissionsMixin):
             ("can_manage_users", "Kann Benutzerkonten verwalten"),
             ("can_assign_roles", "Kann Rollen zuweisen"),
             ("can_view_all_data", "Kann alle Daten einsehen"),
+            ("can_change_inactivity_settings", "Kann Inaktivitäts-Einstellungen ändern"),
         ]
         
     def __str__(self):

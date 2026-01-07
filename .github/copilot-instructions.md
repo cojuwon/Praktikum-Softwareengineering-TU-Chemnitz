@@ -99,6 +99,7 @@ npm install && npm run dev
 ## Common Development Tasks
 
 - **Add new permission**: Define in model Meta `permissions = [("new_perm", "Description")]`, run migrations - always document in  [permissions-system.md](../../dev_documentation/permissions/permissions-system.md)
+- **New Permission**: `can_change_inactivity_settings` (Konto) - Allows changing inactivity timeout settings in frontend.
 - **Check user permissions**: Backend: `user.has_perm('api.permission_name')`; Frontend: `usePermissions().can('api.permission_name')`
 - **Add protected endpoint**: Create ViewSet, add `permission_classes = [IsAuthenticated, DjangoModelPermissionsWithView]`
 - **Gate UI element**: Wrap in `<PermissionGate permission="api.permission_name">Component</PermissionGate>`

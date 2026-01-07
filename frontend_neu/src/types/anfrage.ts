@@ -46,6 +46,19 @@ export const TERMIN_ORT_CHOICES = {
 export type TerminOrtCode = keyof typeof TERMIN_ORT_CHOICES;
 
 /**
+ * Beratungsart Choices (Art des Termins)
+ */
+export const BERATUNGSART_CHOICES = {
+  'P': 'persönlich',
+  'V': 'Video',
+  'T': 'Telefon',
+  'A': 'aufsuchend',
+  'S': 'schriftlich',
+} as const;
+
+export type BeratungsartCode = keyof typeof BERATUNGSART_CHOICES;
+
+/**
  * Anfrageweg Choices (Wie kam die Anfrage rein)
  */
 export const ANFRAGE_WEG_CHOICES = {
@@ -151,6 +164,7 @@ export interface AnfrageCreatePayload {
   anfrage_art: AnfrageArtCode;
   beratungstermin_data?: {
     termin_beratung: string; // Datum des Termins
+    termin_uhrzeit?: string;
     beratungsstelle: BeratungsstelleCode; // Ort des Termins
     beratungsart?: string;
   };
