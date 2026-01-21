@@ -98,6 +98,27 @@ export default function Page() {
           >
             Log in
           </Link>
+
+           <Link
+            href="/register"
+            className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base"
+          >
+            <span>Registrierung</span> 
+          </Link>
+
+  
+
+        </div>
+        <div className="flex items-center justify-center p-6 md:w-3/5 md:px-28 md:py-12">
+        
+          <Image
+            src="/bellis-favicon.png"
+            width={512}
+            height={512}
+            alt="Bellis Logo"
+            className="hidden md:block"
+          />
+
         </div>
       </div>
 

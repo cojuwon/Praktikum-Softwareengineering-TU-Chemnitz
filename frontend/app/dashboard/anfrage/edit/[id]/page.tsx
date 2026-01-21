@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { DynamicForm, FieldDefinition } from "@/components/form/DynamicForm";
 import { BeratungsterminForm, Termin } from "@/components/form/BeratungsterminForm";
 import Image from "next/image";
+import { apiFetch } from "@/lib/api";
 
 export default function FallEditPage() {
   const { id } = useParams<{ id: string }>();
@@ -19,7 +20,7 @@ export default function FallEditPage() {
   // 1. FALL + FELDDEFINITION LADEN
   // ---------------------------------------
   useEffect(() => {
-    fetch(`/api/fall/${id}`)
+    apiFetch(`/api/fall/${id}`)
       .then((res) => res.json())
       .then((json) => {
         setDefinition(json.fields);
@@ -66,7 +67,7 @@ export default function FallEditPage() {
 
     // Backend-Aufruf
     try {
-      const res = await fetch(`/api/fall/${id}`, {
+      const res = await apiFetch(`/api/fall/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -8,6 +8,8 @@ import ExportXLSXButton from "@/components/statistik/ExportXLSXButton";
 import ExportPDFButton from "@/components/statistik/ExportPDFButton";
 import PresetSelector from "@/components/statistik/PresetSelector";
 import Link from 'next/link';
+import { apiFetch } from "@/lib/api";
+
 import Image from 'next/image';
 
 export default function StatistikPage() {
@@ -19,7 +21,7 @@ export default function StatistikPage() {
 
   /** FILTERDEFINITIONEN LADEN */
   useEffect(() => {
-    fetch("/api/statistik/filters")
+    apiFetch("/api/statistik/filters")
       .then(res => res.json())
       .then(json => {
         const defs: FieldDefinition[] = json.filters.map((f: any) => ({
@@ -37,7 +39,7 @@ export default function StatistikPage() {
   useEffect(() => {
     async function loadPresets() {
       try {
-        const res = await fetch("/api/statistik/presets");
+        const res = await apiFetch("/api/statistik/presets");
         const json = await res.json();
         setPresets(json.presets);
       } catch (e) {
@@ -64,7 +66,7 @@ export default function StatistikPage() {
 
   const handleSubmit = async () => {
     try {
-      const response = await fetch("/api/statistik/query", {
+      const response = await apiFetch("/api/statistik/query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(filters),

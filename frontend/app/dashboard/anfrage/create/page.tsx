@@ -1,6 +1,7 @@
 "use client";
 
 import { DynamicForm, FieldDefinition } from "@/components/form/DynamicForm";
+import { apiFetch } from "@/lib/api";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 
@@ -11,7 +12,7 @@ export default function AnfragePage() {
 
   /** FELDER LADEN */
   useEffect(() => {
-    fetch("/api/anfrage")
+    apiFetch("/api/anfrage")
       .then(res => res.json())
       .then(json => {
         const defs: FieldDefinition[] = json.fields.map((f: any) => ({
@@ -57,7 +58,7 @@ export default function AnfragePage() {
     }
 
     try {
-      const response = await fetch("/api/anfrage", {
+      const response = await apiFetch("/api/anfrage", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
