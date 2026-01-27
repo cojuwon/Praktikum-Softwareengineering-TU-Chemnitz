@@ -1,8 +1,8 @@
 "use client";
 
 import { DynamicForm, FieldDefinition } from "@/components/form/DynamicForm";
-import { apiFetch } from "@/lib/api";
 import { useState, useEffect } from "react";
+import { apiFetch } from "@/lib/api";
 import Image from "next/image";
 
 export default function AnfragePage() {
@@ -12,22 +12,21 @@ export default function AnfragePage() {
 
   /** FELDER LADEN */
   useEffect(() => {
-    apiFetch("/api/anfrage")
-      .then(res => res.json())
+    apiFetch("/api/anfragen/form-fields")
+      .then(res => {
+        if (res.status === 401) throw new Error('Session abgelaufen');
+        return res.json();
+      })
       .then(json => {
-        const defs: FieldDefinition[] = json.fields.map((f: any) => ({
-          name: f.name,
-          label: f.label,
-          type: f.type,
-          options: f.options ?? [],
-          required: f.required ?? false,
-        }));
-        setFormDefinition(defs);
+        setFormDefinition(json.fields);
         setLoading(false);
       })
       .catch(err => {
         console.error("Formular konnte nicht geladen werden:", err);
         setLoading(false);
+        if (err.message === 'Session abgelaufen') {
+          // Optional: window.location.href = '/login';
+        }
       });
   }, []);
 
@@ -58,7 +57,7 @@ export default function AnfragePage() {
     }
 
     try {
-      const response = await apiFetch("/api/anfrage", {
+      const response = await apiFetch("/api/anfragen/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -75,21 +74,21 @@ export default function AnfragePage() {
 
   return (
     <div
-  style={{
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    overflow: "auto",
-    minHeight: "100vh",
-    padding: "10px 24px 0 24px",
-    backgroundColor: "#F3EEEE",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-  }}
->
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        overflow: "auto",
+        minHeight: "100vh",
+        padding: "10px 24px 0 24px",
+        backgroundColor: "#F3EEEE",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}
+    >
       <div
         style={{
           maxWidth: "700px",

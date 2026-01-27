@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AnfrageSearchForm } from "@/components/form/AnfrageSearchForm";
 import { apiFetch } from "@/lib/api";
@@ -10,35 +10,68 @@ export default function AnfrageSuchePage() {
   const router = useRouter();
   const [results, setResults] = useState([]);
 
-  const handleSearch = async (filters: any) => {
-    const res = await apiFetch("/api/anfrage/query", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(filters),
-    });
+  // Initial fetch on mount
+  useEffect(() => {
+    handleSearch({});
+  }, []);
 
-    const data = await res.json();
-    console.log(data);
-    setResults(data.data ?? []);
+  const handleSearch = async (filters: any) => {
+    try {
+      const params = new URLSearchParams();
+      if (filters.datumVon) params.append('datum_von', filters.datumVon);
+      if (filters.datumBis) params.append('datum_bis', filters.datumBis);
+
+      const queryString = params.toString();
+      const url = `/api/anfragen/?${queryString}`;
+
+      const res = await apiFetch(url, {
+        method: "GET",
+      });
+
+      if (res.status === 401) {
+        console.warn("AnfrageSearch: 401 Unauthorized");
+        alert("Nicht autorisiert. Bitte neu einloggen.");
+        router.push("/login");
+        return;
+      }
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error(`AnfrageSearch Error: ${res.status} ${res.statusText}`, text);
+        throw new Error(`Fehler beim Laden: ${res.status}`);
+      }
+
+      const data = await res.json();
+      console.log(data);
+      // For list view, API returns array in `results` (paginated) or direct list depending on implementation
+      // Based on previous checks, if paginated it returns { count, results, ... }, if simplified list just []
+      // Let's handle both robustly
+      const list = Array.isArray(data) ? data : (data.results ?? []);
+      setResults(list);
+    } catch (e) {
+      console.error(e);
+      // alert("Fehler beim Laden der Anfragen."); // Initial errors might be just empty state, suppress if needed or make less intrusive
+      setResults([]);
+    }
   };
 
   return (
     <div
-            style={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                overflow: "auto",
-                minHeight: "100vh",
-                padding: "10px 24px 0 24px",
-                backgroundColor: "#F3EEEE",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-            }}
-        >
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        overflow: "auto",
+        minHeight: "100vh",
+        padding: "10px 24px 0 24px",
+        backgroundColor: "#F3EEEE",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}
+    >
       <div
         style={{
           maxWidth: "700px",
@@ -51,12 +84,14 @@ export default function AnfrageSuchePage() {
           alt="Bellis Logo"
           width={100}
           height={100}
+          priority
           style={{
             width: "60px",
             height: "auto",
             objectFit: "contain",
             display: "block",
             margin: "20px auto",
+            backgroundColor: "transparent",
           }}
         />
 
@@ -121,32 +156,34 @@ export default function AnfrageSuchePage() {
           )}
 
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-            {results.map((anfrage: any) => (
-              <li
-                key={anfrage.id}
-                onClick={() => router.push(`/dashboard/anfrage/edit/${anfrage.id}`)}
-                style={{
-                  cursor: "pointer",
-                  padding: "12px 16px",
-                  marginBottom: "10px",
-                  backgroundColor: "#f9fafb",
-                  border: "2px solid #e5e7eb",
-                  borderRadius: "8px",
-                  transition: "all 0.2s",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#f3f4f6";
-                  e.currentTarget.style.borderColor = "#A0A8CD";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "#f9fafb";
-                  e.currentTarget.style.borderColor = "#e5e7eb";
-                }}
-              >
-                <strong style={{ color: "#42446F" }}>Anfrage #{anfrage.id}</strong>
-                <span style={{ color: "#6b7280" }}> – {anfrage.name} ({anfrage.datum})</span>
-              </li>
-            ))}
+            {results.map((anfrage: any) => {
+              return (
+                <li
+                  key={anfrage.anfrage_id}
+                  onClick={() => router.push(`/dashboard/anfrage/edit/${anfrage.anfrage_id}`)}
+                  style={{
+                    cursor: "pointer",
+                    padding: "12px 16px",
+                    marginBottom: "10px",
+                    backgroundColor: "#f9fafb",
+                    border: "2px solid #e5e7eb",
+                    borderRadius: "8px",
+                    transition: "all 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#f3f4f6";
+                    e.currentTarget.style.borderColor = "#A0A8CD";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#f9fafb";
+                    e.currentTarget.style.borderColor = "#e5e7eb";
+                  }}
+                >
+                  <strong style={{ color: "#42446F" }}>Anfrage #{anfrage.anfrage_id}</strong>
+                  <span style={{ color: "#6b7280" }}> – {anfrage.anfrage_art_display} in {anfrage.anfrage_ort_display} ({anfrage.anfrage_datum})</span>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </div>

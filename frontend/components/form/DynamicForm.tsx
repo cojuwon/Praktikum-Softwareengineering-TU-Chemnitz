@@ -6,7 +6,7 @@ export type FieldDefinition = {
   label: string;
   type: "text" | "date" | "select" | "multiselect";
   required?: boolean;
-  options?: string[];
+  options?: (string | { value: string; label: string })[];
 };
 
 type Props = {
@@ -53,11 +53,15 @@ function FieldRenderer({ field, value, onChange }: {
           onChange={(e) => onChange(e.target.value)}
         >
           <option value="">-- bitte wählen --</option>
-          {field.options?.map((o) => (
-            <option key={o} value={o}>
-              {o}
-            </option>
-          ))}
+          {field.options?.map((o) => {
+            const val = typeof o === 'string' ? o : o.value;
+            const lab = typeof o === 'string' ? o : o.label;
+            return (
+              <option key={val} value={val}>
+                {lab}
+              </option>
+            );
+          })}
         </select>
       );
 
@@ -71,11 +75,15 @@ function FieldRenderer({ field, value, onChange }: {
             onChange(Array.from(e.target.selectedOptions, (opt) => opt.value))
           }
         >
-          {field.options?.map((o) => (
-            <option key={o} value={o}>
-              {o}
-            </option>
-          ))}
+          {field.options?.map((o) => {
+            const val = typeof o === 'string' ? o : o.value;
+            const lab = typeof o === 'string' ? o : o.label;
+            return (
+              <option key={val} value={val}>
+                {lab}
+              </option>
+            );
+          })}
         </select>
       );
 

@@ -11,6 +11,7 @@ type User = {
 
 type UserContextType = {
   user: User | null;
+  loading: boolean;
   setUser: (u: User | null) => void;
 };
 
@@ -18,15 +19,22 @@ const UserContext = createContext<UserContextType | null>(null);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getCurrentUser()
-      .then(setUser)
-      .catch(() => setUser(null));
+      .then(u => {
+        setUser(u);
+        setLoading(false);
+      })
+      .catch(() => {
+        setUser(null);
+        setLoading(false);
+      });
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ user, loading, setUser }}>
       {children}
     </UserContext.Provider>
   );

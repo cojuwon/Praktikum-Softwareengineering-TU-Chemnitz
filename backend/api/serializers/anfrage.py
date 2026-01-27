@@ -35,13 +35,14 @@ class AnfrageSerializer(serializers.ModelSerializer):
     beratungstermin_data = BeratungsterminSerializer(write_only=True, required=False)
 
     # Read: Zeigt den verknüpften Beratungstermin an
-    beratungstermin = BeratungsterminSerializer(read_only=True)
+    anfrage_art_display = serializers.CharField(source='get_anfrage_art_display', read_only=True)
+    anfrage_ort_display = serializers.CharField(source='get_anfrage_ort_display', read_only=True)
 
     class Meta:
         model = Anfrage
         fields = [
-            'anfrage_id', 'anfrage_weg', 'anfrage_datum', 'anfrage_ort',
-            'anfrage_person', 'anfrage_art', 'mitarbeiterin', 'mitarbeiterin_display',
+            'anfrage_id', 'anfrage_weg', 'anfrage_datum', 'anfrage_ort', 'anfrage_ort_display',
+            'anfrage_person', 'anfrage_art', 'anfrage_art_display', 'mitarbeiterin', 'mitarbeiterin_display',
             'fall', 'beratungstermin', 'beratungstermin_data'
         ]
         read_only_fields = ['anfrage_id', 'mitarbeiterin']

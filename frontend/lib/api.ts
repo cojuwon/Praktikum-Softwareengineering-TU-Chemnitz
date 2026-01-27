@@ -50,8 +50,26 @@ export async function apiFetch(
   input: string,
   init: RequestInit = {}
 ) {
-  let res = await fetch(`${backendUrl}${input}`, {
+  // Token handling: try localStorage first, then cookie (if needed)
+  let token = typeof localStorage !== 'undefined' ? localStorage.getItem("accessToken") : null;
+
+  // If not in localStorage, check cookie (fallback)
+  if (!token && typeof document !== 'undefined') {
+    const match = document.cookie.match(new RegExp('(^| )accessToken=([^;]+)'));
+    if (match) token = match[2];
+  }
+
+  const headers = new Headers(init.headers || {});
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  // Ensure full URL
+  const url = input.startsWith("http") ? input : `${backendUrl}${input}`;
+
+  let res = await fetch(url, {
     ...init,
+    headers,
     credentials: 'include',
   });
 

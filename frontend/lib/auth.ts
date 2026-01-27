@@ -109,10 +109,12 @@ export async function logout() {
   return true;
 }
 
+import { apiFetch } from './api';
+
 export async function getCurrentUser(): Promise<User> {
-  const res = await fetch(`${API_URL}/api/users/me/`, {
+  const res = await apiFetch('/api/auth/user/', {
     method: 'GET',
-    credentials: 'include', // 🔑 Cookie mitsenden
+    // credentials: 'include' is handled by apiFetch
   });
 
   if (!res.ok) {

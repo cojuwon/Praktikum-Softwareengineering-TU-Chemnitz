@@ -23,7 +23,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db.models import Q
 
-from api.models import Anfrage, Konto
+from api.models import Anfrage, Konto, STANDORT_CHOICES, ANFRAGE_PERSON_CHOICES, ANFRAGE_ART_CHOICES
 from api.serializers import AnfrageSerializer
 from api.permissions import CanManageOwnData
 
@@ -138,6 +138,48 @@ class AnfrageViewSet(viewsets.ModelViewSet):
             qs = qs.filter(anfrage_datum__lte=datum_bis)
         
         return qs
+
+    @action(detail=False, methods=['get'], url_path='form-fields')
+    def form_fields(self, request):
+        """
+        Liefert die Definition der Eingabefelder für eine neue Anfrage.
+        """
+        fields = [
+            {
+                "name": "anfrage_weg",
+                "label": "Anfrageweg",
+                "type": "text",
+                "required": True,
+            },
+            {
+                "name": "anfrage_datum",
+                "label": "Datum der Anfrage",
+                "type": "date",
+                "required": True,
+            },
+            {
+                "name": "anfrage_ort",
+                "label": "Anfrage Ort",
+                "type": "select",
+                "required": True,
+                "options": [{"value": c[0], "label": c[1]} for c in STANDORT_CHOICES],
+            },
+            {
+                "name": "anfrage_person",
+                "label": "Anfragende Person",
+                "type": "select",
+                "required": True,
+                "options": [{"value": c[0], "label": c[1]} for c in ANFRAGE_PERSON_CHOICES],
+            },
+            {
+                "name": "anfrage_art",
+                "label": "Anfrage Art",
+                "type": "select",
+                "required": True,
+                "options": [{"value": c[0], "label": c[1]} for c in ANFRAGE_ART_CHOICES],
+            },
+        ]
+        return Response({"fields": fields})
 
     @action(detail=True, methods=['post'], url_path='assign-employee')
     def assign_employee(self, request, pk=None):
