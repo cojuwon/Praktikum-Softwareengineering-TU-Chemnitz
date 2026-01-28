@@ -6,7 +6,7 @@ import PresetSelector from "@/components/statistik/PresetSelector";
 import Image from "next/image";
 
 export default function EditPresetPage() {
-    
+
     const [filters, setFilters] = useState<{ [key: string]: any }>({});
     const [filterDefinition, setFilterDefinition] = useState<FieldDefinition[] | null>(null);
     const [label, setLabel] = useState<string>("");
@@ -33,30 +33,30 @@ export default function EditPresetPage() {
 
     /** PRESETS LADEN */
     useEffect(() => {
-      async function loadPresets() {
-        try {
-          const res = await fetch("/api/statistik/presets");
-          const json = await res.json();
-          setPresets(json.presets);
-        } catch (e) {
-          console.error("Presets konnten nicht geladen werden:", e);
+        async function loadPresets() {
+            try {
+                const res = await fetch("/api/statistik/presets");
+                const json = await res.json();
+                setPresets(json.presets);
+            } catch (e) {
+                console.error("Presets konnten nicht geladen werden:", e);
+            }
         }
-      }
-      loadPresets();
+        loadPresets();
     }, []);
 
     /** WENN USER EIN PRESET WÄHLT */
     const handleSelectPreset = (presetId: string) => {
-      if (!presetId) return;
+        if (!presetId) return;
 
-      const preset = presets.find(p => String(p.id) === String(presetId));
-      if (!preset) return;
+        const preset = presets.find(p => String(p.id) === String(presetId));
+        if (!preset) return;
 
-      setCurrentPresetId(String(preset.id));
-      setFilters(preset.filters);
-      setLabel(preset.name);
-      setPresetType(preset.preset_type);
-      setStatusMessage(null);
+        setCurrentPresetId(String(preset.id));
+        setFilters(preset.filters);
+        setLabel(preset.name);
+        setPresetType(preset.preset_type);
+        setStatusMessage(null);
     };
 
     /** WENN USER FILTER ÄNDERT */
@@ -100,26 +100,14 @@ export default function EditPresetPage() {
 
     return (
         <div
-            style={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                overflow: "auto",
-                minHeight: "100vh",
-                padding: "10px 24px 0 24px",
-                backgroundColor: "#F3EEEE",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-            }}
+            className="flex flex-col justify-between h-full bg-[#F3EEEE] overflow-auto"
         >
             <div
                 style={{
                     maxWidth: "700px",
                     margin: "0 auto",
                     width: "100%",
+                    padding: "24px 24px 0 24px"
                 }}
             >
                 <Image
@@ -268,14 +256,7 @@ export default function EditPresetPage() {
                 alt=""
                 width={1400}
                 height={100}
-                style={{
-                    width: "150%",
-                    height: "auto",
-                    objectFit: "cover",
-                    transform: "scaleY(1) scaleX(1.21)",
-                    display: "block",
-                    marginLeft: "-10%",
-                }}
+                className="w-full h-auto object-cover block"
             />
         </div>
     );

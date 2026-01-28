@@ -89,26 +89,14 @@ export default function FallPage() {
 
   return (
     <div
-  style={{
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    overflow: "auto",
-    minHeight: "100vh",
-    padding: "10px 24px 0 24px",
-    backgroundColor: "#F3EEEE",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-  }}
->
+      className="flex flex-col justify-between h-full bg-[#F3EEEE] overflow-auto"
+    >
       <div
         style={{
           maxWidth: "700px",
           margin: "0 auto",
           width: "100%",
+          padding: "24px 24px 0 24px"
         }}
       >
         <Image
@@ -186,14 +174,7 @@ export default function FallPage() {
         alt=""
         width={1400}
         height={100}
-        style={{
-          width: "150%",
-          height: "auto",
-          objectFit: "cover",
-          transform: "scaleY(1) scaleX(1.21)",
-          display: "block",
-          marginLeft: "-10%",
-        }}
+        className="w-full h-auto object-cover block"
       />
     </div>
   );

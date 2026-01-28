@@ -1,29 +1,18 @@
 import Link from 'next/link';
-import { lusitana } from '@/components/ui/fonts';
+
 import Image from 'next/image';
 
 export default function Page() {
   return (
     <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        overflow: "auto",
-        padding: "10px 24px 0 24px",
-        backgroundColor: "#F3EEEE",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-      }}
+      className="flex flex-col justify-between h-full bg-[#F3EEEE] overflow-auto"
     >
       <div
         style={{
           maxWidth: "700px",
           margin: "0 auto",
           width: "100%",
+          padding: "24px 24px 0 24px"
         }}
       >
         <Image
@@ -83,74 +72,13 @@ export default function Page() {
             gap: "15px",
           }}
         >
-          <Link
-            href="/dashboard/anfrage"
-            style={{
-              width: "100%",
-              maxWidth: "350px",
-              backgroundColor: "transparent",
-              color: "#131313",
-              border: "3px solid #A0A8CD",
-              borderRadius: "8px",
-              padding: "10px 16px",
-              fontSize: "16px",
-              fontWeight: "500",
-              cursor: "pointer",
-              textAlign: "center",
-              textDecoration: "none",
-              display: "block",
-            }}
-          >
-            Anfrage
-          </Link>
-
-          <Link
-            href="/dashboard/fall"
-            style={{
-              width: "100%",
-              maxWidth: "350px",
-              backgroundColor: "transparent",
-              color: "#131313",
-              border: "3px solid #A0A8CD",
-              borderRadius: "8px",
-              padding: "10px 16px",
-              fontSize: "16px",
-              fontWeight: "500",
-              cursor: "pointer",
-              textAlign: "center",
-              textDecoration: "none",
-              display: "block",
-            }}
-          >
-            Fall
-          </Link>
-
-          <Link
-            href="/dashboard/statistik"
-            style={{
-              width: "100%",
-              maxWidth: "350px",
-              backgroundColor: "transparent",
-              color: "#131313",
-              border: "3px solid #A0A8CD",
-              borderRadius: "8px",
-              padding: "10px 16px",
-              fontSize: "16px",
-              fontWeight: "500",
-              cursor: "pointer",
-              textAlign: "center",
-              textDecoration: "none",
-              display: "block",
-            }}
-          >
-            Statistik
-          </Link>
+          {/* Navigation Links removed as they are now in the Sidebar */}
 
           <Link
             href="/dashboard/change-password"
             className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base"
           >
-            <span>Passwort ändern</span> 
+            <span>Passwort ändern</span>
           </Link>
 
         </div>
@@ -164,14 +92,7 @@ export default function Page() {
         alt=""
         width={1400}
         height={100}
-        style={{
-          width: "150%",
-          height: "auto",
-          objectFit: "cover",
-          transform: "scaleY(1) scaleX(1.21)",
-          display: "block",
-          marginLeft: "-10%",
-        }}
+        className="w-full h-auto object-cover block"
       />
     </div>
   );

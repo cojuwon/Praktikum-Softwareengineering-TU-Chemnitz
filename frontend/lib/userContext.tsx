@@ -5,6 +5,8 @@ import { getCurrentUser } from '@/lib/auth';
 
 type User = {
   id: number;
+  vorname_mb?: string;
+  nachname_mb?: string;
   rolle_mb: 'A' | 'E' | 'B';
   mail_mb: string;
 };

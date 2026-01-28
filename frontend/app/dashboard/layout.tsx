@@ -1,7 +1,6 @@
 "use client";
 
-import Navbar from '@/components/ui/dashboard/navbar';
-import SideNav from '@/components/ui/dashboard/sidenav';
+
 import { useUser } from '@/lib/userContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -39,19 +38,9 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col">
-      <ClientAuthWrapper>
-        <Navbar />
-        <div className="flex flex-1">
-          <aside className="hidden md:block w-64 border-r">
-            <SideNav />
-          </aside>
-          <main className="flex-1 p-4 overflow-auto">
-            {children}
-          </main>
-        </div>
-      </ClientAuthWrapper>
-    </div>
+    <ClientAuthWrapper>
+      {children}
+    </ClientAuthWrapper>
   );
 }
 
