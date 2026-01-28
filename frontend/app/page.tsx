@@ -5,7 +5,7 @@ import Image from 'next/image';
 export default function Page() {
   return (
     <div
-      className="flex flex-col justify-between h-full bg-[#F3EEEE] overflow-auto"
+      className="flex flex-col justify-between min-h-screen bg-[#F3EEEE] overflow-auto"
     >
       <div
         style={{
@@ -102,17 +102,7 @@ export default function Page() {
 
 
         </div>
-        <div className="flex items-center justify-center md:w-3/5 md:px-28 md:py-12">
 
-          <Image
-            src="/bellis-favicon.png"
-            width={512}
-            height={512}
-            alt="Bellis Logo"
-            className="hidden md:block"
-          />
-
-        </div>
       </div>
 
       <Image

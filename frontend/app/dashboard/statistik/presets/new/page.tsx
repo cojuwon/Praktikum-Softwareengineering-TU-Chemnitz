@@ -72,139 +72,128 @@ export default function NewPresetPage() {
 
     return (
         <div
-            className="flex flex-col justify-between h-full bg-[#F3EEEE] overflow-auto"
+            style={{
+                maxWidth: "700px",
+                margin: "0 auto",
+                width: "100%",
+                padding: "24px 24px 0 24px"
+            }}
         >
+            <Image
+                src="/bellis-favicon.png"
+                alt="Bellis Logo"
+                width={100}
+                height={100}
+                style={{
+                    width: "60px",
+                    height: "auto",
+                    objectFit: "contain",
+                    display: "block",
+                    margin: "20px auto",
+                }}
+            />
+
             <div
                 style={{
-                    maxWidth: "700px",
-                    margin: "0 auto",
-                    width: "100%",
-                    padding: "24px 24px 0 24px"
+                    backgroundColor: "white",
+                    padding: "40px 40px",
+                    margin: "0 20px 0px 20px",
+                    borderRadius: "12px 12px 0 0",
                 }}
             >
-                <Image
-                    src="/bellis-favicon.png"
-                    alt="Bellis Logo"
-                    width={100}
-                    height={100}
+                <h1
                     style={{
-                        width: "60px",
-                        height: "auto",
-                        objectFit: "contain",
-                        display: "block",
-                        margin: "20px auto",
-                    }}
-                />
-
-                <div
-                    style={{
-                        backgroundColor: "white",
-                        padding: "40px 40px",
-                        margin: "0 20px 0px 20px",
-                        borderRadius: "12px 12px 0 0",
+                        fontSize: "28px",
+                        fontWeight: "600",
+                        color: "#42446F",
+                        marginBottom: "6px",
+                        textAlign: "center",
                     }}
                 >
-                    <h1
-                        style={{
-                            fontSize: "28px",
-                            fontWeight: "600",
-                            color: "#42446F",
-                            marginBottom: "6px",
-                            textAlign: "center",
-                        }}
-                    >
-                        Neues Preset anlegen
-                    </h1>
-                    <p
-                        style={{
-                            fontSize: "14px",
-                            color: "#6b7280",
-                            textAlign: "center",
-                            margin: 0,
-                        }}
-                    >
-                        Erstellen Sie ein neues Preset
-                    </p>
-                </div>
-
-                <div
+                    Neues Preset
+                </h1>
+                <p
                     style={{
-                        backgroundColor: "white",
-                        padding: "20px 40px 30px 40px",
-                        margin: "0 20px",
-                        borderRadius: "0 0 12px 12px",
+                        fontSize: "14px",
+                        color: "#6b7280",
+                        textAlign: "center",
+                        margin: 0,
                     }}
                 >
-                    <div style={{ marginBottom: "20px" }}>
-                        <label style={{ display: "block", marginBottom: "8px", fontWeight: "500", color: "#374151" }}>
-                            Name des Presets:
-                        </label>
-                        <input
-                            type="text"
-                            value={label}
-                            onChange={(e) => setLabel(e.target.value)}
-                            style={{
-                                width: "100%",
-                                border: "2px solid #052a61ff",
-                                borderRadius: "6px",
-                                padding: "10px",
-                                fontSize: "16px",
-                                boxSizing: "border-box",
-                            }}
-                        />
-                    </div>
+                    Erstellen Sie eine neue Filter-Voreinstellung
+                </p>
+            </div>
 
-                    <div style={{ marginBottom: "20px" }}>
-                        <label style={{ display: "block", marginBottom: "8px", fontWeight: "500", color: "#374151" }}>
-                            Art des Presets:
-                        </label>
-                        <select
-                            value={presetType}
-                            onChange={(e) => setPresetType(e.target.value as "shared" | "private")}
-                            style={{
-                                width: "100%",
-                                border: "2px solid #052a61ff",
-                                borderRadius: "6px",
-                                padding: "10px",
-                                fontSize: "16px",
-                                boxSizing: "border-box",
-                            }}
-                        >
-                            <option value="">Bitte wählen…</option>
-                            <option value="shared">Geteiltes Preset</option>
-                            <option value="private">Privates Preset</option>
-                        </select>
-                    </div>
+            <div
+                style={{
+                    backgroundColor: "white",
+                    padding: "20px 40px 30px 40px",
+                    margin: "0 20px",
+                    borderRadius: "0 0 12px 12px",
+                }}
+            >
+                {!filterDefinition && <p style={{ textAlign: "center" }}>Lade Filter-Definitionen…</p>}
 
-                    <h2
-                        style={{
-                            fontSize: "20px",
-                            fontWeight: "600",
-                            color: "#42446F",
-                            marginTop: "30px",
-                            marginBottom: "15px",
-                        }}
-                    >
-                        Filter setzen:
-                    </h2>
-                    {filterDefinition && (
+                {filterDefinition && (
+                    <form onSubmit={handleSave}>
+                        <div style={{ marginBottom: "20px" }}>
+                            <label style={{ display: "block", fontWeight: "500", marginBottom: "5px" }}>
+                                Preset Name
+                            </label>
+                            <input
+                                type="text"
+                                value={presetName}
+                                onChange={(e) => setPresetName(e.target.value)}
+                                style={{
+                                    width: "100%",
+                                    padding: "8px 12px",
+                                    borderRadius: "4px",
+                                    border: "1px solid #ccc",
+                                }}
+                                required
+                            />
+                        </div>
+
+                        <h3 style={{ fontSize: "18px", marginBottom: "10px", color: "#42446F" }}>Filterwerte</h3>
                         <DynamicFilterForm
                             definition={filterDefinition}
                             values={filters}
-                            onChange={handleFilterChange}
-                            onSubmit={handleSubmit}
+                            onChange={(vals) => setFilters(vals)}
+                            onSubmit={() => { }} // prevent default enter submit
                         />
-                    )}
-                </div>
-            </div>
 
-            <Image
-                src="/drei-welle-zusammenblau.png"
-                alt=""
-                width={1400}
-                height={100}
-                className="w-full h-auto object-cover block"
-            />
+                        <div style={{ marginTop: "20px", display: "flex", gap: "10px", justifyContent: "center" }}>
+                            <button
+                                type="button"
+                                onClick={() => router.back()}
+                                style={{
+                                    padding: "10px 20px",
+                                    borderRadius: "8px",
+                                    border: "1px solid #ccc",
+                                    backgroundColor: "white",
+                                    cursor: "pointer",
+                                }}
+                            >
+                                Abbrechen
+                            </button>
+                            <button
+                                type="submit"
+                                style={{
+                                    padding: "10px 20px",
+                                    borderRadius: "8px",
+                                    border: "none",
+                                    backgroundColor: "#22c55e",
+                                    color: "white",
+                                    cursor: "pointer",
+                                    fontWeight: "500",
+                                }}
+                            >
+                                Speichern
+                            </button>
+                        </div>
+                    </form>
+                )}
+            </div>
         </div>
     );
 }
