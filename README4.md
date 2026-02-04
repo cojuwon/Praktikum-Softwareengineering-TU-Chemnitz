@@ -31,7 +31,7 @@ Die folgende Übersicht beschreibt die wichtigsten Ordner und Dateien im `main`-
 ├── requirements/         # Anforderungsdokumente und theoretische Ausarbeitungen
 ├── docker-compose.yml    # Docker-Compose-Konfiguration
 └── .env.example          # Beispielhafte Umgebungsvariablen
-
+```
 
 ### Beschreibung der Hauptordner
 
