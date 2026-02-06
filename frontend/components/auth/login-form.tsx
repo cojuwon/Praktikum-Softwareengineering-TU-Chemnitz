@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { login } from '@/lib/auth';
+import Link from 'next/link';
 
 export default function LoginForm() {
   const router = useRouter();
@@ -45,48 +46,66 @@ export default function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
+
+    <form onSubmit={handleSubmit} className="mx-auto w-full max-w-[400px] space-y-3">
       <div className="rounded-lg bg-gray-50 px-6 pb-4 pt-8">
-        <h1 className={`${lusitana.className} mb-3 text-2xl`}>Please log in</h1>
+        <h1 className="mb-1 text-center text-[28px] font-semibold text-[#42446F]">
+          Anmeldung
+        </h1>
+    
+    <label className="text-center text-sm text-gray-500" htmlFor="email">
+      Email:
+    </label>
+    <input
+      className="block w-full rounded-md border border-gray-200 py-[9px] pl-3 text-sm"
+      id="email"
+      type="email"
+      name="email"
+      required
+    />
 
-        <label className="block text-xs font-medium" htmlFor="email">
-          Email:
-        </label>
-        <input
-          className="block w-full rounded-md border border-gray-200 py-[9px] pl-3 text-sm"
-          id="email"
-          type="email"
-          name="email"
-          required
-        />
+    <label className="text-center text-sm text-gray-500" htmlFor="password">
+      Passwort:
+    </label>
+    <input
+      className="block w-full rounded-md border border-gray-200 py-[9px] pl-3 text-sm"
+      id="password"
+      type="password"
+      name="password"
+      required
+      minLength={6}
+    />
 
-        <label className="mt-4 block text-xs font-medium" htmlFor="password">
-          Password:
-        </label>
-        <input
-          className="block w-full rounded-md border border-gray-200 py-[9px] pl-3 text-sm"
-          id="password"
-          type="password"
-          name="password"
-          required
-          minLength={6}
-        />
+    {/* Buttons */}
+    <div className="space-y-2 pt-4">
+      <Button
+        type="submit"
+        className="w-full bg-[#294D9D] hover:bg-[#294D9D] text-white flex justify-center items-center"
+        aria-disabled={isPending}
+      >
+        Bestätigung
+      </Button>
 
-        <Button className="mt-4 w-full" aria-disabled={isPending}>
-          Submit <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
-        </Button>
+      <Link
+        href="/forgot-password"
+        className="w-full bg-[#294D9D] hover:bg-[#294D9D] text-white flex justify-center items-center rounded-lg px-6 py-3 text-sm font-medium text-center"
+      >
+        Passwort vergessen
+      </Link>
+    </div>
 
-        {errorMessage && (
-          <div className="flex items-center space-x-1 text-red-500 mt-2">
-            <ExclamationCircleIcon className="h-5 w-5" />
-            <p className="text-sm">{errorMessage}</p>
-          </div>
-        )}
+    {errorMessage && (
+      <div className="flex items-center space-x-1 text-red-500 mt-2">
+        <ExclamationCircleIcon className="h-5 w-5" />
+        <p className="text-sm">{errorMessage}</p>
       </div>
-    </form>
+    )}
+  </div>
+</form>
   );
 }
 
+/*
 
 /*'use client';
 
