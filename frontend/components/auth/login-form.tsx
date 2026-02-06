@@ -76,19 +76,18 @@ export default function LoginForm() {
       minLength={6}
     />
 
-    {/* Buttons */}
     <div className="space-y-2 pt-4">
-      <Button
+      <button
         type="submit"
-        className="w-full bg-[#294D9D] hover:bg-[#294D9D] text-white flex justify-center items-center"
-        aria-disabled={isPending}
+        className="w-full bg-[#294D9D] hover:bg-[#1E40AF] text-white flex justify-center items-center rounded-lg px-6 py-3 text-sm font-medium text-center"
+        disabled={isPending}
       >
-        Bestätigung
-      </Button>
+      Bestätigung
+      </button>
 
       <Link
         href="/forgot-password"
-        className="w-full bg-[#294D9D] hover:bg-[#294D9D] text-white flex justify-center items-center rounded-lg px-6 py-3 text-sm font-medium text-center"
+        className="w-full bg-[#294D9D]  hover:bg-blue-400 text-white flex justify-center items-center rounded-lg px-6 py-3 text-sm font-medium text-center"
       >
         Passwort vergessen
       </Link>

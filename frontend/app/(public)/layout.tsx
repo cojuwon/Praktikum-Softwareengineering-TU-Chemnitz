@@ -33,18 +33,3 @@ export default function PublicLayout({
     </div>
   );
 }
-
-
-/*
-   <div className="mx-auto w-full max-w-[700px] px-6 pt-6">
-        <Image
-          src="/bellis-favicon.png"
-          alt="Bellis Logo"
-          width={60}
-          height={60}
-          className="mx-auto my-16 h-auto w-[60px]"
-        />
-
-        {children}
-      </div>
-*/
