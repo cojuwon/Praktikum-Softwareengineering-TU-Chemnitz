@@ -1,4 +1,5 @@
-// app/api/anfrage/[id]/route.ts
+
+/*
 import { NextResponse } from "next/server";
 
 // ----------------------------------
@@ -79,3 +80,4 @@ export async function PUT(req: Request, context: { params: any }) {
     beratungstermine: fakeAnfrage[id].beratungstermine,
   });
 }
+*/
