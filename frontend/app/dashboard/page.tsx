@@ -45,20 +45,10 @@ export default function Page() {
         >
           Willkommen bei Bellis e.V.
         </h1>
-        <p
-          style={{
-            fontSize: "14px",
-            color: "#6b7280",
-            textAlign: "center",
-            margin: 0,
-          }}
-        >
         </div>
         <div className="flex items-center justify-center p-6 md:w-3/5 md:px-28 md:py-12">
 
         </div>
       </div>
-
-    </div>
   );
 }
