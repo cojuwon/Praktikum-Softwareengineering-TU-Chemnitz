@@ -18,12 +18,12 @@ async function validateSession(token: string): Promise<boolean> {
 
     return response.ok;
   } catch (error) {
-    console.error('[Middleware] Session validation failed:', error);
+    console.error('[Proxy] Session validation failed:', error);
     return false;
   }
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname === '/login') {
