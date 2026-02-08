@@ -8,9 +8,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { login } from '@/lib/auth';
 import Link from 'next/link';
+import { useUser } from '@/lib/userContext';
 
 export default function LoginForm() {
   const router = useRouter();
+  const { setUser } = useUser();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
 
@@ -26,6 +28,9 @@ export default function LoginForm() {
     try {
       const result = await login(email, password);
       console.log(result.user.rolle_mb);
+
+      // Update UserContext so the app knows we are logged in
+      setUser(result.user);
 
       // Weiterleiten anhand Rolle
       switch (result.user.rolle_mb) {
@@ -52,55 +57,55 @@ export default function LoginForm() {
         <h1 className="mb-1 text-center text-[28px] font-semibold text-[#42446F]">
           Anmeldung
         </h1>
-    
-    <label className="text-center text-sm text-gray-500" htmlFor="email">
-      Email:
-    </label>
-    <input
-      className="block w-full rounded-md border border-gray-200 py-[9px] pl-3 text-sm"
-      id="email"
-      type="email"
-      name="email"
-      required
-    />
 
-    <label className="text-center text-sm text-gray-500" htmlFor="password">
-      Passwort:
-    </label>
-    <input
-      className="block w-full rounded-md border border-gray-200 py-[9px] pl-3 text-sm"
-      id="password"
-      type="password"
-      name="password"
-      required
-      minLength={6}
-    />
+        <label className="text-center text-sm text-gray-500" htmlFor="email">
+          Email:
+        </label>
+        <input
+          className="block w-full rounded-md border border-gray-200 py-[9px] pl-3 text-sm"
+          id="email"
+          type="email"
+          name="email"
+          required
+        />
 
-    <div className="space-y-2 pt-4">
-      <button
-        type="submit"
-        className="w-full bg-[#294D9D] hover:bg-[#1E40AF] text-white flex justify-center items-center rounded-lg px-6 py-3 text-sm font-medium text-center"
-        disabled={isPending}
-      >
-      Bestätigung
-      </button>
+        <label className="text-center text-sm text-gray-500" htmlFor="password">
+          Passwort:
+        </label>
+        <input
+          className="block w-full rounded-md border border-gray-200 py-[9px] pl-3 text-sm"
+          id="password"
+          type="password"
+          name="password"
+          required
+          minLength={6}
+        />
 
-      <Link
-        href="/forgot-password"
-        className="w-full bg-[#294D9D]  hover:bg-blue-400 text-white flex justify-center items-center rounded-lg px-6 py-3 text-sm font-medium text-center"
-      >
-        Passwort vergessen
-      </Link>
-    </div>
+        <div className="space-y-2 pt-4">
+          <button
+            type="submit"
+            className="w-full bg-[#294D9D] hover:bg-[#1E40AF] text-white flex justify-center items-center rounded-lg px-6 py-3 text-sm font-medium text-center"
+            disabled={isPending}
+          >
+            Bestätigung
+          </button>
 
-    {errorMessage && (
-      <div className="flex items-center space-x-1 text-red-500 mt-2">
-        <ExclamationCircleIcon className="h-5 w-5" />
-        <p className="text-sm">{errorMessage}</p>
+          <Link
+            href="/forgot-password"
+            className="w-full bg-[#294D9D]  hover:bg-blue-400 text-white flex justify-center items-center rounded-lg px-6 py-3 text-sm font-medium text-center"
+          >
+            Passwort vergessen
+          </Link>
+        </div>
+
+        {errorMessage && (
+          <div className="flex items-center space-x-1 text-red-500 mt-2">
+            <ExclamationCircleIcon className="h-5 w-5" />
+            <p className="text-sm">{errorMessage}</p>
+          </div>
+        )}
       </div>
-    )}
-  </div>
-</form>
+    </form>
   );
 }
 
