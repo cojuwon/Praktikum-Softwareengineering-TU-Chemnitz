@@ -99,9 +99,16 @@ export async function apiFetch(
       throw new Error('Session abgelaufen');
     }
 
+    const data = await refreshRes.json();
+    localStorage.setItem('accessToken', data.access);
+
+    // Update header with new token
+    headers.set("Authorization", `Bearer ${data.access}`);
+
     // Retry ursprüngliche Anfrage
     res = await fetch(`${backendUrl}${input}`, {
       ...init,
+      headers,
       credentials: 'include',
     });
   }
