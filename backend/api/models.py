@@ -398,19 +398,26 @@ class Statistik(models.Model):
 
 class Eingabefeld(models.Model):
     TYP_CHOICES = [
-        ('Text', 'Text'),
-        ('Zahl', 'Zahl'),
-        ('Datum', 'Datum'),
+        ('text', 'Text'),
+        ('number', 'Zahl'),
+        ('date', 'Datum'),
+        ('select', 'Auswahl'),
+        ('multiselect', 'Mehrfachauswahl'),
     ]
 
     feldID = models.BigAutoField(primary_key=True)
-    name = models.CharField(max_length=255, verbose_name="Name des Feldes")
-    typ = models.CharField(max_length=10, choices=TYP_CHOICES, verbose_name="Datentyp")
-    wert = models.TextField(blank=True, null=True, verbose_name="Wert")
+    name = models.CharField(max_length=255, verbose_name="Name des Feldes (Technisch)", help_text="Muss mit dem Modell-Feld übereinstimmen")
+    label = models.CharField(max_length=255, verbose_name="Beschriftung (Label)", default="")
+    typ = models.CharField(max_length=20, choices=TYP_CHOICES, verbose_name="Datentyp")
+    required = models.BooleanField(default=False, verbose_name="Pflichtfeld")
+    options = models.JSONField(default=list, blank=True, verbose_name="Optionen (für Select)", help_text="Liste von Objekten: [{'value': 'X', 'label': 'Y'}]")
+    sort_order = models.IntegerField(default=0, verbose_name="Reihenfolge")
+    default_value = models.TextField(blank=True, null=True, verbose_name="Standardwert")
 
     class Meta:
-        verbose_name = "Eingabefeld"
-        verbose_name_plural = "Eingabefelder"
+        verbose_name = "Eingabefeld (Formular-Konfiguration)"
+        verbose_name_plural = "Eingabefelder (Konfiguration)"
+        ordering = ['sort_order', 'label']
 
     def __str__(self):
-        return f"{self.name} ({self.typ})"
+        return f"{self.label} ({self.typ})"

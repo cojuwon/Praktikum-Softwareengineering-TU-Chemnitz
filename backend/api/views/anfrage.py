@@ -23,7 +23,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db.models import Q
 
-from api.models import Anfrage, Konto, STANDORT_CHOICES, ANFRAGE_PERSON_CHOICES, ANFRAGE_ART_CHOICES
+from api.models import Anfrage, Konto, STANDORT_CHOICES, ANFRAGE_PERSON_CHOICES, ANFRAGE_ART_CHOICES, Eingabefeld
 from api.serializers import AnfrageSerializer
 from api.permissions import CanManageOwnData
 
@@ -149,42 +149,23 @@ class AnfrageViewSet(viewsets.ModelViewSet):
     def form_fields(self, request):
         """
         Liefert die Definition der Eingabefelder für eine neue Anfrage.
+        Die Felder werden dynamisch aus der Tabelle 'Eingabefeld' geladen.
         """
-        fields = [
-            {
-                "name": "anfrage_weg",
-                "label": "Anfrageweg",
-                "type": "text",
-                "required": True,
-            },
-            {
-                "name": "anfrage_datum",
-                "label": "Datum der Anfrage",
-                "type": "date",
-                "required": True,
-            },
-            {
-                "name": "anfrage_ort",
-                "label": "Anfrage Ort",
-                "type": "select",
-                "required": True,
-                "options": [{"value": c[0], "label": c[1]} for c in STANDORT_CHOICES],
-            },
-            {
-                "name": "anfrage_person",
-                "label": "Anfragende Person",
-                "type": "select",
-                "required": True,
-                "options": [{"value": c[0], "label": c[1]} for c in ANFRAGE_PERSON_CHOICES],
-            },
-            {
-                "name": "anfrage_art",
-                "label": "Anfrage Art",
-                "type": "select",
-                "required": True,
-                "options": [{"value": c[0], "label": c[1]} for c in ANFRAGE_ART_CHOICES],
-            },
-        ]
+        fields_qs = Eingabefeld.objects.all().order_by('sort_order')
+        
+        fields = []
+        for f in fields_qs:
+            field_def = {
+                "name": f.name,
+                "label": f.label,
+                "type": f.typ,
+                "required": f.required,
+            }
+            if f.options:
+                field_def["options"] = f.options
+            
+            fields.append(field_def)
+
         return Response({"fields": fields})
 
     @action(detail=True, methods=['post'], url_path='assign-employee')
