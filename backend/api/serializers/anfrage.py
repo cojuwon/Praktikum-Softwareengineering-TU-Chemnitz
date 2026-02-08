@@ -55,6 +55,9 @@ class AnfrageSerializer(serializers.ModelSerializer):
 
     def validate_anfrage_ort(self, value):
         """Validiert, dass anfrage_ort ein gültiger STANDORT_CHOICES Wert ist."""
+        if not value:
+            return value
+            
         valid_choices = [choice[0] for choice in STANDORT_CHOICES]
         if value not in valid_choices:
             raise serializers.ValidationError(
@@ -64,6 +67,9 @@ class AnfrageSerializer(serializers.ModelSerializer):
 
     def validate_anfrage_person(self, value):
         """Validiert, dass anfrage_person ein gültiger ANFRAGE_PERSON_CHOICES Wert ist."""
+        if not value:
+            return value
+
         valid_choices = [choice[0] for choice in ANFRAGE_PERSON_CHOICES]
         if value not in valid_choices:
             raise serializers.ValidationError(
@@ -73,6 +79,9 @@ class AnfrageSerializer(serializers.ModelSerializer):
 
     def validate_anfrage_art(self, value):
         """Validiert, dass anfrage_art ein gültiger ANFRAGE_ART_CHOICES Wert ist."""
+        if not value:
+            return value
+
         valid_choices = [choice[0] for choice in ANFRAGE_ART_CHOICES]
         if value not in valid_choices:
             raise serializers.ValidationError(

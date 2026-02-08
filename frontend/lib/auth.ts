@@ -28,14 +28,15 @@ export async function login(email: string, password: string) {
 
   const data = await res.json();
 
-  // ⚠️ NUR falls Backend keine Cookies setzt
-  document.cookie = `accessToken=${data.access}; path=/; max-age=54000`; // 15h fallback
-  document.cookie = `refreshToken=${data.refresh}; path=/; max-age=54000`;
+  // ⚠️ ACCESSTOKEN + REFRESH TOKEN (Rotation)
+  // Expiry Logic: 2 hours (match backend)
+  const expiryDate = new Date().getTime() + 2 * 60 * 60 * 1000;
 
   // Persist tokens for restarts
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem('accessToken', data.access);
     localStorage.setItem('refreshToken', data.refresh);
+    localStorage.setItem('sessionExpiry', expiryDate.toString());
   }
 
   return data;
@@ -116,6 +117,7 @@ export async function logout() {
   if (typeof localStorage !== 'undefined') {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
+    localStorage.removeItem('sessionExpiry');
   }
   document.cookie = 'accessToken=; Max-Age=0; path=/';
   document.cookie = 'refreshToken=; Max-Age=0; path=/';
@@ -261,7 +263,19 @@ export async function refreshToken(): Promise<string> {
   }
 
   const data = await res.json();
-  localStorage.setItem('accessToken', data.access);
+
+  // TOKEN ROTATION: Backend returns new access AND refresh token
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('accessToken', data.access);
+    if (data.refresh) {
+      localStorage.setItem('refreshToken', data.refresh);
+    }
+
+    // Reset Expiry to +2 hours
+    const expiryDate = new Date().getTime() + 2 * 60 * 60 * 1000;
+    localStorage.setItem('sessionExpiry', expiryDate.toString());
+  }
+
   return data.access;
 }
 
