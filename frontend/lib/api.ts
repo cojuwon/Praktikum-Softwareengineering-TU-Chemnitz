@@ -75,8 +75,23 @@ export async function apiFetch(
 
   // Access Token abgelaufen?
   if (res.status === 401) {
+    // Get refresh token from cookie or localStorage
+    let refreshToken = typeof localStorage !== 'undefined' ? localStorage.getItem("refreshToken") : null;
+    if (!refreshToken && typeof document !== 'undefined') {
+      const match = document.cookie.match(new RegExp('(^| )refreshToken=([^;]+)'));
+      if (match) refreshToken = match[2];
+    }
+
+    if (!refreshToken) {
+      throw new Error('Kein Refresh Token gefunden');
+    }
+
     const refreshRes = await fetch(`${backendUrl}/api/auth/token/refresh/`, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ refresh: refreshToken }),
       credentials: 'include',
     });
 
