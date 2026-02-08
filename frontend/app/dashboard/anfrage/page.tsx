@@ -214,7 +214,7 @@ export default function AnfrageListPage() {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "80px 120px 1fr 1fr 1fr 120px",
+                  gridTemplateColumns: "80px 120px 1fr 1fr 1fr",
                   padding: "0 16px",
                   marginBottom: "5px",
                   fontWeight: "600",
@@ -228,7 +228,6 @@ export default function AnfrageListPage() {
                 <span>Art</span>
                 <span>Ort</span>
                 <span>Person</span>
-                <span style={{ textAlign: "right" }}>Aktion</span>
               </div>
 
               {anfragen.map((a) => (
@@ -237,7 +236,7 @@ export default function AnfrageListPage() {
                   onClick={() => router.push(`/dashboard/anfrage/edit/${a.anfrage_id}`)}
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "80px 120px 1fr 1fr 1fr 120px",
+                    gridTemplateColumns: "80px 120px 1fr 1fr 1fr",
                     alignItems: "center",
                     gap: "15px",
                     backgroundColor: "white",
@@ -289,35 +288,6 @@ export default function AnfrageListPage() {
                   <span style={{ color: "#4b5563", fontSize: "14px" }}>
                     {a.anfrage_person}
                   </span>
-
-                  {/* Action Button */}
-                  <div style={{ textAlign: "right" }}>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/dashboard/anfrage/edit/${a.anfrage_id}`);
-                      }}
-                      style={{
-                        backgroundColor: "transparent",
-                        border: "1px solid #A0A8CD",
-                        color: "#42446F",
-                        borderRadius: "6px",
-                        padding: "6px 12px",
-                        fontSize: "13px",
-                        fontWeight: "500",
-                        cursor: "pointer",
-                        transition: "background-color 0.2s"
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = "#e0e7ff";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = "transparent";
-                      }}
-                    >
-                      Bearbeiten
-                    </button>
-                  </div>
                 </div>
               ))}
             </div>

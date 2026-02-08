@@ -210,10 +210,32 @@ export default function AnfrageEditPage() {
           {!isEditing && (
             <button
               onClick={() => setIsEditing(true)}
-              className="p-2 text-gray-400 hover:text-[#42446F] hover:bg-gray-50 rounded-full transition-colors"
-              title="Bearbeiten"
+              style={{
+                backgroundColor: "white",
+                border: "1px solid #d1d5db",
+                color: "#374151",
+                borderRadius: "6px",
+                padding: "8px 16px",
+                fontSize: "14px",
+                fontWeight: "500",
+                cursor: "pointer",
+                transition: "all 0.2s",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#f9fafb";
+                e.currentTarget.style.borderColor = "#c6cdd5";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "white";
+                e.currentTarget.style.borderColor = "#d1d5db";
+              }}
             >
-              <PencilSquareIcon className="h-6 w-6" />
+              <PencilSquareIcon className="h-4 w-4" />
+              Bearbeiten
             </button>
           )}
         </div>
