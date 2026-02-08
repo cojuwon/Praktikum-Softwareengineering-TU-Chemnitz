@@ -20,7 +20,7 @@ def init_fields():
         {
             "name": "anfrage_weg",
             "label": "Anfrageweg",
-            "typ": "text",
+            "typ": "textarea",
             "required": True,
             "sort_order": 1,
         },
@@ -59,7 +59,7 @@ def init_fields():
 
     for f in fields:
         options = f.pop('options', list())
-        Eingabefeld.objects.create(options=options, **f)
+        Eingabefeld.objects.create(options=options, context="anfrage", **f)
         print(f"Created field: {f['label']}")
 
     print("Done.")

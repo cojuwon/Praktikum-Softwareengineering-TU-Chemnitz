@@ -151,7 +151,7 @@ class AnfrageViewSet(viewsets.ModelViewSet):
         Liefert die Definition der Eingabefelder für eine neue Anfrage.
         Die Felder werden dynamisch aus der Tabelle 'Eingabefeld' geladen.
         """
-        fields_qs = Eingabefeld.objects.all().order_by('sort_order')
+        fields_qs = Eingabefeld.objects.filter(context='anfrage').order_by('sort_order')
         
         fields = []
         for f in fields_qs:

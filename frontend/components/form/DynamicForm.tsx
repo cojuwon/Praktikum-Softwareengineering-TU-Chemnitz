@@ -4,7 +4,7 @@
 export type FieldDefinition = {
   name: string;
   label: string;
-  type: "text" | "date" | "select" | "multiselect";
+  type: "text" | "textarea" | "date" | "select" | "multiselect";
   required?: boolean;
   options?: (string | { value: string; label: string })[];
 };
@@ -32,6 +32,17 @@ function FieldRenderer({ field, value, onChange }: {
         <input
           id={field.name}
           type="text"
+          value={value ?? ""}
+          onChange={(e) => onChange(e.target.value)}
+          className={inputBaseClass}
+        />
+      );
+
+    case "textarea":
+      return (
+        <textarea
+          id={field.name}
+          rows={4}
           value={value ?? ""}
           onChange={(e) => onChange(e.target.value)}
           className={inputBaseClass}

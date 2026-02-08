@@ -348,7 +348,7 @@ class Gewaltfolge(models.Model):
 
 class Anfrage(models.Model):
     anfrage_id = models.BigAutoField(primary_key=True)
-    anfrage_weg = models.CharField(max_length=100, verbose_name="Anfrageweg (Freitext)")
+    anfrage_weg = models.TextField(verbose_name="Anfrageweg (Freitext)")
     anfrage_datum = models.DateField(default=timezone.localdate, verbose_name="Datum der Anfrage")
     anfrage_ort = models.CharField(max_length=2, choices=STANDORT_CHOICES, verbose_name="Anfrage Ort")
     anfrage_person = models.CharField(max_length=4, choices=ANFRAGE_PERSON_CHOICES, verbose_name="Anfrage Person (wer)")
@@ -398,14 +398,21 @@ class Statistik(models.Model):
 
 class Eingabefeld(models.Model):
     TYP_CHOICES = [
-        ('text', 'Text'),
+        ('text', 'Text (kurz)'),
+        ('textarea', 'Text (lang)'),
         ('number', 'Zahl'),
         ('date', 'Datum'),
         ('select', 'Auswahl'),
         ('multiselect', 'Mehrfachauswahl'),
     ]
 
+    CONTEXT_CHOICES = [
+        ('anfrage', 'Anfrage'),
+        ('fall', 'Fall'),
+    ]
+
     feldID = models.BigAutoField(primary_key=True)
+    context = models.CharField(max_length=20, choices=CONTEXT_CHOICES, default='anfrage', verbose_name="Kontext")
     name = models.CharField(max_length=255, verbose_name="Name des Feldes (Technisch)", help_text="Muss mit dem Modell-Feld übereinstimmen")
     label = models.CharField(max_length=255, verbose_name="Beschriftung (Label)", default="")
     typ = models.CharField(max_length=20, choices=TYP_CHOICES, verbose_name="Datentyp")

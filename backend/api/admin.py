@@ -63,8 +63,8 @@ class StatistikAdmin(admin.ModelAdmin):
 
 @admin.register(Eingabefeld)
 class EingabefeldAdmin(admin.ModelAdmin):
-    list_display = ('label', 'name', 'typ', 'required', 'sort_order')
-    list_filter = ('typ', 'required')
+    list_display = ('label', 'name', 'context', 'typ', 'required', 'sort_order')
+    list_filter = ('context', 'typ', 'required')
     search_fields = ('label', 'name')
     ordering = ('sort_order', 'label')
 
