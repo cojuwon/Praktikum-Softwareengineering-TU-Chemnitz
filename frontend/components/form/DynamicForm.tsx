@@ -121,23 +121,27 @@ export function DynamicForm({ definition, values, onChange, onSubmit }: Props) {
       }}
       className="space-y-5"
     >
-      {definition.map((field) => (
-        <div key={field.name}>
-          <label
-            htmlFor={field.name}
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            {field.label}
-            {field.required && <span className="text-red-500 ml-1">*</span>}
-          </label>
+      {definition.map((field) => {
+        // Debugging
+        // console.log(`Field: ${field.name}, Type: ${field.type}, Value:`, values[field.name]);
+        return (
+          <div key={field.name}>
+            <label
+              htmlFor={field.name}
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              {field.label}
+              {field.required && <span className="text-red-500 ml-1">*</span>}
+            </label>
 
-          <FieldRenderer
-            field={field}
-            value={values[field.name]}
-            onChange={(value) => onChange(field.name, value)}
-          />
-        </div>
-      ))}
+            <FieldRenderer
+              field={field}
+              value={values[field.name]}
+              onChange={(value) => onChange(field.name, value)}
+            />
+          </div>
+        );
+      })}
 
       {onSubmit && (
         <div className="pt-4">

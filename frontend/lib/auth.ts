@@ -29,8 +29,14 @@ export async function login(email: string, password: string) {
   const data = await res.json();
 
   // ⚠️ NUR falls Backend keine Cookies setzt
-  document.cookie = `accessToken=${data.access}; path=/`;
-  document.cookie = `refreshToken=${data.refresh}; path=/`;
+  document.cookie = `accessToken=${data.access}; path=/; max-age=54000`; // 15h fallback
+  document.cookie = `refreshToken=${data.refresh}; path=/; max-age=54000`;
+
+  // Persist tokens for restarts
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('accessToken', data.access);
+    localStorage.setItem('refreshToken', data.refresh);
+  }
 
   return data;
 }
@@ -105,6 +111,14 @@ export async function logout() {
   if (!res.ok) {
     throw new Error('Logout fehlgeschlagen');
   }
+
+  // Clear local storage and cookies
+  if (typeof localStorage !== 'undefined') {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+  }
+  document.cookie = 'accessToken=; Max-Age=0; path=/';
+  document.cookie = 'refreshToken=; Max-Age=0; path=/';
 
   return true;
 }
