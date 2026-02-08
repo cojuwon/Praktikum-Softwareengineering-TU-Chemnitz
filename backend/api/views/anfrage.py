@@ -116,17 +116,23 @@ class AnfrageViewSet(viewsets.ModelViewSet):
         # Filter nach Anfrage-Art
         anfrage_art = params.get('anfrage_art')
         if anfrage_art:
-            qs = qs.filter(anfrage_art=anfrage_art)
+            arts = [x.strip() for x in anfrage_art.split(',') if x.strip()]
+            if arts:
+                qs = qs.filter(anfrage_art__in=arts)
         
         # Filter nach Anfrage-Ort
         anfrage_ort = params.get('anfrage_ort')
         if anfrage_ort:
-            qs = qs.filter(anfrage_ort=anfrage_ort)
+            orte = [x.strip() for x in anfrage_ort.split(',') if x.strip()]
+            if orte:
+                qs = qs.filter(anfrage_ort__in=orte)
         
         # Filter nach Anfrage-Person
         anfrage_person = params.get('anfrage_person')
         if anfrage_person:
-            qs = qs.filter(anfrage_person=anfrage_person)
+            personen = [x.strip() for x in anfrage_person.split(',') if x.strip()]
+            if personen:
+                qs = qs.filter(anfrage_person__in=personen)
         
         # Filter nach Datumsbereich
         datum_von = params.get('datum_von')

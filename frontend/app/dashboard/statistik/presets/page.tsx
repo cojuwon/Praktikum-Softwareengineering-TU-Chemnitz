@@ -6,8 +6,13 @@ import PresetSelector from "@/components/statistik/PresetSelector";
 import Link from 'next/link';
 import Image from 'next/image';
 
+type Preset = {
+  id: string;
+  name: string;
+};
+
 export default function PresetPage() {
-  const [presets, setPresets] = useState([]); // Placeholder for presets state
+  const [presets, setPresets] = useState<Preset[]>([]); // Placeholder for presets state
 
   // Placeholder for fetching presets, if needed
   useEffect(() => {
@@ -27,7 +32,7 @@ export default function PresetPage() {
     ]);
   }, []);
 
-  const handleDelete = (id) => {
+  const handleDelete = (id: string) => {
     // Placeholder for delete logic
     console.log(`Deleting preset with id: ${id}`);
     setPresets(presets.filter(preset => preset.id !== id));

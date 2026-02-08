@@ -24,6 +24,8 @@ function FieldRenderer({ field, value, onChange }: {
   value: any;
   onChange: (value: any) => void;
 }) {
+  const inputBaseClass = "block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm";
+
   switch (field.type) {
     case "text":
       return (
@@ -32,6 +34,7 @@ function FieldRenderer({ field, value, onChange }: {
           type="text"
           value={value ?? ""}
           onChange={(e) => onChange(e.target.value)}
+          className={inputBaseClass}
         />
       );
 
@@ -42,6 +45,7 @@ function FieldRenderer({ field, value, onChange }: {
           type="date"
           value={value ?? ""}
           onChange={(e) => onChange(e.target.value)}
+          className={inputBaseClass}
         />
       );
 
@@ -51,6 +55,7 @@ function FieldRenderer({ field, value, onChange }: {
           id={field.name}
           value={value ?? ""}
           onChange={(e) => onChange(e.target.value)}
+          className={inputBaseClass}
         >
           <option value="">-- bitte wählen --</option>
           {field.options?.map((o) => {
@@ -74,6 +79,7 @@ function FieldRenderer({ field, value, onChange }: {
           onChange={(e) =>
             onChange(Array.from(e.target.selectedOptions, (opt) => opt.value))
           }
+          className={`${inputBaseClass} min-h-[100px]`}
         >
           {field.options?.map((o) => {
             const val = typeof o === 'string' ? o : o.value;
@@ -102,12 +108,16 @@ export function DynamicForm({ definition, values, onChange, onSubmit }: Props) {
         e.preventDefault();
         onSubmit?.();
       }}
+      className="space-y-5"
     >
       {definition.map((field) => (
-        <div key={field.name} style={{ marginBottom: "1rem" }}>
-          <label htmlFor={field.name} style={{ display: "block", fontWeight: 500 }}>
+        <div key={field.name}>
+          <label
+            htmlFor={field.name}
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             {field.label}
-            {field.required && <span style={{ color: "red" }}> *</span>}
+            {field.required && <span className="text-red-500 ml-1">*</span>}
           </label>
 
           <FieldRenderer
@@ -118,7 +128,23 @@ export function DynamicForm({ definition, values, onChange, onSubmit }: Props) {
         </div>
       ))}
 
-      {onSubmit && <button type="submit">Formular abschicken</button>}
+      {onSubmit && (
+        <div className="pt-4">
+          {/* 
+               Button is rendered by parent usually if they want custom placement, 
+               but if `onSubmit` is passed here we render a default one. 
+               However, usually the parent handles the submit button.
+               I'll keep it but style it nicely just in case.
+            */}
+          <button
+            type="submit"
+            style={{ backgroundColor: "#42446F" }}
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Speichern
+          </button>
+        </div>
+      )}
     </form>
   );
 }
