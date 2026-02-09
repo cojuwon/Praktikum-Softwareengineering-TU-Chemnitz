@@ -22,11 +22,26 @@ export async function login(email: string, password: string) {
   });
 
   if (!res.ok) {
-    const err = await res.json();
+    let err;
+    try {
+      err = await res.json();
+    } catch (e) {
+      // Fallback if response is text/html (e.g. 404 or 500)
+      const text = await res.text();
+      console.error("Login failed with non-JSON response:", text);
+      throw new Error(`Login failed: ${res.status} ${res.statusText}`);
+    }
     throw new Error(err?.detail || 'Login fehlgeschlagen');
   }
 
-  const data = await res.json();
+  let data;
+  try {
+    data = await res.json();
+  } catch (e) {
+    const text = await res.text();
+    console.error("Login success response is not JSON:", text);
+    throw new Error("Server communication error: Invalid JSON response");
+  }
 
   // ⚠️ ACCESSTOKEN + REFRESH TOKEN (Rotation)
   // Expiry Logic: 2 hours (match backend)
@@ -85,7 +100,14 @@ export async function register(payload: {
     throw new Error(errorData?.detail || 'Registrierung fehlgeschlagen');
   }
 
-  const data = await res.json();
+  let data;
+  try {
+    data = await res.json();
+  } catch (e) {
+    const text = await res.text();
+    console.error("Registration success response is not JSON:", text);
+    throw new Error("Server communication error: Invalid JSON response");
+  }
 
   // Optional Auto-Login
   localStorage.setItem('accessToken', data.access);
@@ -137,7 +159,13 @@ export async function getCurrentUser(): Promise<User> {
     throw new Error('Nicht eingeloggt');
   }
 
-  return res.json();
+  try {
+    return await res.json();
+  } catch (e) {
+    const text = await res.text();
+    console.error("User fetch response is not JSON:", text);
+    throw new Error("Failed to load user data");
+  }
 }
 /*
 

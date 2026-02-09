@@ -16,7 +16,13 @@ export async function fetchAnfragenPages(query: string): Promise<number> {
       throw new Error('Fehler beim Laden der Anfragen');
     }
 
-    const data: { count: number; results: Anfrage[] } = await res.json();
+    let data: { count: number; results: Anfrage[] };
+    try {
+      data = await res.json();
+    } catch (e) {
+      console.error("fetchAnfragenPages: Invalid JSON response", await res.text());
+      throw new Error("Invalid server response");
+    }
     // count = Gesamtanzahl der Anfragen → daraus die Gesamtseiten berechnen
     return Math.ceil(data.count / PAGE_SIZE);
   } catch (error) {
@@ -35,7 +41,13 @@ export async function fetchAnfrage(query: string, page: number) {
 
     if (!res.ok) throw new Error("Fehler beim Laden der Anfragen");
 
-    const data: { count: number; results: Anfrage[] } = await res.json();
+    let data: { count: number; results: Anfrage[] };
+    try {
+      data = await res.json();
+    } catch (e) {
+      console.error("fetchAnfrage: Invalid JSON response", await res.text());
+      throw new Error("Invalid server response");
+    }
     return data.results;     // <-- WICHTIG!
   } catch (error) {
     console.error(error);
@@ -99,7 +111,14 @@ export async function apiFetch(
       throw new Error('Session abgelaufen');
     }
 
-    const data = await refreshRes.json();
+    let data;
+    try {
+      data = await refreshRes.json();
+    } catch (e) {
+      const text = await refreshRes.text();
+      console.error("Token refresh response is not JSON:", text);
+      throw new Error("Session abgelaufen (Invalid JSON from refresh)");
+    }
 
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('accessToken', data.access);
