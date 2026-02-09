@@ -169,6 +169,7 @@ class KlientIn(models.Model):
     klient_beruf = models.CharField(max_length=255, verbose_name="Beruf")
     
     klient_schwerbehinderung = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, verbose_name="Schwerbehinderung")
+    klient_migrationshintergrund = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, verbose_name="Migrationshintergrund", default='KA')
     klient_schwerbehinderung_detail = models.TextField(
         blank=True, 
         verbose_name="Form/Grad der Behinderung", 
@@ -209,6 +210,7 @@ class Preset(models.Model):
         # Custom Permissions für Preset-Verwaltung
         permissions = [
             ("can_share_preset", "Kann Presets mit anderen teilen"),
+            ("can_manage_presets", "Kann Presets verwalten"),
         ]
         
     def __str__(self):
@@ -390,10 +392,11 @@ class Statistik(models.Model):
     class Meta:
         verbose_name = "Statistik"
         verbose_name_plural = "Statistiken"
-        # Custom Permissions für Statistik-Export (nur für erweiterte Benutzer)
+        # Custom Permissions für Statistik-Export und Zugriff
         permissions = [
             ("can_export_statistik", "Kann Statistiken exportieren"),
             ("can_share_statistik", "Kann Statistiken teilen"),
+            ("can_view_statistics", "Kann Statistiken einsehen"),
         ]
         
     def __str__(self):
