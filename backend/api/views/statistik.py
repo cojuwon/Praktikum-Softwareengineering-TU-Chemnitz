@@ -139,6 +139,9 @@ class StatistikViewSet(viewsets.ModelViewSet):
         - groupable_fields: Felder nach denen gruppiert werden kann (Dimensionen)
         - metrics: Verfügbare Aggregationsfunktionen
         """
+        if not request.user.has_perm('api.can_view_statistics'):
+             return Response({'detail': 'Keine Berechtigung.'}, status=status.HTTP_403_FORBIDDEN)
+
         from api.services.dynamic_statistik_service import DynamicStatistikService
         metadata = DynamicStatistikService.get_metadata()
         return Response(metadata)
@@ -167,6 +170,9 @@ class StatistikViewSet(viewsets.ModelViewSet):
         - metric: "count" oder "sum"
         - sum_field: Bei metric="sum" das zu summierende Feld
         """
+        if not request.user.has_perm('api.can_view_statistics'):
+             return Response({'detail': 'Keine Berechtigung.'}, status=status.HTTP_403_FORBIDDEN)
+
         from api.serializers.statistik_query import DynamicQuerySerializer
         from api.services.dynamic_statistik_service import DynamicStatistikService
         
@@ -192,7 +198,7 @@ class StatistikViewSet(viewsets.ModelViewSet):
                 {'detail': str(e)}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
-        except Exception as e:
+        except Exception:
             logger.exception("Error executing dynamic query")
             return Response(
                 {'detail': 'Fehler bei der Ausführung der dynamischen Abfrage.'}, 

@@ -98,8 +98,9 @@ class DynamicStatistikTests(APITestCase):
         # Prüfe dass Choices vorhanden sind
         groupable = anfrage_meta.get('groupable_fields', [])
         anfrage_art_field = next((f for f in groupable if f['name'] == 'anfrage_art'), None)
-        if anfrage_art_field:
-            self.assertIn('choices', anfrage_art_field)
+        
+        self.assertIsNotNone(anfrage_art_field, "anfrage_art sollte in groupable_fields sein")
+        self.assertIn('choices', anfrage_art_field)
 
     def test_dynamic_query_count_anfragen_by_art(self):
         """Test: Dynamische Query zählt Anfragen nach Art."""
@@ -119,6 +120,68 @@ class DynamicStatistikTests(APITestCase):
         # Prüfe Ergebnisse
         results = response.data['results']
         self.assertGreater(len(results), 0)
+
+    def test_dynamic_query_invalid_lookup(self):
+        """Test: Ungültiger Lookup-Suffix wird abgelehnt."""
+        self.client.force_authenticate(user=self.admin_user)
+        
+        response = self.client.post('/api/statistik/dynamic-query/', {
+            'base_model': 'Anfrage',
+            'filters': {'anfrage_datum__dangersql': '2024-01-01'},
+            'group_by': 'anfrage_art',
+            'metric': 'count'
+        }, format='json')
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('Ungültiger Filter-Lookup', str(response.data))
+
+    def test_dynamic_query_invalid_metric(self):
+        """Test: Ungültige Metrik wird abgelehnt."""
+        self.client.force_authenticate(user=self.admin_user)
+        
+        response = self.client.post('/api/statistik/dynamic-query/', {
+            'base_model': 'Anfrage',
+            'group_by': 'anfrage_art',
+            'metric': 'avg_something' # Gibt es nicht
+        }, format='json')
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('Ungültige Metrik', str(response.data))
+
+    def test_dynamic_query_permission_denied(self):
+        """Test: User ohne Permission wird abgelehnt."""
+        # Standard User hat 'can_view_statistics' NICHT (außer wir geben es ihm, aber hier testen wir den Fall ohne)
+        self.client.force_authenticate(user=self.standard_user)
+        
+        response = self.client.post('/api/statistik/dynamic-query/', {
+            'base_model': 'Anfrage',
+            'group_by': 'anfrage_art',
+            'metric': 'count'
+        }, format='json')
+        
+        # Sollte 403 Forbidden sein (wegen explizitem Check im View)
+        # Wenn DjangoModelPermissions greift, wäre es vielleicht auch 403, aber wir wollen den expliziten Check testen.
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+    # ... existing tests ...
+
+class ModelMetadataExtractorTests(TestCase):
+    # ... existing ...
+
+    def test_extract_includes_verbose_names(self):
+        """Test: Extrahierte Felder enthalten verbose_name als Label."""
+        from api.services.dynamic_statistik_service import ModelMetadataExtractor
+        from api.models import Anfrage
+        
+        metadata = ModelMetadataExtractor.extract(Anfrage)
+        
+        groupable = metadata.get('groupable_fields', [])
+        anfrage_art = next((f for f in groupable if f['name'] == 'anfrage_art'), None)
+        
+        self.assertIsNotNone(anfrage_art, "anfrage_art sollte extrahiert werden")
+        self.assertIn('label', anfrage_art)
+        self.assertIsNotNone(anfrage_art['label'])
 
     def test_dynamic_query_count_anfragen_by_ort(self):
         """Test: Dynamische Query zählt Anfragen nach Ort."""
@@ -246,9 +309,9 @@ class ModelMetadataExtractorTests(TestCase):
         groupable = metadata.get('groupable_fields', [])
         anfrage_art = next((f for f in groupable if f['name'] == 'anfrage_art'), None)
         
-        if anfrage_art:
-            self.assertIn('label', anfrage_art)
-            self.assertIsNotNone(anfrage_art['label'])
+        self.assertIsNotNone(anfrage_art, "anfrage_art sollte extrahiert werden")
+        self.assertIn('label', anfrage_art)
+        self.assertIsNotNone(anfrage_art['label'])
 
 
 class InitStatisticsCommandTests(TestCase):

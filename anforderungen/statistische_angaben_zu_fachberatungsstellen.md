@@ -34,14 +34,14 @@
 
 | Code | Zugang über | Format / Hinweise |
 | ----- | ----- | ----- |
-| **05-1-1** | Selbstmeldungen über Polizei | Pflichtangabe | Datenformat: Ganzzahl; minimaler Wert: 0 |
-| **05-1-2** | Private Kontakte | Pflichtangabe | Datenformat: Ganzzahl; minimaler Wert: 0 |
-| **05-1-3** | Beratungsstellen | Pflichtangabe | Datenformat: Ganzzahl; minimaler Wert: 0 (Opferhilfe, Weißer Ring) |
-| **05-1-4** | Internet | Pflichtangabe | Datenformat: Ganzzahl; minimaler Wert: 0 |
-| **05-1-5** | Ämter | Pflichtangabe | Datenformat: Ganzzahl; minimaler Wert: 0 (Jugend-/Sozialamt/ASD/Jobcenter/Arbeitsagentur) |
-| **05-1-6** | Gesundheitswesen (Ärzte/ Ärztinnen) | Pflichtangabe | Datenformat: Ganzzahl; minimaler Wert: 0 |
-| **05-1-7** | Rechtsanwälte / Rechtsanwältinnen | Pflichtangabe | Datenformat: Ganzzahl; minimaler Wert: 0 |
-| **05-1-8** | Unbekannt / keine Angaben | Pflichtangabe | Datenformat: Ganzzahl; minimaler Wert: 0 |
-| **05-1-9** | Andere Quelle | Pflichtangabe | Datenformat: Ganzzahl; minimaler Wert: 0 |
-| **05-1-9A** | Ggf. Welche anderen Quellen? | Pflichtangabe | Datenformat: Freitext |
+| **05-1-1** | Selbstmeldungen über Polizei | Pflichtangabe; Datenformat: Ganzzahl; minimaler Wert: 0 |
+| **05-1-2** | Private Kontakte | Pflichtangabe; Datenformat: Ganzzahl; minimaler Wert: 0 |
+| **05-1-3** | Beratungsstellen | Pflichtangabe; Datenformat: Ganzzahl; minimaler Wert: 0 (Opferhilfe, Weißer Ring) |
+| **05-1-4** | Internet | Pflichtangabe; Datenformat: Ganzzahl; minimaler Wert: 0 |
+| **05-1-5** | Ämter | Pflichtangabe; Datenformat: Ganzzahl; minimaler Wert: 0 (Jugend-/Sozialamt/ASD/Jobcenter/Arbeitsagentur) |
+| **05-1-6** | Gesundheitswesen (Ärzte/ Ärztinnen) | Pflichtangabe; Datenformat: Ganzzahl; minimaler Wert: 0 |
+| **05-1-7** | Rechtsanwälte / Rechtsanwältinnen | Pflichtangabe; Datenformat: Ganzzahl; minimaler Wert: 0 |
+| **05-1-8** | Unbekannt / keine Angaben | Pflichtangabe; Datenformat: Ganzzahl; minimaler Wert: 0 |
+| **05-1-9** | Andere Quelle | Pflichtangabe; Datenformat: Ganzzahl; minimaler Wert: 0 |
+| **05-1-9A** | Ggf. Welche anderen Quellen? | Pflichtangabe; Datenformat: Freitext |
 

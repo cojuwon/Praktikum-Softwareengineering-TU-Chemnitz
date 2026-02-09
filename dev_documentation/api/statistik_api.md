@@ -69,12 +69,20 @@ Führt die eigentliche Berechnung durch.
 
 **Body:**
 
+Erklärung der Felder:
+- `base_model`: Muss ein Key aus Metadata sein (z.B. "Anfrage")
+- `group_by`: Muss in `groupable_fields` enthalten sein
+- `metric`: "count" oder "sum"
+- `filters`: Optional, Django-Lookup Syntax
+
+Beispiel-Body:
+
 ```json
 {
-  "base_model": "Anfrage",           // Muss ein Key aus Metadata sein
-  "group_by": "anfrage_art",         // Muss in groupable_fields sein
-  "metric": "count",                 // "count" oder "sum"
-  "filters": {                       // Optional: Django-Lookup Syntax
+  "base_model": "Anfrage",
+  "group_by": "anfrage_art",
+  "metric": "count",
+  "filters": {
     "anfrage_datum__gte": "2024-01-01",
     "anfrage_datum__lte": "2024-12-31",
     "anfrage_ort": "LS"

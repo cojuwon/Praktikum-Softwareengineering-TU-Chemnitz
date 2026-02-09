@@ -162,9 +162,9 @@ class DynamicStatistikService:
         return allowed
     
     @staticmethod
-    def validate_query(base_model: str, filters: dict, group_by: str) -> tuple[bool, str]:
+    def validate_query(base_model: str, filters: dict, group_by: str, metric: str = 'count') -> tuple[bool, str]:
         """
-        Validiert eine Query gegen die erlaubten Felder.
+        Validiert eine Query gegen die erlaubten Felder und Metriken.
         
         Returns:
             Tuple (is_valid, error_message)
@@ -172,18 +172,50 @@ class DynamicStatistikService:
         if base_model not in ALLOWED_MODELS:
             return False, f"Model '{base_model}' ist nicht für Statistiken freigegeben."
         
-        allowed_fields = DynamicStatistikService.get_allowed_fields(base_model)
+        metadata = DynamicStatistikService.get_metadata()
+        if base_model not in metadata:
+             return False, f"Model '{base_model}' nicht gefunden."
+             
+        model_meta = metadata[base_model]
         
-        # Validiere group_by
-        if group_by not in allowed_fields:
+        # Erstelle Sets für schnelle Suche
+        allowed_fields = set()
+        for field in model_meta['filterable_fields']:
+            allowed_fields.add(field['name'])
+        for field in model_meta['groupable_fields']:
+            allowed_fields.add(field['name'])
+            
+        # 1. Validiere group_by
+        if group_by and group_by not in allowed_fields:
             return False, f"Feld '{group_by}' ist nicht als Gruppierung erlaubt für {base_model}."
         
-        # Validiere Filter-Felder
+        # 2. Validiere Filter-Felder und Lookups
+        ALLOWED_LOOKUPS = {'', 'gte', 'lte', 'exact', 'in', 'icontains', 'gt', 'lt', 'contains', 'startswith', 'endswith', 'year', 'month', 'day'}
+        
         for filter_key in filters.keys():
-            # Entferne Django lookups (__gte, __lte, __icontains, etc.)
-            field_name = filter_key.split('__')[0]
+            parts = filter_key.split('__')
+            field_name = parts[0]
+            
+            # Lookup validieren (alles nach dem ersten __)
+            if len(parts) > 1:
+                lookup = parts[-1] # Simple check: last part must be allowed lookup
+                # Besser: Checke alle Parts ab index 1, falls chained lookups
+                for part in parts[1:]:
+                    if part not in ALLOWED_LOOKUPS:
+                        return False, f"Ungültiger Filter-Lookup: '{part}' in '{filter_key}'."
+            
             if field_name not in allowed_fields:
                 return False, f"Filterfeld '{field_name}' ist nicht erlaubt für {base_model}."
+                
+        # 3. Validiere Metric und Sum-Field
+        if metric != 'count':
+            if metric.startswith('sum_'):
+                 # Prüfe ob Metrik in den Metadaten des Models existiert
+                 allowed_metrics = {m['name'] for m in model_meta['metrics']}
+                 if metric not in allowed_metrics:
+                     return False, f"Metrik '{metric}' ist für {base_model} nicht erlaubt oder Feld nicht summierbar."
+            else:
+                 return False, f"Ungültige Metrik: '{metric}'."
         
         return True, ""
     
@@ -196,20 +228,11 @@ class DynamicStatistikService:
     ) -> list:
         """
         Führt eine dynamische Statistik-Abfrage aus.
-        
-        Args:
-            base_model: Name des Django-Models (z.B. 'Anfrage')
-            filters: Dict mit Django-Lookups (z.B. {'datum__gte': '2024-01-01'})
-            group_by: Feld für Gruppierung (z.B. 'anfrage_art')
-            metric: Aggregationsfunktion ('count' oder 'sum_<feldname>')
-        
-        Returns:
-            Liste von Dicts mit Gruppen-Werten und Aggregat
         """
         filters = filters or {}
         
-        # Validierung
-        is_valid, error = DynamicStatistikService.validate_query(base_model, filters, group_by)
+        # Validierung (inkl. Metrik)
+        is_valid, error = DynamicStatistikService.validate_query(base_model, filters, group_by, metric)
         if not is_valid:
             raise ValueError(error)
         
@@ -237,7 +260,7 @@ class DynamicStatistikService:
                 sum_field = metric[4:]  # Entferne 'sum_' Prefix
                 queryset = queryset.annotate(value=Sum(sum_field))
             else:
-                queryset = queryset.annotate(value=Count('pk'))
+                 raise ValueError(f"Ungültige Metrik: {metric}")
             
             # Labels für Choice-Felder hinzufügen
             results = list(queryset)
@@ -253,7 +276,7 @@ class DynamicStatistikService:
                 result = queryset.aggregate(value=Sum(sum_field))
                 return [{'value': result['value'] or 0}]
             else:
-                return [{'value': queryset.count()}]
+                raise ValueError(f"Ungültige Metrik: {metric}")
     
     @staticmethod
     def _add_choice_labels(model, field_name: str, results: list) -> list:

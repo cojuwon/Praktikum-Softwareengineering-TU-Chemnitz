@@ -48,10 +48,10 @@
 | Preset | Model | group_by | Beschreibung |
 |--------|-------|----------|--------------|
 | Altersstruktur | KlientIn | klient_alter | Altersgruppen |
-| Geschlechtsidentität | KlientIn | klient_geschlecht | Verteilung |
+| Geschlechtsidentität | KlientIn | klient_geschlechtsidentitaet | Verteilung |
 | Wohnort | KlientIn | klient_wohnort | Nach Standort |
-| Migrationshintergrund | KlientIn | klient_migration | J/N/KA |
-| Behinderung | KlientIn | klient_behinderung | J/N/KA |
+| Migrationshintergrund | KlientIn | klient_migrationshintergrund | J/N/KA |
+| Behinderung | KlientIn | klient_schwerbehinderung | J/N/KA |
 
 ### Begleitungen/Verweisungen
 | Preset | Model | group_by | Beschreibung |
