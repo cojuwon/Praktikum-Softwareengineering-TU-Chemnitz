@@ -136,6 +136,6 @@ python manage.py init_statistics
 
 # Manuell testen
 curl -X GET http://localhost:8000/api/statistik/metadata/
-curl -X POST http://localhost:8000/api/statistik/query/ -d '{"base_model":"Anfrage","group_by":"anfrage_art","metric":"count"}'
+curl -X POST http://localhost:8000/api/statistik/dynamic-query/ -d '{"base_model":"Anfrage","group_by":"anfrage_art","metric":"count"}'
 ```
 

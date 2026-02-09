@@ -10,6 +10,8 @@ from django.db.models.fields import (
 from django.db.models.fields.related import ForeignKey
 from django.apps import apps
 import logging
+from django.core.exceptions import ValidationError as DjangoValidationError
+from rest_framework.exceptions import ValidationError as DRFValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -247,7 +249,10 @@ class DynamicStatistikService:
         
         # Filter anwenden
         if filters:
-            queryset = queryset.filter(**filters)
+            try:
+                queryset = queryset.filter(**filters)
+            except (ValueError, TypeError, DjangoValidationError) as e:
+                raise DRFValidationError(f"Ungültiger Filterwert: {str(e)}")
         
         # Gruppierung und Aggregation
         if group_by:

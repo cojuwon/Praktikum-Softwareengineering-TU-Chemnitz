@@ -21,11 +21,13 @@ class PresetSerializer(serializers.ModelSerializer):
         # Validiere Inhalt (Whitelist etc.) via Service
         from api.services.dynamic_statistik_service import DynamicStatistikService
         try:
-            DynamicStatistikService.validate_query(
+            is_valid, error_message = DynamicStatistikService.validate_query(
                 base_model=value.get('base_model'),
                 filters=value.get('filters', {}),
                 group_by=value.get('group_by')
             )
+            if not is_valid:
+                raise serializers.ValidationError(error_message)
         except Exception as e:
              raise serializers.ValidationError(str(e))
              

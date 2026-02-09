@@ -169,6 +169,7 @@ class KlientIn(models.Model):
     klient_beruf = models.CharField(max_length=255, verbose_name="Beruf")
     
     klient_schwerbehinderung = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, verbose_name="Schwerbehinderung")
+    klient_migrationshintergrund = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, verbose_name="Migrationshintergrund", default='KA')
     klient_schwerbehinderung_detail = models.TextField(
         blank=True, 
         verbose_name="Form/Grad der Behinderung", 

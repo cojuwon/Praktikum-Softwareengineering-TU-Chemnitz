@@ -167,25 +167,6 @@ class DynamicStatistikTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
-    # ... existing tests ...
-
-class ModelMetadataExtractorTests(TestCase):
-    # ... existing ...
-
-    def test_extract_includes_verbose_names(self):
-        """Test: Extrahierte Felder enthalten verbose_name als Label."""
-        from api.services.dynamic_statistik_service import ModelMetadataExtractor
-        from api.models import Anfrage
-        
-        metadata = ModelMetadataExtractor.extract(Anfrage)
-        
-        groupable = metadata.get('groupable_fields', [])
-        anfrage_art = next((f for f in groupable if f['name'] == 'anfrage_art'), None)
-        
-        self.assertIsNotNone(anfrage_art, "anfrage_art sollte extrahiert werden")
-        self.assertIn('label', anfrage_art)
-        self.assertIsNotNone(anfrage_art['label'])
-
     def test_dynamic_query_count_anfragen_by_ort(self):
         """Test: Dynamische Query zählt Anfragen nach Ort."""
         self.client.force_authenticate(user=self.admin_user)
@@ -279,6 +260,8 @@ class ModelMetadataExtractorTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('structure', response.data)
         self.assertIn('data', response.data)
+
+
 
 
 class ModelMetadataExtractorTests(TestCase):
