@@ -1,11 +1,10 @@
 """
 ViewSet für Fall-Management.
 
-Verwendet DjangoModelPermissions für automatische Permission-Prüfung:
-- GET (list/retrieve) -> api.view_fall
-- POST (create) -> api.add_fall
-- PUT/PATCH (update) -> api.change_fall
-- DELETE (destroy) -> api.delete_fall
+Verwendet Custom Permissions (CanManageOwnData) für Zugriffskontrolle:
+- GET (list/retrieve) -> Filterung im get_queryset + CanManageOwnData
+- POST (create) -> IsAuthenticated
+- PUT/PATCH/DELETE -> CanManageOwnData (nur eigene/zugewiesene Fälle)
 """
 
 from rest_framework import viewsets, permissions, status
@@ -41,35 +40,80 @@ class FallViewSet(viewsets.ModelViewSet):
     """
     ViewSet für CRUD-Operationen auf Fälle.
     
-    Berechtigungen werden automatisch über DjangoModelPermissions geprüft.
-    Zusätzlich wird bei Objekt-Operationen geprüft, ob der User Zugriff auf den Fall hat.
+    Berechtigungen:
+    - IsAuthenticated: Jeder eingeloggte User kann Fälle erstellen.
+    - CanManageOwnData: Nur eigene Fälle (oder zugewiesene) bearbeiten/löschen.
+    
+    Sichtbarkeit (via get_queryset):
+    - Admins/ViewAll: Alle Fälle
+    - Sonst: Nur eigene Fälle
     """
     queryset = Fall.objects.all()
     serializer_class = FallSerializer
-    permission_classes = [permissions.IsAuthenticated, DjangoModelPermissionsWithView, CanManageOwnData]
+    permission_classes = [permissions.IsAuthenticated, CanManageOwnData]
 
     def get_queryset(self):
         """
-        Filtert Fälle basierend auf User-Berechtigungen.
+        Filtert Fälle basierend auf User-Berechtigungen und Query-Parametern.
         - Admin/Erweiterung (view_all_fall) + ?view=all -> Alle
         - Sonst -> Nur zugewiesene Fälle
+        
+        Filter-Parameter:
+        - search: Fuzzy-Suche
+        - status: Filter nach Status (O, L, A, G)
+        - mitarbeiterin: Filter nach Mitarbeiter-ID
+        - datum_von / datum_bis: Filter nach Startdatum
         """
         user = self.request.user
-        queryset = Fall.objects.all()
+        queryset = Fall.objects.select_related('klient', 'mitarbeiterin').all()
         
-        # Check permission to view all
+        # --- Berechtigungs-Filter ---
         can_view_all = user.rolle_mb == 'AD' or user.has_perm('api.view_all_fall') or user.has_perm('api.can_view_all_data')
         
-        # Explicit request for all data
-        if can_view_all and self.request.query_params.get('view') == 'all':
-            return queryset
-            
-        # Default / Fallback: Filter by own cases
-        if user.has_perm('api.view_own_fall') or can_view_all:
-             return queryset.filter(mitarbeiterin=user)
+        if not (can_view_all and self.request.query_params.get('view') == 'all'):
+             # Default / Fallback: Filter by own cases if not explicitly asking for all (and allowed)
+             from django.db.models import Q
+             if not can_view_all and not user.has_perm('api.view_own_fall'):
+                 return queryset.none()
+
+             if not can_view_all:
+                 queryset = queryset.filter(mitarbeiterin=user)
         
-        # No permission
-        return queryset.none()
+        # --- Query-Parameter Filter ---
+        params = self.request.query_params
+
+        # Search
+        search = params.get('search', '').strip()
+        if search:
+            queryset = queryset.filter(
+                Q(notizen__icontains=search) |
+                Q(klient__klient_id__icontains=search) | # Klient ID search
+                Q(mitarbeiterin__vorname_mb__icontains=search) | 
+                Q(mitarbeiterin__nachname_mb__icontains=search)
+            )
+
+        # Status
+        status_param = params.get('status')
+        if status_param:
+            statuses = [s.strip() for s in status_param.split(',') if s.strip()]
+            if statuses:
+                queryset = queryset.filter(status__in=statuses)
+
+        # Mitarbeiterin
+        mitarbeiterin_id = params.get('mitarbeiterin')
+        if mitarbeiterin_id:
+            queryset = queryset.filter(mitarbeiterin_id=mitarbeiterin_id)
+
+        # Datum
+        datum_von = params.get('datum_von')
+        if datum_von:
+            queryset = queryset.filter(startdatum__gte=datum_von)
+            
+        datum_bis = params.get('datum_bis')
+        if datum_bis:
+            queryset = queryset.filter(startdatum__lte=datum_bis)
+
+        return queryset
 
     def perform_create(self, serializer):
         """
@@ -114,6 +158,81 @@ class FallViewSet(viewsets.ModelViewSet):
                 {'detail': 'Mitarbeiter:in nicht gefunden.'},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+    @action(detail=False, methods=['get'], url_path='form-fields')
+    def form_fields(self, request):
+        """
+        Liefert die Definition der Eingabefelder für einen neuen Fall.
+        """
+        from api.models import KlientIn, Konto
+        
+        # 1. Klienten-Optionen laden
+        # Da Klienten keine Namen haben, nutzen wir "KlientIn #ID (Rolle)"
+        klienten = KlientIn.objects.all()
+        klient_options = []
+        for k in klienten:
+            klient_options.append({
+                "value": str(k.klient_id),
+                "label": f"Klient:in #{k.klient_id} ({k.get_klient_rolle_display()})"
+            })
+            
+        # 2. Mitarbeiter-Optionen laden
+        mitarbeiter = Konto.objects.all()
+        mitarbeiter_options = []
+        for m in mitarbeiter:
+            mitarbeiter_options.append({
+                "value": str(m.id),
+                "label": f"{m.vorname_mb} {m.nachname_mb}"
+            })
+            
+        # 3. Status-Optionen
+        status_options = [
+            {'value': 'O', 'label': 'Offen'},
+            {'value': 'L', 'label': 'Laufend'},
+            {'value': 'A', 'label': 'Abgeschlossen'},
+            {'value': 'G', 'label': 'Gelöscht'},
+        ]
+
+        # Form Definition zusammenstellen
+        fields = [
+            {
+                "name": "klient",
+                "label": "Klient:in",
+                "type": "select",
+                "required": True,
+                "options": klient_options
+            },
+            {
+                "name": "mitarbeiterin",
+                "label": "Zuständige Mitarbeiter:in",
+                "type": "select",
+                "required": False, # Kann leer sein, wird dann im Backend gesetzt
+                "options": mitarbeiter_options,
+                # Default könnte man im Frontend setzen
+            },
+            {
+                "name": "status",
+                "label": "Status",
+                "type": "select",
+                "required": True,
+                "options": status_options,
+                "default": "O"
+            },
+            {
+                "name": "startdatum",
+                "label": "Startdatum",
+                "type": "date",
+                "required": True,
+            },
+            {
+                "name": "notizen",
+                "label": "Notizen",
+                "type": "textarea",
+                "required": False,
+            }
+        ]
+
+        return Response({"fields": fields})
 
     @extend_schema(
         request={'application/json': {'type': 'object', 'properties': {'begleitung_id': {'type': 'integer'}}}},

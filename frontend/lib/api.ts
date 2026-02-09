@@ -100,7 +100,24 @@ export async function apiFetch(
     }
 
     const data = await refreshRes.json();
-    localStorage.setItem('accessToken', data.access);
+
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('accessToken', data.access);
+      if (data.refresh) {
+        localStorage.setItem('refreshToken', data.refresh);
+      }
+      // Extend session expiry to 2h from now
+      const expiryDate = new Date().getTime() + 2 * 60 * 60 * 1000;
+      localStorage.setItem('sessionExpiry', expiryDate.toString());
+    }
+
+    // Also update cookies if in browser
+    if (typeof document !== 'undefined') {
+      document.cookie = `accessToken=${data.access}; path=/; max-age=54000`;
+      if (data.refresh) {
+        document.cookie = `refreshToken=${data.refresh}; path=/; max-age=54000`;
+      }
+    }
 
     // Update header with new token
     headers.set("Authorization", `Bearer ${data.access}`);
