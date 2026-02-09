@@ -41,6 +41,8 @@
 **Phase 3: Presets & Permissions**
 - [x] Permissions `can_view_statistics`, `can_manage_presets` in `models.py` hinzugefügt
 - [x] Preset-Modell angepasst
+- [x] `PresetSerializer` Validierung implementiert (`validate_preset_daten`)
+- [x] `test_preset_validation.py` hinzugefügt
 
 **Phase 4: Management Command**
 - [x] `init_statistics.py` erstellt
