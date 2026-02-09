@@ -61,8 +61,8 @@ class AnfrageViewSet(viewsets.ModelViewSet):
     serializer_class = AnfrageSerializer
     permission_classes = [permissions.IsAuthenticated, CanManageOwnData]
     filter_backends = [filters.OrderingFilter]
-    ordering_fields = ['anfrage_datum', 'anfrage_art', 'anfrage_ort', 'anfrage_person', 'anfrage_id']
-    ordering = ['-anfrage_datum']  # Default: neueste zuerst
+    ordering_fields = ['created_at', 'updated_at', 'anfrage_datum', 'anfrage_art', 'anfrage_ort', 'anfrage_person', 'anfrage_id']
+    ordering = ['-created_at']  # Default: neueste zuerst
 
     def get_queryset(self):
         """

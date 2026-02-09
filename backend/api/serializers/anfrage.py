@@ -47,6 +47,26 @@ class AnfrageSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['anfrage_id', 'mitarbeiterin']
 
+    def to_internal_value(self, data):
+        """
+        Vorverarbeitung der Eingabedaten.
+        Leere Strings werden bereinigt, damit Validierung und Defaults greifen.
+        """
+        # Mutable Copy erstellen
+        data = data.copy()
+
+        # 1. Datum: Wenn leer, entfernen -> Model nutzt default=timezone.localdate
+        if data.get('anfrage_datum') == "":
+            data.pop('anfrage_datum', None)
+
+        # 2. Optionale Felder: Wenn leer, auf None setzen (für null=True in DB)
+        optional_fields = ['anfrage_ort', 'anfrage_person', 'anfrage_art', 'anfrage_weg']
+        for field in optional_fields:
+            if data.get(field) == "":
+                data[field] = None
+        
+        return super().to_internal_value(data)
+
     def get_mitarbeiterin_display(self, obj):
         """Gibt den Namen der Mitarbeiterin zurück."""
         if obj.mitarbeiterin:

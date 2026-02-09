@@ -354,6 +354,10 @@ class Anfrage(models.Model):
     anfrage_person = models.CharField(max_length=4, choices=ANFRAGE_PERSON_CHOICES, blank=True, null=True, verbose_name="Anfrage Person (wer)")
     anfrage_art = models.CharField(max_length=2, choices=ANFRAGE_ART_CHOICES, blank=True, null=True, verbose_name="Anfrage Art")
     
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Erstellt am")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Zuletzt geändert")
+    
     # Beziehungen:
     beratungstermin = models.OneToOneField(Beratungstermin, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Zugeordneter Beratungstermin")
     mitarbeiterin = models.ForeignKey(Konto, on_delete=models.SET_NULL, null=True, verbose_name="Zuständige Mitarbeiter:in")
