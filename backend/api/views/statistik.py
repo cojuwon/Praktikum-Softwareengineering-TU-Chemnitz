@@ -111,6 +111,7 @@ class StatistikViewSet(viewsets.ModelViewSet):
     def query(self, request):
         """
         Führt die Statistik-Berechnung basierend auf den Filtern durch.
+        (Legacy-Endpoint für Rückwärtskompatibilität)
         """
         query_serializer = StatistikQuerySerializer(data=request.data)
         if not query_serializer.is_valid():
@@ -125,6 +126,76 @@ class StatistikViewSet(viewsets.ModelViewSet):
             logger.exception("Error calculating statistics")
             return Response(
                 {'detail': 'Fehler bei der Berechnung der Statistik.'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=False, methods=['get'])
+    def metadata(self, request):
+        """
+        Liefert Metadaten für alle analysierbaren Models.
+        
+        Response enthält pro Model:
+        - filterable_fields: Felder die als Filter verwendet werden können
+        - groupable_fields: Felder nach denen gruppiert werden kann (Dimensionen)
+        - metrics: Verfügbare Aggregationsfunktionen
+        """
+        from api.services.dynamic_statistik_service import DynamicStatistikService
+        metadata = DynamicStatistikService.get_metadata()
+        return Response(metadata)
+
+    @extend_schema(
+        request={'application/json': {
+            'type': 'object',
+            'properties': {
+                'base_model': {'type': 'string', 'enum': ['Anfrage', 'Fall', 'KlientIn', 'Beratungstermin', 'Begleitung', 'Gewalttat', 'Gewaltfolge']},
+                'filters': {'type': 'object'},
+                'group_by': {'type': 'string'},
+                'metric': {'type': 'string', 'enum': ['count', 'sum']},
+            }
+        }},
+        responses={200: {'type': 'array'}}
+    )
+    @action(detail=False, methods=['post'], url_path='dynamic-query')
+    def dynamic_query(self, request):
+        """
+        Führt eine dynamische Statistik-Abfrage aus.
+        
+        Request Body:
+        - base_model: Name des Models (z.B. "Anfrage")
+        - filters: Dict mit Django-Lookups (z.B. {"anfrage_datum__gte": "2024-01-01"})
+        - group_by: Feld für Gruppierung (z.B. "anfrage_art")
+        - metric: "count" oder "sum"
+        - sum_field: Bei metric="sum" das zu summierende Feld
+        """
+        from api.serializers.statistik_query import DynamicQuerySerializer
+        from api.services.dynamic_statistik_service import DynamicStatistikService
+        
+        serializer = DynamicQuerySerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            result = DynamicStatistikService.execute_query(
+                base_model=serializer.validated_data['base_model'],
+                filters=serializer.validated_data.get('filters', {}),
+                group_by=serializer.validated_data['group_by'],
+                metric=serializer.get_metric_string()
+            )
+            return Response({
+                'base_model': serializer.validated_data['base_model'],
+                'group_by': serializer.validated_data['group_by'],
+                'metric': serializer.validated_data['metric'],
+                'results': result
+            })
+        except ValueError as e:
+            return Response(
+                {'detail': str(e)}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            logger.exception("Error executing dynamic query")
+            return Response(
+                {'detail': 'Fehler bei der Ausführung der dynamischen Abfrage.'}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 

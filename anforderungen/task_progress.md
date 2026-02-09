@@ -1,18 +1,18 @@
 # Statistik-API Refactoring - Fortschritt
 
-**Letztes Update:** 2026-02-09 20:45
+**Letztes Update:** 2026-02-09 20:50
 
-## Status: 🟢 In Implementierung
+## Status: 🟢 In Implementierung (Phase 5 - Tests)
 
 ### Übersicht
 
 | Phase | Status | Beschreibung |
 |-------|--------|--------------|
-| 1. Service-Layer | ⬜ Ausstehend | `ModelMetadataExtractor`, `get_metadata()`, `execute_query()` |
-| 2. Views | ⬜ Ausstehend | `metadata` Action, neuer `query` Endpoint |
-| 3. Presets & Permissions | ⬜ Ausstehend | Neue Permissions, Preset-Validierung |
-| 4. Management Command | ⬜ Ausstehend | `init_statistics.py` mit Standard-Presets |
-| 5. Tests | ⬜ Ausstehend | `test_statistik_dynamic.py` |
+| 1. Service-Layer | ✅ Abgeschlossen | `DynamicStatistikService`, `ModelMetadataExtractor`, `execute_query()` |
+| 2. Views | ✅ Abgeschlossen | `metadata` Action, `dynamic_query` Endpoint |
+| 3. Presets & Permissions | ✅ Abgeschlossen | Neue Permissions hinzugefügt |
+| 4. Management Command | ✅ Abgeschlossen | `init_statistics.py` mit 16 Standard-Presets |
+| 5. Tests | ✅ Abgeschlossen | `test_statistik_dynamic.py` erstellt |
 
 ---
 
@@ -20,16 +20,16 @@
 
 ### ✅ Abgeschlossen
 
-- [x] Bestehenden Code analysiert (`statistik.py`, `statistik_service.py`)
+- [x] Bestehenden Code analysiert
 - [x] Models und Choices verstanden
-- [x] Permissions-Dokumentation gelesen
 - [x] Anforderungsdokumente analysiert
-- [x] Standard-Presets identifiziert
-- [x] Implementierungsplan erstellt
-
-### 🔄 In Bearbeitung
-
-- [ ] Plan vom User bestätigen lassen
+- [x] Implementierungsplan erstellt und genehmigt
+- [x] `DynamicStatistikService` implementiert
+- [x] `DynamicQuerySerializer` implementiert
+- [x] `metadata` und `dynamic_query` Actions hinzugefügt
+- [x] Permissions `can_view_statistics`, `can_manage_presets` hinzugefügt
+- [x] `init_statistics.py` Management Command erstellt
+- [x] `test_statistik_dynamic.py` erstellt
 
 ### ⬜ Ausstehend
 
