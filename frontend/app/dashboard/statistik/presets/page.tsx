@@ -3,6 +3,7 @@
 import { DynamicFilterForm, FieldDefinition } from "@/components/statistik/DynamicFilterForm";
 import { useState, useEffect } from "react";
 import PresetSelector from "@/components/statistik/PresetSelector";
+import { apiFetch } from "@/lib/api";
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -14,28 +15,34 @@ type Preset = {
 export default function PresetPage() {
   const [presets, setPresets] = useState<Preset[]>([]); // Placeholder for presets state
 
-  // Placeholder for fetching presets, if needed
+  // Fetch presets from API
   useEffect(() => {
-    // Example: Fetch presets from an API
-    // const fetchPresets = async () => {
-    //   const response = await fetch('/api/presets');
-    //   const data = await response.json();
-    //   setPresets(data);
-    // };
-    // fetchPresets();
-
-    // Mock data for demonstration
-    setPresets([
-      { id: '1', name: 'Mein erstes Preset' },
-      { id: '2', name: 'Wichtige Filter' },
-      { id: '3', name: 'Standard Ansicht' },
-    ]);
+    async function loadPresets() {
+      try {
+        const res = await apiFetch("/api/presets/");
+        if (!res.ok) throw new Error("Fehler beim Laden der Presets");
+        const json = await res.json();
+        setPresets(json.presets || json); // Support both list and {presets: []} format just in case
+      } catch (e) {
+        console.error("Presets konnten nicht geladen werden:", e);
+      }
+    }
+    loadPresets();
   }, []);
 
-  const handleDelete = (id: string) => {
-    // Placeholder for delete logic
-    console.log(`Deleting preset with id: ${id}`);
-    setPresets(presets.filter(preset => preset.id !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await apiFetch(`/api/presets/${id}/`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setPresets(presets.filter(preset => preset.id !== id));
+      } else {
+        console.error("Fehler beim Löschen des Presets");
+      }
+    } catch (e) {
+      console.error("Fehler beim Löschen des Presets:", e);
+    }
   };
 
   return (
