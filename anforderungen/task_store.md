@@ -114,6 +114,15 @@ class DynamicQuerySerializer(serializers.Serializer):
 - Permission-Enforcement
 - Whitelist-Validierung (invalid fields)
 
+### Phase 6: Dokumentation
+
+**[NEW] statistik_dokumentation.md**
+- Dokumentation der Statistik-API
+- Endpunkte und Parameter
+- Beispiel-Requests
+- Antwort-Struktur
+- Soll vollständig sein, sodass die Frontend-Entwickler direkt loslegen können.
+
 ---
 
 ## Verifikation
@@ -129,3 +138,4 @@ python manage.py init_statistics
 curl -X GET http://localhost:8000/api/statistik/metadata/
 curl -X POST http://localhost:8000/api/statistik/query/ -d '{"base_model":"Anfrage","group_by":"anfrage_art","metric":"count"}'
 ```
+
