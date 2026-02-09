@@ -1,8 +1,8 @@
 # Statistik-API Refactoring - Fortschritt
 
-**Letztes Update:** 2026-02-09 20:50
+**Letztes Update:** 2026-02-09 20:55
 
-## Status: 🟢 In Implementierung (Phase 5 - Tests)
+## Status: ✅ Abgeschlossen
 
 ### Übersicht
 
@@ -12,7 +12,7 @@
 | 2. Views | ✅ Abgeschlossen | `metadata` Action, `dynamic_query` Endpoint |
 | 3. Presets & Permissions | ✅ Abgeschlossen | Neue Permissions hinzugefügt |
 | 4. Management Command | ✅ Abgeschlossen | `init_statistics.py` mit 16 Standard-Presets |
-| 5. Tests | ✅ Abgeschlossen | `test_statistik_dynamic.py` erstellt |
+| 5. Tests | ✅ Abgeschlossen | 14 neue Tests, alle bestanden |
 
 ---
 
@@ -29,7 +29,8 @@
 - [x] `metadata` und `dynamic_query` Actions hinzugefügt
 - [x] Permissions `can_view_statistics`, `can_manage_presets` hinzugefügt
 - [x] `init_statistics.py` Management Command erstellt
-- [x] `test_statistik_dynamic.py` erstellt
+- [x] `test_statistik_dynamic.py` erstellt und alle Tests bestanden
+- [x] Bug in `ModelMetadataExtractor` behoben (related_model Check)
 
 ### ⬜ Ausstehend
 

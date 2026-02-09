@@ -45,8 +45,8 @@ class ModelMetadataExtractor:
         summable = []
         
         for field in meta.get_fields():
-            # Überspringe Relationen (außer ForeignKey)
-            if hasattr(field, 'related_model') and not isinstance(field, ForeignKey):
+            # Überspringe Relationen (außer ForeignKey) - prüfe ob related_model tatsächlich gesetzt ist
+            if getattr(field, 'related_model', None) is not None and not isinstance(field, ForeignKey):
                 continue
             
             # Überspringe automatisch generierte Felder
