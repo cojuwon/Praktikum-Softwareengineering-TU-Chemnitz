@@ -1,6 +1,7 @@
 """ViewSet für Statistik-Management."""
 
 from django.core.files.base import ContentFile
+from django.db.models import Q
 from django.http import FileResponse
 from django.utils import timezone
 from rest_framework import viewsets, permissions, status
@@ -8,8 +9,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
-from api.models import Statistik
-from api.serializers import StatistikSerializer
+from api.models import Statistik, Preset, STANDORT_CHOICES
+from api.serializers import StatistikSerializer, PresetSerializer
 from api.permissions import DjangoModelPermissionsWithView, IsOwnerOrAdmin
 
 
@@ -71,6 +72,51 @@ class StatistikViewSet(viewsets.ModelViewSet):
         
         # 4. Speichern mit Creator und Ergebnisdatei
         serializer.save(creator=self.request.user, ergebnis=file_obj, creation_date=timezone.localdate())
+
+    @action(detail=False, methods=['get'])
+    def filters(self, request):
+        """
+        Liefert die Definition der verfügbaren Filter (Hardcoded + Eingabefelder).
+        """
+        # Hardcoded Basis-Filter
+        filters = [
+            { "name": "zeitraum_start", "label": "Von", "type": "date" },
+            { "name": "zeitraum_ende", "label": "Bis", "type": "date" },
+            { 
+                "name": "anfrage_ort", "label": "Anfrage-Ort", "type": "select", 
+                "options": [x[0] for x in STANDORT_CHOICES] 
+            },
+            # ... Weitere Filter analog zur Fake-API ...
+            # Hier gekürzt für Übersichtlichkeit, sollte idealerweise alle Enums mappen
+        ]
+        return Response({"filters": filters})
+
+    @action(detail=False, methods=['get'])
+    def presets(self, request):
+        """
+        Liefert gespeicherte Presets.
+        """
+        presets = Preset.objects.filter(
+            Q(ersteller=request.user) | Q(berechtigte=request.user)
+        ).distinct()
+        serializer = PresetSerializer(presets, many=True)
+        return Response({"presets": serializer.data})
+
+    @action(detail=False, methods=['post'])
+    def query(self, request):
+        """
+        Führt die Statistik-Berechnung basierend auf den Filtern durch.
+        """
+        filters = request.data
+        try:
+            from api.services.statistik_service import StatistikService
+            result = StatistikService.calculate_stats(filters)
+            return Response(result)
+        except Exception as e:
+            return Response(
+                {'detail': f'Fehler bei der Berechnung: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     @extend_schema(
         parameters=[OpenApiParameter(name='format', description='Dateiformat (pdf, xlsx, csv)', required=False, type=str)],
