@@ -26,10 +26,11 @@ class PresetSerializer(serializers.ModelSerializer):
                 filters=value.get('filters', {}),
                 group_by=value.get('group_by')
             )
-            if not is_valid:
-                raise serializers.ValidationError(error_message)
         except Exception as e:
              raise serializers.ValidationError(str(e))
+
+        if not is_valid:
+            raise serializers.ValidationError(error_message)
              
         return value
 
