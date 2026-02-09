@@ -25,46 +25,38 @@
 - [x] Models und Choices verstanden
 - [x] Anforderungsdokumente analysiert
 - [x] Implementierungsplan erstellt und genehmigt
-- [x] `DynamicStatistikService` implementiert
-- [x] `DynamicQuerySerializer` implementiert
-- [x] `metadata` und `dynamic_query` Actions hinzugefügt
-- [x] Permissions `can_view_statistics`, `can_manage_presets` hinzugefügt
-- [x] `init_statistics.py` Management Command erstellt
-- [x] `test_statistik_dynamic.py` erstellt und alle Tests bestanden
-- [x] Bug in `ModelMetadataExtractor` behoben (related_model Check)
+
+**Phase 1: Service-Layer**
+- [x] `ModelMetadataExtractor` implementiert
+- [x] `get_metadata()` implementiert
+- [x] `execute_query()` implementiert
+- [x] Whitelist-Validierung implementiert
+- [x] Bugfix: `related_model` Check korrigiert
+
+**Phase 2: Views**
+- [x] `DynamicQuerySerializer` erstellt
+- [x] `metadata` Action hinzugefügt
+- [x] `dynamic_query` Endpoint implementiert
+
+**Phase 3: Presets & Permissions**
+- [x] Permissions `can_view_statistics`, `can_manage_presets` in `models.py` hinzugefügt
+- [x] Preset-Modell angepasst
+
+**Phase 4: Management Command**
+- [x] `init_statistics.py` erstellt
+- [x] 16 Standard-Presets definiert (Anfragen, Klient:innen, etc.)
+- [x] Idempotentes Update implementiert
+
+**Phase 5: Tests**
+- [x] `test_statistik_dynamic.py` erstellt
+- [x] 14 neue Tests erfolgreich durchlaufen
+
+**Phase 6: Dokumentation**
+- [x] API-Dokumentation in `dev_documentation/api/statistik_api.md` erstellt
 
 ### ⬜ Ausstehend
 
-#### Phase 1: Service-Layer
-- [ ] `ModelMetadataExtractor` implementieren
-- [ ] `get_metadata()` implementieren
-- [ ] `execute_query()` implementieren
-- [ ] Whitelist-Validierung
-
-#### Phase 2: Views
-- [ ] `DynamicQuerySerializer` erstellen
-- [ ] `metadata` Action hinzufügen
-- [ ] `query` Action refaktorieren
-
-#### Phase 3: Presets & Permissions
-- [ ] Permissions in `models.py` hinzufügen
-- [ ] Migration erstellen
-- [ ] `setup_groups.py` aktualisieren
-- [ ] Preset-Serializer mit Validierung
-
-#### Phase 4: Management Command
-- [ ] `init_statistics.py` erstellen
-- [ ] Standard-Presets definieren
-- [ ] Idempotentes Update implementieren
-
-#### Phase 5: Tests
-- [ ] Test-Setup
-- [ ] Metadaten-Tests
-- [ ] Query-Tests
-- [ ] Permission-Tests
-
-#### Phase 6: Dokumentation
-- [ ] Dokumentation aktualisieren - erstelle eine detaillierte Dokumentation der Statistik API für die Frontend-Entwickler, sodass diese direkt loslegen können.
+*(Keine ausstehenden Aufgaben)*
 
 ---
 
