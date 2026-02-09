@@ -348,11 +348,15 @@ class Gewaltfolge(models.Model):
 
 class Anfrage(models.Model):
     anfrage_id = models.BigAutoField(primary_key=True)
-    anfrage_weg = models.CharField(max_length=100, verbose_name="Anfrageweg (Freitext)")
+    anfrage_weg = models.TextField(blank=True, null=True, verbose_name="Anfrageweg (Freitext)")
     anfrage_datum = models.DateField(default=timezone.localdate, verbose_name="Datum der Anfrage")
-    anfrage_ort = models.CharField(max_length=2, choices=STANDORT_CHOICES, verbose_name="Anfrage Ort")
-    anfrage_person = models.CharField(max_length=4, choices=ANFRAGE_PERSON_CHOICES, verbose_name="Anfrage Person (wer)")
-    anfrage_art = models.CharField(max_length=2, choices=ANFRAGE_ART_CHOICES, verbose_name="Anfrage Art")
+    anfrage_ort = models.CharField(max_length=2, choices=STANDORT_CHOICES, blank=True, null=True, verbose_name="Anfrage Ort")
+    anfrage_person = models.CharField(max_length=4, choices=ANFRAGE_PERSON_CHOICES, blank=True, null=True, verbose_name="Anfrage Person (wer)")
+    anfrage_art = models.CharField(max_length=2, choices=ANFRAGE_ART_CHOICES, blank=True, null=True, verbose_name="Anfrage Art")
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Erstellt am")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Zuletzt geändert")
     
     # Beziehungen:
     beratungstermin = models.OneToOneField(Beratungstermin, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Zugeordneter Beratungstermin")
@@ -398,19 +402,33 @@ class Statistik(models.Model):
 
 class Eingabefeld(models.Model):
     TYP_CHOICES = [
-        ('Text', 'Text'),
-        ('Zahl', 'Zahl'),
-        ('Datum', 'Datum'),
+        ('text', 'Text (kurz)'),
+        ('textarea', 'Text (lang)'),
+        ('number', 'Zahl'),
+        ('date', 'Datum'),
+        ('select', 'Auswahl'),
+        ('multiselect', 'Mehrfachauswahl'),
+    ]
+
+    CONTEXT_CHOICES = [
+        ('anfrage', 'Anfrage'),
+        ('fall', 'Fall'),
     ]
 
     feldID = models.BigAutoField(primary_key=True)
-    name = models.CharField(max_length=255, verbose_name="Name des Feldes")
-    typ = models.CharField(max_length=10, choices=TYP_CHOICES, verbose_name="Datentyp")
-    wert = models.TextField(blank=True, null=True, verbose_name="Wert")
+    context = models.CharField(max_length=20, choices=CONTEXT_CHOICES, default='anfrage', verbose_name="Kontext")
+    name = models.CharField(max_length=255, verbose_name="Name des Feldes (Technisch)", help_text="Muss mit dem Modell-Feld übereinstimmen")
+    label = models.CharField(max_length=255, verbose_name="Beschriftung (Label)", default="")
+    typ = models.CharField(max_length=20, choices=TYP_CHOICES, verbose_name="Datentyp")
+    required = models.BooleanField(default=False, verbose_name="Pflichtfeld")
+    options = models.JSONField(default=list, blank=True, verbose_name="Optionen (für Select)", help_text="Liste von Objekten: [{'value': 'X', 'label': 'Y'}]")
+    sort_order = models.IntegerField(default=0, verbose_name="Reihenfolge")
+    default_value = models.TextField(blank=True, null=True, verbose_name="Standardwert")
 
     class Meta:
-        verbose_name = "Eingabefeld"
-        verbose_name_plural = "Eingabefelder"
+        verbose_name = "Eingabefeld (Formular-Konfiguration)"
+        verbose_name_plural = "Eingabefelder (Konfiguration)"
+        ordering = ['sort_order', 'label']
 
     def __str__(self):
-        return f"{self.name} ({self.typ})"
+        return f"{self.label} ({self.typ})"

@@ -29,9 +29,10 @@ export default function Page() {
       <div
         style={{
           backgroundColor: "white",
-          padding: "40px 40px",
-          margin: "0 20px 0px 20px",
-          borderRadius: "12px 12px 0 0",
+          padding: "40px",
+          margin: "0 20px",
+          borderRadius: "12px",
+          boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)"
         }}
       >
         <h1
@@ -39,16 +40,58 @@ export default function Page() {
             fontSize: "28px",
             fontWeight: "600",
             color: "#42446F",
-            marginBottom: "6px",
+            marginBottom: "30px",
             textAlign: "center",
           }}
         >
           Willkommen bei Bellis e.V.
         </h1>
-        </div>
-        <div className="flex items-center justify-center p-6 md:w-3/5 md:px-28 md:py-12">
 
+        <div style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: "20px",
+          flexWrap: "wrap"
+        }}>
+          <Link
+            href="/dashboard/anfrage/create"
+            style={{
+              backgroundColor: "#42446F",
+              color: "white",
+              padding: "12px 24px",
+              borderRadius: "8px",
+              textDecoration: "none",
+              fontWeight: "500",
+              fontSize: "16px",
+              transition: "transform 0.1s",
+              display: "inline-block",
+              textAlign: "center",
+              minWidth: "160px"
+            }}
+          >
+            Neue Anfrage
+          </Link>
+
+          <Link
+            href="/dashboard/fall/create"
+            style={{
+              backgroundColor: "#42446F",
+              color: "white",
+              padding: "12px 24px",
+              borderRadius: "8px",
+              textDecoration: "none",
+              fontWeight: "500",
+              fontSize: "16px",
+              transition: "transform 0.1s",
+              display: "inline-block",
+              textAlign: "center",
+              minWidth: "160px"
+            }}
+          >
+            Neuer Fall
+          </Link>
         </div>
       </div>
+    </div>
   );
 }

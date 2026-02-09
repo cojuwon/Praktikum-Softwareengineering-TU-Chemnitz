@@ -35,6 +35,7 @@ router.register(r'klienten', KlientInViewSet, basename='klient')
 router.register(r'konten', KontoViewSet, basename='konto')
 router.register(r'presets', PresetViewSet, basename='preset')
 router.register(r'statistiken', StatistikViewSet, basename='statistik')
+router.register(r'statistik', StatistikViewSet, basename='statistik_singular')
 
 
 urlpatterns = [

@@ -43,9 +43,9 @@ services:
   # 3. NEXT.JS FRONTEND SERVICE (SSR/Proxy)
   frontend:
     build:
-      context: ./frontend_neu     
+      context: ./frontend     
       dockerfile: Dockerfile
-    container_name: nextjs_frontend
+    container_name: frontend
     
     # 💡 ENTWICKLUNG: Entferne die Kommentare für Live Reload
     # volumes:
@@ -65,6 +65,33 @@ services:
       - api
     networks:
       - webnet
+
+# # 4. NEXT.JS FRONTEND SERVICE (SSR/Proxy)
+#  frontend_alternative:
+#    build:
+#      context: ./frontend_neu     
+#      dockerfile: Dockerfile
+#    container_name: frontend_other
+#    
+#    # 💡 ENTWICKLUNG: Entferne die Kommentare für Live Reload
+#    # volumes:
+#    #   - ./frontend:/app
+#    #   - /app/node_modules
+#    # command: npm run dev
+#    
+#    # Exponiert den Frontend-Port auf den Host-Rechner
+#    ports:
+#      - "3001:3001"
+#    env_file:
+#      - .env
+#    environment:
+#      # Interne URL für SSR/Proxy-Aufrufe vom Next.js Server zu Django
+#      DJANGO_INTERNAL_HOST: http://api:8000 
+#    depends_on:
+#      - api
+#    networks:
+#      - webnet
+
 
 # Definition der Volumes (für Persistenz) und Netzwerke
 volumes:

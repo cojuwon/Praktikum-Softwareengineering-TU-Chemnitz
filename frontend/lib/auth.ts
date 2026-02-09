@@ -6,7 +6,7 @@ interface User {
   vorname_mb: string;
   nachname_mb: string;
   mail_mb: string;
-  rolle_mb: 'B' | 'E' | 'A'; // Basis, Erweiterung, Admin
+  rolle_mb: 'B' | 'E' | 'A' | 'AD'; // Basis, Erweiterung, Admin
 }
 
 /**
@@ -22,15 +22,37 @@ export async function login(email: string, password: string) {
   });
 
   if (!res.ok) {
-    const err = await res.json();
+    let err;
+    try {
+      const errorText = await res.text();
+      err = JSON.parse(errorText);
+    } catch (e) {
+      // Fallback if response is text/html (e.g. 404 or 500)
+      console.error("Login failed with non-JSON response");
+      throw new Error(`Login failed: ${res.status} ${res.statusText}`);
+    }
     throw new Error(err?.detail || 'Login fehlgeschlagen');
   }
 
-  const data = await res.json();
+  let data;
+  try {
+    const bodyText = await res.text();
+    data = JSON.parse(bodyText);
+  } catch (e) {
+    console.error("Login success response is not JSON");
+    throw new Error("Server communication error: Invalid JSON response");
+  }
 
-  // ⚠️ NUR falls Backend keine Cookies setzt
-  document.cookie = `accessToken=${data.access}; path=/`;
-  document.cookie = `refreshToken=${data.refresh}; path=/`;
+  // ⚠️ ACCESSTOKEN + REFRESH TOKEN (Rotation)
+  // Expiry Logic: 2 hours (match backend)
+  const expiryDate = new Date().getTime() + 2 * 60 * 60 * 1000;
+
+  // Persist tokens for restarts
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('accessToken', data.access);
+    localStorage.setItem('refreshToken', data.refresh);
+    localStorage.setItem('sessionExpiry', expiryDate.toString());
+  }
 
   return data;
 }
@@ -74,15 +96,30 @@ export async function register(payload: {
   });
 
   if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData?.detail || 'Registrierung fehlgeschlagen');
+    let errorData = {};
+    try {
+      const errorText = await res.text();
+      errorData = JSON.parse(errorText);
+    } catch (e) {
+      // Fallback for non-JSON responses
+    }
+    throw new Error((errorData as any)?.detail || 'Registrierung fehlgeschlagen');
   }
 
-  const data = await res.json();
+  let data;
+  try {
+    const bodyText = await res.text();
+    data = JSON.parse(bodyText);
+  } catch (e) {
+    console.error("Registration success response is not JSON");
+    throw new Error("Server communication error: Invalid JSON response");
+  }
 
-  // Optional Auto-Login
-  localStorage.setItem('accessToken', data.access);
-  localStorage.setItem('refreshToken', data.refresh);
+  // Optional Auto-Login (SSR-safe)
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('accessToken', data.access);
+    localStorage.setItem('refreshToken', data.refresh);
+  }
 
   return data.user;
 }
@@ -106,6 +143,19 @@ export async function logout() {
     throw new Error('Logout fehlgeschlagen');
   }
 
+  // Clear local storage and cookies
+  if (typeof localStorage !== 'undefined') {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('sessionExpiry');
+  }
+
+  // SSR-safe cookie clearing
+  if (typeof document !== 'undefined') {
+    document.cookie = 'accessToken=; Max-Age=0; path=/';
+    document.cookie = 'refreshToken=; Max-Age=0; path=/';
+  }
+
   return true;
 }
 
@@ -121,7 +171,13 @@ export async function getCurrentUser(): Promise<User> {
     throw new Error('Nicht eingeloggt');
   }
 
-  return res.json();
+  try {
+    const bodyText = await res.text();
+    return JSON.parse(bodyText);
+  } catch (e) {
+    console.error("User fetch response is not JSON");
+    throw new Error("Failed to load user data");
+  }
 }
 /*
 
@@ -247,7 +303,19 @@ export async function refreshToken(): Promise<string> {
   }
 
   const data = await res.json();
-  localStorage.setItem('accessToken', data.access);
+
+  // TOKEN ROTATION: Backend returns new access AND refresh token
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('accessToken', data.access);
+    if (data.refresh) {
+      localStorage.setItem('refreshToken', data.refresh);
+    }
+
+    // Reset Expiry to +2 hours
+    const expiryDate = new Date().getTime() + 2 * 60 * 60 * 1000;
+    localStorage.setItem('sessionExpiry', expiryDate.toString());
+  }
+
   return data.access;
 }
 

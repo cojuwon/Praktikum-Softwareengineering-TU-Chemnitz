@@ -16,7 +16,14 @@ export async function fetchAnfragenPages(query: string): Promise<number> {
       throw new Error('Fehler beim Laden der Anfragen');
     }
 
-    const data: { count: number; results: Anfrage[] } = await res.json();
+    let data: { count: number; results: Anfrage[] };
+    try {
+      const bodyText = await res.text();
+      data = JSON.parse(bodyText);
+    } catch (e) {
+      console.error("fetchAnfragenPages: Invalid JSON response");
+      throw new Error("Invalid server response");
+    }
     // count = Gesamtanzahl der Anfragen → daraus die Gesamtseiten berechnen
     return Math.ceil(data.count / PAGE_SIZE);
   } catch (error) {
@@ -35,7 +42,14 @@ export async function fetchAnfrage(query: string, page: number) {
 
     if (!res.ok) throw new Error("Fehler beim Laden der Anfragen");
 
-    const data: { count: number; results: Anfrage[] } = await res.json();
+    let data: { count: number; results: Anfrage[] };
+    try {
+      const bodyText = await res.text();
+      data = JSON.parse(bodyText);
+    } catch (e) {
+      console.error("fetchAnfrage: Invalid JSON response");
+      throw new Error("Invalid server response");
+    }
     return data.results;     // <-- WICHTIG!
   } catch (error) {
     console.error(error);
@@ -75,8 +89,23 @@ export async function apiFetch(
 
   // Access Token abgelaufen?
   if (res.status === 401) {
+    // Get refresh token from cookie or localStorage
+    let refreshToken = typeof localStorage !== 'undefined' ? localStorage.getItem("refreshToken") : null;
+    if (!refreshToken && typeof document !== 'undefined') {
+      const match = document.cookie.match(new RegExp('(^| )refreshToken=([^;]+)'));
+      if (match) refreshToken = match[2];
+    }
+
+    if (!refreshToken) {
+      throw new Error('Kein Refresh Token gefunden');
+    }
+
     const refreshRes = await fetch(`${backendUrl}/api/auth/token/refresh/`, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ refresh: refreshToken }),
       credentials: 'include',
     });
 
@@ -84,9 +113,40 @@ export async function apiFetch(
       throw new Error('Session abgelaufen');
     }
 
-    // Retry ursprüngliche Anfrage
-    res = await fetch(`${backendUrl}${input}`, {
+    let data;
+    try {
+      const refreshBodyText = await refreshRes.text();
+      data = JSON.parse(refreshBodyText);
+    } catch (e) {
+      console.error("Token refresh response is not JSON");
+      throw new Error("Session abgelaufen (Invalid JSON from refresh)");
+    }
+
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('accessToken', data.access);
+      if (data.refresh) {
+        localStorage.setItem('refreshToken', data.refresh);
+      }
+      // Extend session expiry to 2h from now
+      const expiryDate = new Date().getTime() + 2 * 60 * 60 * 1000;
+      localStorage.setItem('sessionExpiry', expiryDate.toString());
+    }
+
+    // Also update cookies if in browser
+    if (typeof document !== 'undefined') {
+      document.cookie = `accessToken=${data.access}; path=/; max-age=54000`;
+      if (data.refresh) {
+        document.cookie = `refreshToken=${data.refresh}; path=/; max-age=54000`;
+      }
+    }
+
+    // Update header with new token
+    headers.set("Authorization", `Bearer ${data.access}`);
+
+    // Retry original request using the same normalized URL
+    res = await fetch(url, {
       ...init,
+      headers,
       credentials: 'include',
     });
   }

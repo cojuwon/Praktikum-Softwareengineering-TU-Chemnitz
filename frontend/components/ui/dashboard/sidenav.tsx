@@ -15,6 +15,7 @@ import {
 import { useUser } from '@/lib/userContext';
 import { logout } from '@/lib/auth';
 import Image from 'next/image';
+import SessionTimer from '@/components/auth/SessionTimer';
 
 const links = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -87,6 +88,9 @@ export default function SideNav() {
           );
         })}
       </div>
+
+      {/* Session Timer */}
+      <SessionTimer />
 
       {/* User Info & Logout */}
       {user && (
