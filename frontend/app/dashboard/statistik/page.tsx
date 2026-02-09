@@ -81,7 +81,6 @@ export default function StatistikPage() {
     }
   };
 
-  console.log(data);
 
   return (
     <div
