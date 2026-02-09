@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, OpenApiTypes
+from django.db.models import Q
 
 from api.models import Fall, Begleitung, Beratungstermin, Gewalttat, KlientIn
 from api.serializers import FallSerializer, BegleitungSerializer, BeratungsterminSerializer, GewalttatSerializer
@@ -50,7 +51,7 @@ class FallViewSet(viewsets.ModelViewSet):
     """
     queryset = Fall.objects.all()
     serializer_class = FallSerializer
-    permission_classes = [permissions.IsAuthenticated, CanManageOwnData]
+    permission_classes = [permissions.IsAuthenticated, DjangoModelPermissionsWithView, CanManageOwnData]
 
     def get_queryset(self):
         """
@@ -72,7 +73,6 @@ class FallViewSet(viewsets.ModelViewSet):
         
         if not (can_view_all and self.request.query_params.get('view') == 'all'):
              # Default / Fallback: Filter by own cases if not explicitly asking for all (and allowed)
-             from django.db.models import Q
              if not can_view_all and not user.has_perm('api.view_own_fall'):
                  return queryset.none()
 

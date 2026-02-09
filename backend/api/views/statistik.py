@@ -1,17 +1,27 @@
 """ViewSet für Statistik-Management."""
 
+import logging
+
 from django.core.files.base import ContentFile
 from django.db.models import Q
 from django.http import FileResponse
 from django.utils import timezone
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
+logger = logging.getLogger(__name__)
+
 from api.models import Statistik, Preset, STANDORT_CHOICES
 from api.serializers import StatistikSerializer, PresetSerializer
 from api.permissions import DjangoModelPermissionsWithView, IsOwnerOrAdmin
+
+
+class StatistikQuerySerializer(serializers.Serializer):
+    """Serializer for validating statistics query parameters."""
+    zeitraum_start = serializers.DateField(required=False, allow_null=True)
+    zeitraum_ende = serializers.DateField(required=False, allow_null=True)
 
 
 class StatistikViewSet(viewsets.ModelViewSet):
@@ -86,10 +96,14 @@ class StatistikViewSet(viewsets.ModelViewSet):
     def presets(self, request):
         """
         Liefert gespeicherte Presets.
+        Admins sehen alle Presets, andere User nur eigene oder berechtigte.
         """
-        presets = Preset.objects.filter(
-            Q(ersteller=request.user) | Q(berechtigte=request.user)
-        ).distinct()
+        if request.user.rolle_mb == 'AD':
+            presets = Preset.objects.all()
+        else:
+            presets = Preset.objects.filter(
+                Q(ersteller=request.user) | Q(berechtigte=request.user)
+            ).distinct()
         serializer = PresetSerializer(presets, many=True)
         return Response({"presets": serializer.data})
 
@@ -98,14 +112,19 @@ class StatistikViewSet(viewsets.ModelViewSet):
         """
         Führt die Statistik-Berechnung basierend auf den Filtern durch.
         """
-        filters = request.data
+        query_serializer = StatistikQuerySerializer(data=request.data)
+        if not query_serializer.is_valid():
+            return Response(query_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        filters = query_serializer.validated_data
         try:
             from api.services.statistik_service import StatistikService
             result = StatistikService.calculate_stats(filters)
             return Response(result)
         except Exception as e:
+            logger.exception("Error calculating statistics")
             return Response(
-                {'detail': f'Fehler bei der Berechnung: {str(e)}'}, 
+                {'detail': 'Fehler bei der Berechnung der Statistik.'}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 

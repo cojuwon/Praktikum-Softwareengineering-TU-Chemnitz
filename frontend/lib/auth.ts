@@ -24,11 +24,11 @@ export async function login(email: string, password: string) {
   if (!res.ok) {
     let err;
     try {
-      err = await res.json();
+      const errorText = await res.text();
+      err = JSON.parse(errorText);
     } catch (e) {
       // Fallback if response is text/html (e.g. 404 or 500)
-      const text = await res.text();
-      console.error("Login failed with non-JSON response:", text);
+      console.error("Login failed with non-JSON response");
       throw new Error(`Login failed: ${res.status} ${res.statusText}`);
     }
     throw new Error(err?.detail || 'Login fehlgeschlagen');
@@ -36,10 +36,10 @@ export async function login(email: string, password: string) {
 
   let data;
   try {
-    data = await res.json();
+    const bodyText = await res.text();
+    data = JSON.parse(bodyText);
   } catch (e) {
-    const text = await res.text();
-    console.error("Login success response is not JSON:", text);
+    console.error("Login success response is not JSON");
     throw new Error("Server communication error: Invalid JSON response");
   }
 
@@ -96,22 +96,30 @@ export async function register(payload: {
   });
 
   if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData?.detail || 'Registrierung fehlgeschlagen');
+    let errorData = {};
+    try {
+      const errorText = await res.text();
+      errorData = JSON.parse(errorText);
+    } catch (e) {
+      // Fallback for non-JSON responses
+    }
+    throw new Error((errorData as any)?.detail || 'Registrierung fehlgeschlagen');
   }
 
   let data;
   try {
-    data = await res.json();
+    const bodyText = await res.text();
+    data = JSON.parse(bodyText);
   } catch (e) {
-    const text = await res.text();
-    console.error("Registration success response is not JSON:", text);
+    console.error("Registration success response is not JSON");
     throw new Error("Server communication error: Invalid JSON response");
   }
 
-  // Optional Auto-Login
-  localStorage.setItem('accessToken', data.access);
-  localStorage.setItem('refreshToken', data.refresh);
+  // Optional Auto-Login (SSR-safe)
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('accessToken', data.access);
+    localStorage.setItem('refreshToken', data.refresh);
+  }
 
   return data.user;
 }
@@ -141,8 +149,12 @@ export async function logout() {
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('sessionExpiry');
   }
-  document.cookie = 'accessToken=; Max-Age=0; path=/';
-  document.cookie = 'refreshToken=; Max-Age=0; path=/';
+
+  // SSR-safe cookie clearing
+  if (typeof document !== 'undefined') {
+    document.cookie = 'accessToken=; Max-Age=0; path=/';
+    document.cookie = 'refreshToken=; Max-Age=0; path=/';
+  }
 
   return true;
 }
@@ -160,10 +172,10 @@ export async function getCurrentUser(): Promise<User> {
   }
 
   try {
-    return await res.json();
+    const bodyText = await res.text();
+    return JSON.parse(bodyText);
   } catch (e) {
-    const text = await res.text();
-    console.error("User fetch response is not JSON:", text);
+    console.error("User fetch response is not JSON");
     throw new Error("Failed to load user data");
   }
 }

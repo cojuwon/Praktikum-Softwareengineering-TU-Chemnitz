@@ -14,6 +14,7 @@ export default function FallEditPage() {
 
   const [definition, setDefinition] = useState<FieldDefinition[] | null>(null);
   const [data, setData] = useState<Record<string, any> | null>(null);
+  const [originalData, setOriginalData] = useState<Record<string, any> | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -33,6 +34,7 @@ export default function FallEditPage() {
     ])
       .then(([fallData, fieldsData]) => {
         setData(fallData);
+        setOriginalData({ ...fallData });
         setDefinition(fieldsData.fields);
         setLoading(false);
       })
@@ -215,7 +217,12 @@ export default function FallEditPage() {
           {/* EDIT BUTTON (Only in View Mode) */}
           {!isEditing && (
             <button
-              onClick={() => setIsEditing(true)}
+              onClick={() => {
+                if (data) {
+                  setOriginalData({ ...data });
+                }
+                setIsEditing(true);
+              }}
               style={{
                 backgroundColor: "white",
                 border: "1px solid #d1d5db",
@@ -278,8 +285,11 @@ export default function FallEditPage() {
               {/* Cancel Button */}
               <button
                 onClick={() => {
+                  // Restore original data
+                  if (originalData) {
+                    setData({ ...originalData });
+                  }
                   setIsEditing(false);
-                  // Optional: window.location.reload(); 
                 }}
                 className="w-full mt-3 flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >

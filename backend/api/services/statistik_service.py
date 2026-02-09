@@ -226,7 +226,8 @@ class StatistikService:
 
         # === BERICHTSDATEN - GEWALTART ===
         def count_violence_type(keyword):
-            return violence.filter(tat_art__icontains=keyword).count()
+            """Count violence entries with exact tat_art match to avoid overlapping counts."""
+            return violence.filter(tat_art=keyword).count()
 
         berichtsdaten_gewaltart = {
             "04_6_1_Anzahl": count_violence_type("Vergewaltigung"),
@@ -237,11 +238,16 @@ class StatistikService:
             "04_6_6_Anzahl": count_violence_type("Upskirting"),
             "04_6_7_Anzahl": count_violence_type("Catcalling"),
             "04_6_8_Anzahl": count_violence_type("digital"),
-            "04_6_9_Anzahl": violence.count() - sum([
+            "04_6_9_Anzahl": max(0, violence.count() - sum([
                 count_violence_type("Vergewaltigung"),
-                count_violence_type("Nötigung"),
-                count_violence_type("Belästigung"),
-            ]),
+                count_violence_type("versuchte Vergewaltigung"),
+                count_violence_type("sexuelle Nötigung"),
+                count_violence_type("sexuelle Belästigung"),
+                count_violence_type("sexuelle Ausbeutung"),
+                count_violence_type("Upskirting"),
+                count_violence_type("Catcalling"),
+                count_violence_type("digital"),
+            ])),
             "04_6_9_a_Welche": "-"
         }
 

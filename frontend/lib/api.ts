@@ -18,9 +18,10 @@ export async function fetchAnfragenPages(query: string): Promise<number> {
 
     let data: { count: number; results: Anfrage[] };
     try {
-      data = await res.json();
+      const bodyText = await res.text();
+      data = JSON.parse(bodyText);
     } catch (e) {
-      console.error("fetchAnfragenPages: Invalid JSON response", await res.text());
+      console.error("fetchAnfragenPages: Invalid JSON response");
       throw new Error("Invalid server response");
     }
     // count = Gesamtanzahl der Anfragen → daraus die Gesamtseiten berechnen
@@ -43,9 +44,10 @@ export async function fetchAnfrage(query: string, page: number) {
 
     let data: { count: number; results: Anfrage[] };
     try {
-      data = await res.json();
+      const bodyText = await res.text();
+      data = JSON.parse(bodyText);
     } catch (e) {
-      console.error("fetchAnfrage: Invalid JSON response", await res.text());
+      console.error("fetchAnfrage: Invalid JSON response");
       throw new Error("Invalid server response");
     }
     return data.results;     // <-- WICHTIG!
@@ -113,10 +115,10 @@ export async function apiFetch(
 
     let data;
     try {
-      data = await refreshRes.json();
+      const refreshBodyText = await refreshRes.text();
+      data = JSON.parse(refreshBodyText);
     } catch (e) {
-      const text = await refreshRes.text();
-      console.error("Token refresh response is not JSON:", text);
+      console.error("Token refresh response is not JSON");
       throw new Error("Session abgelaufen (Invalid JSON from refresh)");
     }
 
@@ -141,8 +143,8 @@ export async function apiFetch(
     // Update header with new token
     headers.set("Authorization", `Bearer ${data.access}`);
 
-    // Retry ursprüngliche Anfrage
-    res = await fetch(`${backendUrl}${input}`, {
+    // Retry original request using the same normalized URL
+    res = await fetch(url, {
       ...init,
       headers,
       credentials: 'include',

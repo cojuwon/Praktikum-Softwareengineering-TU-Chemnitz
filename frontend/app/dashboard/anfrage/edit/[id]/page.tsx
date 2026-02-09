@@ -14,6 +14,7 @@ export default function AnfrageEditPage() {
 
   const [definition, setDefinition] = useState<FieldDefinition[] | null>(null);
   const [data, setData] = useState<Record<string, any> | null>(null);
+  const [originalData, setOriginalData] = useState<Record<string, any> | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -33,6 +34,7 @@ export default function AnfrageEditPage() {
     ])
       .then(([anfrageData, fieldsData]) => {
         setData(anfrageData);
+        setOriginalData({ ...anfrageData });
         setDefinition(fieldsData.fields);
         setLoading(false);
       })
@@ -74,10 +76,20 @@ export default function AnfrageEditPage() {
     }
 
     try {
+      // Filter to only include editable fields from definition
+      const editableData: Record<string, any> = {};
+      if (definition) {
+        for (const field of definition) {
+          if (data[field.name] !== undefined) {
+            editableData[field.name] = data[field.name];
+          }
+        }
+      }
+
       const res = await apiFetch(`/api/anfragen/${id}/`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(editableData),
       });
 
       if (!res.ok) throw new Error("Update failed");
@@ -209,7 +221,13 @@ export default function AnfrageEditPage() {
           {/* EDIT BUTTON (Only in View Mode) */}
           {!isEditing && (
             <button
-              onClick={() => setIsEditing(true)}
+              onClick={() => {
+                // Snapshot current data before editing so Cancel can restore
+                if (data) {
+                  setOriginalData({ ...data });
+                }
+                setIsEditing(true);
+              }}
               style={{
                 backgroundColor: "white",
                 border: "1px solid #d1d5db",
@@ -282,12 +300,11 @@ export default function AnfrageEditPage() {
               {/* Cancel Button */}
               <button
                 onClick={() => {
-                  // Reload data to reset changes or just switch off
-                  // For now just switch off, assuming no changes persisted if not saved.
-                  // Ideally we re-fetch to be safe or keep a backup. 
-                  // Let's just switch off for UI responsiveness, user loses unsaved changes.
+                  // Restore original data to discard unsaved changes
+                  if (originalData) {
+                    setData({ ...originalData });
+                  }
                   setIsEditing(false);
-                  // Optional: re-fetch data?
                 }}
                 className="w-full mt-3 flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >

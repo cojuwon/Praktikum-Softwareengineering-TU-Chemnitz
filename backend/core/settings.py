@@ -61,6 +61,8 @@ INSTALLED_APPS = [
 
     'dj_rest_auth',
     'dj_rest_auth.registration',
+    
+    'rest_framework_simplejwt.token_blacklist',
 
 
     
@@ -232,8 +234,6 @@ SIMPLE_JWT = {
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_LOGIN_METHODS = {'email'}
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
-
-ACCOUNT_LOGIN_METHODS = {'email'}
 
 ACCOUNT_USER_MODEL_EMAIL_FIELD = 'mail_mb'
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None

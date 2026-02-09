@@ -25,7 +25,7 @@ from django.db.models import Q
 
 from api.models import Anfrage, Konto, STANDORT_CHOICES, ANFRAGE_PERSON_CHOICES, ANFRAGE_ART_CHOICES, Eingabefeld
 from api.serializers import AnfrageSerializer
-from api.permissions import CanManageOwnData
+from api.permissions import CanManageOwnData, DjangoModelPermissionsWithView
 
 
 class AnfrageViewSet(viewsets.ModelViewSet):
@@ -59,7 +59,7 @@ class AnfrageViewSet(viewsets.ModelViewSet):
     """
     queryset = Anfrage.objects.all()
     serializer_class = AnfrageSerializer
-    permission_classes = [permissions.IsAuthenticated, CanManageOwnData]
+    permission_classes = [permissions.IsAuthenticated, DjangoModelPermissionsWithView, CanManageOwnData]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['created_at', 'updated_at', 'anfrage_datum', 'anfrage_art', 'anfrage_ort', 'anfrage_person', 'anfrage_id']
     ordering = ['-created_at']  # Default: neueste zuerst

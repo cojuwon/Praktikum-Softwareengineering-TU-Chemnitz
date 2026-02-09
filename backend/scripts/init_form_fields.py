@@ -10,11 +10,7 @@ django.setup()
 from api.models import Eingabefeld, STANDORT_CHOICES, ANFRAGE_PERSON_CHOICES, ANFRAGE_ART_CHOICES
 
 def init_fields():
-    print("Initializing Eingabefeld entries...")
-    
-    # Clear existing entries? Or just update/create?
-    # Let's clear to ensure clean state as per plan
-    Eingabefeld.objects.all().delete()
+    print("Initializing Eingabefeld entries (idempotent)...")
     
     fields = [
         {
@@ -59,10 +55,22 @@ def init_fields():
 
     for f in fields:
         options = f.pop('options', list())
-        Eingabefeld.objects.create(options=options, context="anfrage", **f)
-        print(f"Created field: {f['label']}")
+        obj, created = Eingabefeld.objects.update_or_create(
+            name=f['name'],
+            context="anfrage",
+            defaults={
+                'label': f['label'],
+                'typ': f['typ'],
+                'required': f['required'],
+                'sort_order': f['sort_order'],
+                'options': options,
+            }
+        )
+        action = "Created" if created else "Updated"
+        print(f"{action} field: {f['label']}")
 
     print("Done.")
 
 if __name__ == '__main__':
     init_fields()
+
