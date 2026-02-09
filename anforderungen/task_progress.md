@@ -13,6 +13,7 @@
 | 3. Presets & Permissions | ✅ Abgeschlossen | Neue Permissions hinzugefügt |
 | 4. Management Command | ✅ Abgeschlossen | `init_statistics.py` mit 16 Standard-Presets |
 | 5. Tests | ✅ Abgeschlossen | 14 neue Tests, alle bestanden |
+| 6. Dokumentation | ✅ Abgeschlossen | `dev_documentation/api/statistik_api.md` erstellt |
 
 ---
 
