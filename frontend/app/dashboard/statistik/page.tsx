@@ -21,7 +21,7 @@ export default function StatistikPage() {
 
   /** FILTERDEFINITIONEN LADEN */
   useEffect(() => {
-    apiFetch("/api/statistik/filters")
+    apiFetch("/api/statistik/filters/")
       .then(res => res.json())
       .then(json => {
         const defs: FieldDefinition[] = json.filters.map((f: any) => ({
@@ -39,7 +39,7 @@ export default function StatistikPage() {
   useEffect(() => {
     async function loadPresets() {
       try {
-        const res = await apiFetch("/api/statistik/presets");
+        const res = await apiFetch("/api/statistik/presets/");
         const json = await res.json();
         setPresets(json.presets);
       } catch (e) {
@@ -66,7 +66,7 @@ export default function StatistikPage() {
 
   const handleSubmit = async () => {
     try {
-      const response = await apiFetch("/api/statistik/query", {
+      const response = await apiFetch("/api/statistik/query/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(filters),
