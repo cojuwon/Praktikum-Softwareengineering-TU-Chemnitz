@@ -27,7 +27,6 @@ export default function LoginForm() {
 
     try {
       const result = await login(email, password);
-      console.log(result.user.rolle_mb);
 
       // Update UserContext so the app knows we are logged in
       setUser(result.user);
@@ -35,7 +34,8 @@ export default function LoginForm() {
       // Weiterleiten anhand Rolle
       switch (result.user.rolle_mb) {
         case 'A':
-          router.push('/dashboard/admin');
+        case 'AD':
+          router.push('/dashboard');
           break;
         case 'E':
           router.push('/dashboard/extended');

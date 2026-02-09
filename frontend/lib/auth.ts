@@ -6,7 +6,7 @@ interface User {
   vorname_mb: string;
   nachname_mb: string;
   mail_mb: string;
-  rolle_mb: 'B' | 'E' | 'A'; // Basis, Erweiterung, Admin
+  rolle_mb: 'B' | 'E' | 'A' | 'AD'; // Basis, Erweiterung, Admin
 }
 
 /**
