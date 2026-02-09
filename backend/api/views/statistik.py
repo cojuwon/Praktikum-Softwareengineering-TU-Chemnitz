@@ -76,19 +76,10 @@ class StatistikViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def filters(self, request):
         """
-        Liefert die Definition der verfügbaren Filter (Hardcoded + Eingabefelder).
+        Liefert die Definition der verfügbaren Filter mit echten Enum-Optionen.
         """
-        # Hardcoded Basis-Filter
-        filters = [
-            { "name": "zeitraum_start", "label": "Von", "type": "date" },
-            { "name": "zeitraum_ende", "label": "Bis", "type": "date" },
-            { 
-                "name": "anfrage_ort", "label": "Anfrage-Ort", "type": "select", 
-                "options": [x[0] for x in STANDORT_CHOICES] 
-            },
-            # ... Weitere Filter analog zur Fake-API ...
-            # Hier gekürzt für Übersichtlichkeit, sollte idealerweise alle Enums mappen
-        ]
+        from api.services.statistik_service import StatistikService
+        filters = StatistikService.get_filters()
         return Response({"filters": filters})
 
     @action(detail=False, methods=['get'])
