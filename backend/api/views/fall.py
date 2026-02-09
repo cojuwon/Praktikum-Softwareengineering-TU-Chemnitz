@@ -163,11 +163,12 @@ class FallViewSet(viewsets.ModelViewSet):
     def form_fields(self, request):
         """
         Liefert die Definition der Eingabefelder für einen neuen Fall.
+        Kombiniert hardcodierte Beziehungsfelder (Klient, Mitarbeiter) mit
+        dynamisch konfigurierten Eingabefeldern aus der Datenbank.
         """
-        from api.models import KlientIn, Konto
+        from api.models import KlientIn, Konto, Eingabefeld
         
         # 1. Klienten-Optionen laden
-        # Da Klienten keine Namen haben, nutzen wir "KlientIn #ID (Rolle)"
         klienten = KlientIn.objects.all()
         klient_options = []
         for k in klienten:
@@ -184,16 +185,8 @@ class FallViewSet(viewsets.ModelViewSet):
                 "value": str(m.id),
                 "label": f"{m.vorname_mb} {m.nachname_mb}"
             })
-            
-        # 3. Status-Optionen
-        status_options = [
-            {'value': 'O', 'label': 'Offen'},
-            {'value': 'L', 'label': 'Laufend'},
-            {'value': 'A', 'label': 'Abgeschlossen'},
-            {'value': 'G', 'label': 'Gelöscht'},
-        ]
 
-        # Form Definition zusammenstellen
+        # 3. Hardcodierte Beziehungsfelder (diese kommen nicht aus Eingabefeld)
         fields = [
             {
                 "name": "klient",
@@ -206,31 +199,25 @@ class FallViewSet(viewsets.ModelViewSet):
                 "name": "mitarbeiterin",
                 "label": "Zuständige Mitarbeiter:in",
                 "type": "select",
-                "required": False, # Kann leer sein, wird dann im Backend gesetzt
-                "options": mitarbeiter_options,
-                # Default könnte man im Frontend setzen
-            },
-            {
-                "name": "status",
-                "label": "Status",
-                "type": "select",
-                "required": True,
-                "options": status_options,
-                "default": "O"
-            },
-            {
-                "name": "startdatum",
-                "label": "Startdatum",
-                "type": "date",
-                "required": True,
-            },
-            {
-                "name": "notizen",
-                "label": "Notizen",
-                "type": "textarea",
                 "required": False,
-            }
+                "options": mitarbeiter_options,
+            },
         ]
+
+        # 4. Dynamische Felder aus der Eingabefeld-Tabelle laden (context='fall')
+        eingabefelder = Eingabefeld.objects.filter(context='fall').order_by('sort_order')
+        for ef in eingabefelder:
+            field_def = {
+                "name": ef.name,
+                "label": ef.label,
+                "type": ef.typ,
+                "required": ef.required,
+            }
+            if ef.options:
+                field_def["options"] = ef.options
+            if ef.default_value:
+                field_def["default"] = ef.default_value
+            fields.append(field_def)
 
         return Response({"fields": fields})
 

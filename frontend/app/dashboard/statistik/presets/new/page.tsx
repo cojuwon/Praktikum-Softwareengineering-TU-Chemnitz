@@ -4,6 +4,9 @@ import { DynamicFilterForm, FieldDefinition } from "@/components/statistik/Dynam
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import Modal from "@/components/ui/Modal";
+
+import { apiFetch } from "@/lib/api";
 
 export default function NewPresetPage() {
     const router = useRouter();
@@ -13,9 +16,12 @@ export default function NewPresetPage() {
     const [label, setLabel] = useState<string>("");
     const [presetType, setPresetType] = useState<"shared" | "private" | "">("");
 
+    // Modal States
+    const [feedbackModal, setFeedbackModal] = useState<{ isOpen: boolean; type: 'success' | 'error'; message: string; onClose?: () => void } | null>(null);
+
     /** FILTERDEFINITIONEN LADEN */
     useEffect(() => {
-        fetch("/api/statistik/filters")
+        apiFetch("/api/statistik/filters/")
             .then(res => res.json())
             .then(json => {
                 const defs: FieldDefinition[] = json.filters.map((f: any) => ({
@@ -37,15 +43,18 @@ export default function NewPresetPage() {
     /** WENN USER DAS FORMULAR ABSCHICKT */
     const handleSubmit = async () => {
         if (!label || !presetType) {
-            alert("Bitte Name und Art des Presets auswählen!");
+            setFeedbackModal({
+                isOpen: true,
+                type: 'error',
+                message: "Bitte Name und Art des Presets auswählen!"
+            });
             return;
         }
 
         try {
-            const response = await fetch("/api/statistik/presets/new", {
+            const response = await apiFetch("/api/presets/", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                credentials: "include",
                 body: JSON.stringify({
                     name: label,
                     preset_type: presetType,
@@ -54,21 +63,38 @@ export default function NewPresetPage() {
             });
 
             if (!response.ok) {
-                throw new Error("Preset konnte nicht gespeichert werden");
+                try {
+                    const errorData = await response.json();
+                    console.error("Server Error:", errorData);
+                    throw new Error(JSON.stringify(errorData));
+                } catch (e) {
+                    throw new Error("Preset konnte nicht gespeichert werden");
+                }
             }
 
             const result = await response.json();
-            alert("Preset erfolgreich gespeichert!");
-            console.log("Neues Preset:", result);
 
-            // Formular zurücksetzen
-            setFilters({});
-            setLabel("");
-            setPresetType("");
+            setFeedbackModal({
+                isOpen: true,
+                type: 'success',
+                message: "Preset erfolgreich gespeichert!",
+                onClose: () => {
+                    // Formular zurücksetzen? Oder redirecten?
+                    // User bleibt auf der Seite, also zurücksetzen.
+                    setFilters({});
+                    setLabel("");
+                    setPresetType("");
+                }
+            });
+            console.log("Neues Preset:", result);
 
         } catch (error) {
             console.error(error);
-            alert("Fehler beim Speichern des Presets.");
+            setFeedbackModal({
+                isOpen: true,
+                type: 'error',
+                message: "Fehler beim Speichern des Presets."
+            });
         }
     };
 
@@ -217,6 +243,44 @@ export default function NewPresetPage() {
                     </form>
                 )}
             </div>
+            {/* FEEDBACK MODAL */}
+            {feedbackModal && (
+                <Modal
+                    isOpen={feedbackModal.isOpen}
+                    onClose={() => {
+                        setFeedbackModal(null);
+                        feedbackModal.onClose?.();
+                    }}
+                    title={feedbackModal.type === 'success' ? 'Erfolg' : 'Fehler'}
+                    footer={
+                        <button
+                            onClick={() => {
+                                setFeedbackModal(null);
+                                feedbackModal.onClose?.();
+                            }}
+                            className={`px-4 py-2 rounded-md text-white font-medium ${feedbackModal.type === 'success' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
+                                }`}
+                        >
+                            OK
+                        </button>
+                    }
+                >
+                    <div className="flex items-center gap-3">
+                        {feedbackModal.type === 'success' ? (
+                            <div className="h-10 w-10 text-green-500 bg-green-100 rounded-full flex items-center justify-center">
+                                ✓
+                            </div>
+                        ) : (
+                            <div className="h-10 w-10 text-red-500 bg-red-100 rounded-full flex items-center justify-center">
+                                !
+                            </div>
+                        )}
+                        <p className="text-gray-700 text-lg">
+                            {feedbackModal.message}
+                        </p>
+                    </div>
+                </Modal>
+            )}
         </div>
     );
 }
