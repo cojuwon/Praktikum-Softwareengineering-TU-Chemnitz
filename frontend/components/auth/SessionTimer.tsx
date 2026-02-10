@@ -70,8 +70,8 @@ export default function SessionTimer() {
             const now = new Date().getTime();
             const diff = expiry - now;
 
-            // "If timer less than 30 mins" -> Auto Extend
-            if (diff > 0 && diff < 30 * 60 * 1000) {
+            // "If timer less than 90 mins" -> Auto Extend (keeps access token fresh)
+            if (diff > 0 && diff < 90 * 60 * 1000) {
                 console.log("Auto-extending session due to activity...");
                 await handleRefresh();
             }
