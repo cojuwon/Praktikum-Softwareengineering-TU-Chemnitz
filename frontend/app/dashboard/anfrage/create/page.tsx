@@ -1,12 +1,11 @@
 "use client";
 
-import { DynamicForm, FieldDefinition } from "@/components/form/DynamicForm";
+import { FieldDefinition } from "@/components/form/DynamicForm";
 import { useState, useEffect } from "react";
 import { apiFetch } from "@/lib/api";
-import Image from "next/image";
-import Link from "next/link";
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import Modal from "@/components/ui/Modal";
+import AnfrageCreateHeader from "@/components/dashboard/anfrage/create/AnfrageCreateHeader";
+import AnfrageCreateForm from "@/components/dashboard/anfrage/create/AnfrageCreateForm";
 
 export default function AnfrageCreatePage() {
   const [form, setForm] = useState<Record<string, any>>({});
@@ -112,101 +111,17 @@ export default function AnfrageCreatePage() {
   };
 
   return (
-    <div
-      style={{
-        maxWidth: "1000px",
-        margin: "0 auto",
-        width: "100%",
-        padding: "24px"
-      }}
-    >
-      <Image
-        src="/bellis-favicon.png"
-        alt="Bellis Logo"
-        width={100}
-        height={100}
-        style={{
-          width: "60px",
-          height: "auto",
-          objectFit: "contain",
-          display: "block",
-          margin: "0 auto 20px auto",
-        }}
-      />
+    <div className="max-w-5xl mx-auto w-full px-6">
+      <AnfrageCreateHeader />
 
-      {/* BIG BOX */}
-      <div
-        style={{
-          backgroundColor: "white",
-          borderRadius: "12px",
-          overflow: "hidden",
-          boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)"
-        }}
-      >
-        {/* HEADER */}
-        <div
-          style={{
-            padding: "30px 40px",
-            borderBottom: "1px solid #e5e7eb",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center"
-          }}
-        >
-          <div className="flex items-center gap-4">
-            <Link href="/dashboard/anfrage" className="text-gray-400 hover:text-gray-600">
-              <ArrowLeftIcon className="h-6 w-6" />
-            </Link>
-            <div>
-              <h1
-                style={{
-                  fontSize: "24px",
-                  fontWeight: "600",
-                  color: "#42446F",
-                  margin: 0,
-                }}
-              >
-                Anfrage anlegen
-              </h1>
-              <p
-                style={{
-                  fontSize: "14px",
-                  color: "#6b7280",
-                  margin: "4px 0 0 0",
-                }}
-              >
-                Erfassen Sie eine neue Anfrage im System
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* FORM CONTENT */}
-        <div
-          style={{
-            padding: "40px",
-            backgroundColor: "#fff"
-          }}
-        >
-          {loading && <p className="text-center text-gray-500">Lade Formular...</p>}
-
-          {!loading && formDefinition && (
-            <div className="max-w-2xl mx-auto">
-              <DynamicForm
-                definition={formDefinition}
-                values={form}
-                onChange={handleChange}
-                // We render our own button for better placement/styling control, or pass it to DynamicForm.
-                // Since I updated DynamicForm to have a nice button if onSubmit is passed, let's use that.
-                onSubmit={handleSubmit}
-              />
-            </div>
-          )}
-
-          {!loading && formDefinition?.length === 0 && (
-            <p className="text-center text-gray-500">Keine Felder definiert.</p>
-          )}
-        </div>
+      <div className="bg-white rounded-b-xl overflow-hidden shadow-sm">
+        <AnfrageCreateForm
+          loading={loading}
+          formDefinition={formDefinition}
+          values={form}
+          onChange={handleChange}
+          onSubmit={handleSubmit}
+        />
       </div>
 
       {/* CONFIRM MODAL */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useStatistik } from "../../app/dashboard/statistik/StatistikContext";
+import { useStatistik } from "@/app/dashboard/statistik/StatistikContext";
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
 

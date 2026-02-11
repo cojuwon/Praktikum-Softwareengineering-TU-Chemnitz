@@ -3,7 +3,7 @@
 import { useStatistik } from "../StatistikContext";
 import Link from 'next/link';
 import { lusitana } from '@/components/ui/fonts';
-import { DynamicKPIs } from "@/components/statistik/DynamicKPIs";
+import { DynamicKPIs } from "@/components/dashboard/statistik/DynamicKPIs";
 
 
 export default function NetzwerkPage() {

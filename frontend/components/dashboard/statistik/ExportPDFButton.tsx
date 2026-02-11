@@ -1,16 +1,23 @@
 "use client";
 
-import { useStatistik } from "../../app/dashboard/statistik/StatistikContext";
-import { saveAs } from "file-saver";
-import Papa from "papaparse";
+import { useStatistik } from "@/app/dashboard/statistik/StatistikContext";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+
+// -------------------------------------------------------
+// Typen
+// -------------------------------------------------------
 
 type FlatRow = {
-  ebene: string; // Hierarchieebene für CSV
+  ebene: string; // Hierarchie-Ebene als Text (inkl. Einrückung)
   kpi?: string;
   wert?: any;
 };
 
-// Rekursive Funktion, die nur echte Daten exportiert, Struktur dient nur als Label
+// -------------------------------------------------------
+// Flatten-Funktionen (aus deinem CSV-Exporter übernommen)
+// -------------------------------------------------------
+
 const flattenDataHierarchical = (
   structureNode: any,
   dataNode: any,
@@ -20,17 +27,17 @@ const flattenDataHierarchical = (
 ) => {
   if (!dataNode || typeof dataNode !== "object") return;
 
-  // Hauptkategorie nur einmal
+  // Hauptkategorie
   if (!rows.some((r) => r.ebene === hauptLabel)) {
     rows.push({ ebene: hauptLabel });
   }
 
-  // Unterkategorie nur einmal
-  if (!rows.some((r) => r.ebene === unterLabel)) {
+  // Unterkategorie
+  if (!rows.some((r) => r.ebene === "  " + unterLabel)) {
     rows.push({ ebene: "  " + unterLabel });
   }
 
-  // Prüfen auf Abschnitte in structure
+  // Abschnitte prüfen
   if (structureNode?.abschnitte) {
     for (const abschnitt of structureNode.abschnitte) {
       const abschnittLabel = "    " + abschnitt.label;
@@ -51,7 +58,7 @@ const flattenDataHierarchical = (
     return;
   }
 
-  // Direkte KPIs, wenn keine Abschnitte
+  // Direkte KPIs (wenn keine Abschnitte)
   const kpiKeys = Object.keys(dataNode).filter((k) => typeof dataNode[k] !== "object");
   kpiKeys.forEach((kpiKey) => {
     rows.push({
@@ -74,8 +81,6 @@ const flattenDataHierarchical = (
 
 const flattenDataForExport = (structure: any, fullData: any): FlatRow[] => {
   const rows: FlatRow[] = [];
-
-  // Nur den data-Teil durchlaufen
   const data = fullData.data;
   if (!data) return rows;
 
@@ -88,35 +93,67 @@ const flattenDataForExport = (structure: any, fullData: any): FlatRow[] => {
       const unterStructure = structureNode?.unterkategorien?.[unterKey] || {};
       const unterLabel = unterStructure?.label || unterKey;
 
-      flattenDataHierarchical(unterStructure, dataNode[unterKey], hauptLabel, unterLabel, rows);
+      flattenDataHierarchical(
+        unterStructure,
+        dataNode[unterKey],
+        hauptLabel,
+        unterLabel,
+        rows
+      );
     }
   }
 
   return rows;
 };
 
+// -------------------------------------------------------
+// PDF Export Button
+// -------------------------------------------------------
 
-export default function ExportCSVButton({ structure }: { structure: any }) {
+export default function ExportPDFButton({ structure }: { structure: any }) {
   const { data } = useStatistik();
   if (!data) return null;
 
-  const handleExportCSV = () => {
+  const handleExportPDF = () => {
     const flatData = flattenDataForExport(structure, data);
     if (!flatData.length) return;
 
-    // CSV mit Hierarchie-Spalte
-    const csvData = flatData.map((r) => ({
-      Hierarchie: r.ebene + (r.wert !== undefined ? `: ${r.wert}` : ""),
-    }));
+    const doc = new jsPDF();
 
-    const csv = Papa.unparse(csvData);
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    saveAs(blob, "statistik.csv");
+    // Titel
+    doc.setFontSize(16);
+    doc.text("Statistik Export", 14, 15);
+
+    // Daten in Tabelle wandeln
+    const tableRows = flatData.map((r) => [
+      r.ebene ?? "",
+      r.wert !== undefined ? String(r.wert) : "",
+    ]);
+
+    autoTable(doc, {
+      startY: 25,
+      head: [["Bereich", "Wert"]],
+      body: tableRows,
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [30, 30, 30] },
+      didParseCell: (data) => {
+        const text = data.cell.raw;
+
+        // Fette Unterkategorien
+        if (typeof text === "string") {
+          if (text.startsWith("  ") && !text.startsWith("      ")) {
+            data.cell.styles.fontStyle = "bold";
+          }
+        }
+      },
+    });
+
+    doc.save("statistik.pdf");
   };
 
   return (
-    <button onClick={handleExportCSV} className="btn">
-      CSV
+    <button onClick={handleExportPDF} className="btn">
+      PDF
     </button>
   );
 }

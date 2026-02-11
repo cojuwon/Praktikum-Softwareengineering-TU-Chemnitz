@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { DynamicForm, FieldDefinition } from "@/components/form/DynamicForm";
-import Image from "next/image";
-import Link from "next/link";
+import { FieldDefinition } from "@/components/form/DynamicForm";
 import { apiFetch } from "@/lib/api";
-import { ArrowLeftIcon, PencilSquareIcon } from "@heroicons/react/24/outline";
+import AnfrageDetailHeader from "@/components/dashboard/anfrage/detail/AnfrageDetailHeader";
+import AnfrageDetailView from "@/components/dashboard/anfrage/detail/AnfrageDetailView";
+import AnfrageDetailEdit from "@/components/dashboard/anfrage/detail/AnfrageDetailEdit";
 
 export default function AnfrageEditPage() {
   const { id } = useParams<{ id: string }>();
@@ -147,172 +147,42 @@ export default function AnfrageEditPage() {
   }
 
   return (
-    <div
-      style={{
-        maxWidth: "1000px",
-        margin: "0 auto",
-        width: "100%",
-        padding: "24px",
-      }}
-    >
-      <Image
-        src="/bellis-favicon.png"
-        alt="Bellis Logo"
-        width={100}
-        height={100}
-        style={{
-          width: "60px",
-          height: "auto",
-          objectFit: "contain",
-          display: "block",
-          margin: "0 auto 20px auto",
+    <div className="max-w-5xl mx-auto w-full px-6">
+      <AnfrageDetailHeader
+        anfrageId={data.anfrage_id}
+        isEditing={isEditing}
+        onEdit={() => {
+          if (data) {
+            setOriginalData({ ...data });
+          }
+          setIsEditing(true);
         }}
       />
 
-      {/* BIG BOX AROUND EVERYTHING */}
-      <div
-        style={{
-          backgroundColor: "white",
-          borderRadius: "12px",
-          overflow: "hidden", // Ensure header/footer radius respects container
-          boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
-        }}
-      >
-        {/* HEADER SECTION */}
-        <div
-          style={{
-            padding: "30px 40px",
-            borderBottom: "1px solid #e5e7eb",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <div className="flex items-center gap-4">
-            <Link
-              href="/dashboard/anfrage"
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <ArrowLeftIcon className="h-6 w-6" />
-            </Link>
-            <div>
-              <h1
-                style={{
-                  fontSize: "24px",
-                  fontWeight: "600",
-                  color: "#42446F",
-                  margin: 0,
-                }}
-              >
-                Anfrage #{data.anfrage_id}
-              </h1>
-              <p
-                style={{
-                  fontSize: "14px",
-                  color: "#6b7280",
-                  margin: "4px 0 0 0",
-                }}
-              >
-                {isEditing ? "Daten bearbeiten" : "Details der Anfrage anzeigen"}
-              </p>
-            </div>
-          </div>
-
-          {/* EDIT BUTTON (Only in View Mode) */}
+      <div className="bg-white rounded-b-xl overflow-hidden shadow-sm">
+        <div className="px-10 py-10">
           {!isEditing && (
-            <button
-              onClick={() => {
-                // Snapshot current data before editing so Cancel can restore
-                if (data) {
-                  setOriginalData({ ...data });
-                }
-                setIsEditing(true);
-              }}
-              style={{
-                backgroundColor: "white",
-                border: "1px solid #d1d5db",
-                color: "#374151",
-                borderRadius: "6px",
-                padding: "8px 16px",
-                fontSize: "14px",
-                fontWeight: "500",
-                cursor: "pointer",
-                transition: "all 0.2s",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#f9fafb";
-                e.currentTarget.style.borderColor = "#c6cdd5";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "white";
-                e.currentTarget.style.borderColor = "#d1d5db";
-              }}
-            >
-              <PencilSquareIcon className="h-4 w-4" />
-              Bearbeiten
-            </button>
-          )}
-        </div>
-
-        {/* CONTENT SECTION */}
-        <div style={{ padding: "40px", backgroundColor: "#fff" }}>
-
-          {/* VIEW MODE */}
-          {!isEditing && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-              {definition.map((field) => (
-                <div key={field.name} className="flex flex-col border-b border-gray-100 pb-2">
-                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                    {field.label}
-                  </span>
-                  <span className="text-gray-900 font-medium text-lg">
-                    {getDisplayValue(field.name, data[field.name]) || "—"}
-                  </span>
-                </div>
-              ))}
-
-              {/* Additional Info not in form fields but in API */}
-              <div className="flex flex-col border-b border-gray-100 pb-2">
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                  Bearbeitet von
-                </span>
-                <span className="text-gray-900 font-medium text-lg">
-                  {data.mitarbeiterin_display || "—"}
-                </span>
-              </div>
-            </div>
+            <AnfrageDetailView
+              data={data}
+              definition={definition}
+              getDisplayValue={getDisplayValue}
+            />
           )}
 
-          {/* EDIT MODE */}
           {isEditing && (
-            <div className="max-w-2xl mx-auto">
-              <DynamicForm
-                definition={definition}
-                values={data}
-                onChange={handleChange}
-                onSubmit={handleSubmit}
-              />
-
-              {/* Cancel Button */}
-              <button
-                onClick={() => {
-                  // Restore original data to discard unsaved changes
-                  if (originalData) {
-                    setData({ ...originalData });
-                  }
-                  setIsEditing(false);
-                }}
-                className="w-full mt-3 flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Abbrechen
-              </button>
-            </div>
+            <AnfrageDetailEdit
+              definition={definition}
+              values={data}
+              onChange={handleChange}
+              onSubmit={handleSubmit}
+              onCancel={() => {
+                if (originalData) {
+                  setData({ ...originalData });
+                }
+                setIsEditing(false);
+              }}
+            />
           )}
-
         </div>
       </div>
     </div>

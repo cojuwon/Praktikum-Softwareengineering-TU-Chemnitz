@@ -1,6 +1,6 @@
 "use client";
 
-import { DynamicFilterForm, FieldDefinition } from "@/components/statistik/DynamicFilterForm";
+import { DynamicFilterForm, FieldDefinition } from "@/components/dashboard/statistik/DynamicFilterForm";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";

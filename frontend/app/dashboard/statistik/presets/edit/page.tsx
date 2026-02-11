@@ -1,8 +1,8 @@
 "use client";
 
-import { DynamicFilterForm, FieldDefinition } from "@/components/statistik/DynamicFilterForm";
+import { DynamicFilterForm, FieldDefinition } from "@/components/dashboard/statistik/DynamicFilterForm";
 import { useState, useEffect } from "react";
-import PresetSelector from "@/components/statistik/PresetSelector";
+import PresetSelector from "@/components/dashboard/statistik/PresetSelector";
 import Image from "next/image";
 import Modal from "@/components/ui/Modal";
 
