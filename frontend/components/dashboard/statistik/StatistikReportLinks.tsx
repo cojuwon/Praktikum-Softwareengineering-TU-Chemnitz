@@ -5,6 +5,7 @@ const REPORT_LINKS = [
   { href: "/dashboard/statistik/berichtsdaten", label: "Berichtsdaten" },
   { href: "/dashboard/statistik/finanzierung", label: "Finanzierung" },
   { href: "/dashboard/statistik/netzwerk", label: "Netzwerk" },
+
 ];
 
 export default function StatistikReportLinks() {

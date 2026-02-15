@@ -11,12 +11,16 @@ export default function AuslastungPage() {
 
   return (
     <div>
-      <h1>Auslastung und Leistungen in der Erwachsenenberatung</h1>
+      <h1 className="text-xl font-semibold text-[#42446F] mb-4">
+          Auslastung und Leistungen in der Erwachsenenberatung
+      </h1>
+      
         <Link
             href="/dashboard/statistik/auslastung/begleitungen"
             className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base">
             <span> Begleitungen </span> 
         </Link>
+
         <br></br>
         <Link
             href="/dashboard/statistik/auslastung/beratungen"

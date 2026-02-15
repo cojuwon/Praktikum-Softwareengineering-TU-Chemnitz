@@ -4,7 +4,7 @@ import { useStatistik } from "../StatistikContext";
 import Link from 'next/link';
 import { lusitana } from '@/components/ui/fonts';
 import { DynamicKPIs } from "@/components/dashboard/statistik/DynamicKPIs";
-
+import { formatQuestionLabel } from "@/lib/statistik/labels";
 
 export default function FinanzierungPage() {
   const { data } = useStatistik();
@@ -28,7 +28,7 @@ export default function FinanzierungPage() {
       {structure.abschnitte.map((abschnitt: any) => (
         <div key={abschnitt.label} className="mb-10">
           <h2 className="text-lg font-semibold mb-3">
-            {abschnitt.label}
+            {formatQuestionLabel(abschnitt.label)}
           </h2>
 
           <DynamicKPIs kpis={abschnitt.kpis} data={values} />
