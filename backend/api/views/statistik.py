@@ -83,7 +83,7 @@ class StatistikViewSet(viewsets.ModelViewSet):
         # 4. Speichern mit Creator und Ergebnisdatei
         serializer.save(creator=self.request.user, ergebnis=file_obj, creation_date=timezone.localdate())
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated] )
     def filters(self, request):
         """
         Liefert die Definition der verfügbaren Filter mit echten Enum-Optionen.
@@ -92,7 +92,7 @@ class StatistikViewSet(viewsets.ModelViewSet):
         filters = StatistikService.get_filters()
         return Response({"filters": filters})
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
     def presets(self, request):
         """
         Liefert gespeicherte Presets.
