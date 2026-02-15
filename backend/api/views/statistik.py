@@ -107,7 +107,7 @@ class StatistikViewSet(viewsets.ModelViewSet):
         serializer = PresetSerializer(presets, many=True)
         return Response({"presets": serializer.data})
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def query(self, request):
         """
         Führt die Statistik-Berechnung basierend auf den Filtern durch.
