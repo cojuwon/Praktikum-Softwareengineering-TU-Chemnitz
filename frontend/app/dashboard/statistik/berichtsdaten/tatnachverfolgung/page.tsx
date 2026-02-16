@@ -36,7 +36,6 @@ export default function TatnachverfolgungPage() {
         return (
           <div key={abschnitt.label} className="mb-10">
             <h2 className="text-lg font-semibold mb-3">
-              {abschnitt.label}
               {formatQuestionLabel(abschnitt.label)}
             </h2>
 
