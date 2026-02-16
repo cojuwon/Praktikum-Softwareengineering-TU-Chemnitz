@@ -104,12 +104,13 @@ export default function ExportCSVButton({ structure }: { structure: any }) {
     const flatData = flattenDataForExport(structure, data);
     if (!flatData.length) return;
 
-    // CSV mit Hierarchie-Spalte
+    // CSV mit separaten Spalten für Kategorie und Wert
     const csvData = flatData.map((r) => ({
-      Hierarchie: r.ebene + (r.wert !== undefined ? `: ${r.wert}` : ""),
+      Kategorie: r.ebene.trim(),
+      Wert: r.wert !== undefined ? r.wert : "",
     }));
 
-    const csv = Papa.unparse(csvData);
+    const csv = Papa.unparse(csvData, { quotes: false });
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     saveAs(blob, "statistik.csv");
   };

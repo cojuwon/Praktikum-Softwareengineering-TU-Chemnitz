@@ -14,21 +14,18 @@ export default function BegleitungenPage() {
     return <p>Noch keine Daten geladen. Bitte zuerst Filter anwenden.</p>;
   }
 
-  // Struktur aus dem Backend
   const structure = data.structure.auslastung.unterkategorien.begleitungen;
-
-  // Werte aus dem Backend
   const values = data.data.auslastung.begleitungen;
 
   return (
     <div className="p-6">
       <h1 className="text-xl font-bold mb-6">{structure.label}</h1>
 
-
       {structure.abschnitte.map((abschnitt: any) => {
-        // 👉 Chart-Daten aus den KPIs dieses Abschnitts erzeugen
+        const hasMultipleKPIs = abschnitt.kpis.length > 1;
+
         const chartData = abschnitt.kpis.map((kpi: any) => ({
-          name: kpi.label,
+          name: formatQuestionLabel(kpi.label),
           value: values[kpi.field] ?? 0,
         }));
 
@@ -38,25 +35,31 @@ export default function BegleitungenPage() {
               {formatQuestionLabel(abschnitt.label)}
             </h2>
 
-         
+            {/* ✅ KPI immer anzeigen */}
             <DynamicKPIs kpis={abschnitt.kpis} data={values} />
 
-            <br />
+            {/* ❗ Tabelle & Chart nur bei Vergleichsdaten */}
+            {hasMultipleKPIs && (
+              <>
+                <br />
 
-          
-            <DynamicTable columns={abschnitt.kpis} rows={[values]} />
+                <DynamicTable
+                  columns={abschnitt.kpis}
+                  rows={[values]}
+                />
 
-            <br />
+                <br />
 
-        
-            <DynamicChart
-              config={{ type: "bar", xField: "name", yField: "value" }}
-              data={chartData}        // 👉 korrektes Datenformat
-            />
+                <DynamicChart
+                  config={{ type: "bar", xField: "name", yField: "value" }}
+                  data={chartData}
+                />
 
-            <br />
+                <br />
 
-            {data && <ExportButtons />}
+                <ExportButtons />
+              </>
+            )}
           </div>
         );
       })}
