@@ -1,59 +1,40 @@
 "use client";
 
 import { useStatistik } from "../StatistikContext";
-import Link from 'next/link';
-import { lusitana } from '@/components/ui/fonts';
+import CenteredCard from '@/components/layout/CenteredCard';
+import PageHeader from '@/components/layout/PageHeader';
+import PrimaryButton from '@/components/ui/PrimaryButton';
 
 export default function BerichtsdatenPage() {
-  const { data } = useStatistik();
+    const { data } = useStatistik();
 
-  if (!data) return <p>Noch keine Daten geladen. Bitte zuerst Filter anwenden.</p>;
+    if (!data) {
+        return (
+            <CenteredCard header={<PageHeader title={"Berichtsdaten der Klient:innen"} showImage={false} />}>
+                <p style={{ textAlign: "center", color: "#6b7280", margin: 0 }}>Noch keine Daten geladen. Bitte zuerst Filter anwenden.</p>
+            </CenteredCard>
+        );
+    }
 
-  return (
-    <div>
-      <h1>Berichtsdaten der Klient:innen</h1>
-        <Link
-            href="/dashboard/statistik/berichtsdaten/wohnsitz"
-            className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base">
-            <span> Wohnsitz der Klient:innen </span> 
-        </Link>
-        <br></br>
-        <Link
-            href="/dashboard/statistik/berichtsdaten/staatsangehoerigkeit"
-            className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base">
-            <span> Staatsangehörigkeit </span> 
-        </Link> <br/>
-        <Link
-            href="/dashboard/statistik/berichtsdaten/altersstruktur"
-            className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base">
-            <span> Altersstruktur der Klient:innen </span> 
-        </Link> <br/>
-        <Link
-            href="/dashboard/statistik/berichtsdaten/behinderung"
-            className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base">
-            <span> Anzahl der Klient:innen mit vorliegender Schwerbehinderung</span> 
-        </Link> <br/>
-        <Link
-            href="/dashboard/statistik/berichtsdaten/taeterOpferBeziehung"
-            className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base">
-            <span> Täter-Opfer-Beziehung</span> 
-        </Link> <br/>
-        <Link
-            href="/dashboard/statistik/berichtsdaten/gewaltart"
-            className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base">
-            <span> Art der Gewaltanwendung </span> 
-        </Link> <br/>
-        <Link
-            href="/dashboard/statistik/berichtsdaten/gewaltfolgen"
-            className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base">
-            <span> Folgen der Gewalttat </span> 
-        </Link> <br/>
-        <Link
-            href="/dashboard/statistik/berichtsdaten/tatnachverfolgung"
-            className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base">
-            <span> Tatnachverfolgung </span> 
-        </Link>
+    return (
+        <CenteredCard header={<PageHeader title={"Berichtsdaten der Klient:innen"} showImage={false} />}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "stretch" }}>
+                <PrimaryButton href="/dashboard/statistik/berichtsdaten/wohnsitz">Wohnsitz der Klient:innen</PrimaryButton>
 
-    </div>
-  );
+                <PrimaryButton href="/dashboard/statistik/berichtsdaten/staatsangehoerigkeit">Staatsangehörigkeit</PrimaryButton>
+
+                <PrimaryButton href="/dashboard/statistik/berichtsdaten/altersstruktur">Altersstruktur der Klient:innen</PrimaryButton>
+
+                <PrimaryButton href="/dashboard/statistik/berichtsdaten/behinderung">Anzahl der Klient:innen mit vorliegender Schwerbehinderung</PrimaryButton>
+
+                <PrimaryButton href="/dashboard/statistik/berichtsdaten/taeterOpferBeziehung">Täter-Opfer-Beziehung</PrimaryButton>
+
+                <PrimaryButton href="/dashboard/statistik/berichtsdaten/gewaltart">Art der Gewaltanwendung</PrimaryButton>
+
+                <PrimaryButton href="/dashboard/statistik/berichtsdaten/gewaltfolgen">Folgen der Gewalttat</PrimaryButton>
+
+                <PrimaryButton href="/dashboard/statistik/berichtsdaten/tatnachverfolgung">Tatnachverfolgung</PrimaryButton>
+            </div>
+        </CenteredCard>
+    );
 }
