@@ -29,11 +29,16 @@ export function DynamicChart({ config, data }: Props) {
   const ChartComponent = type === "bar" ? BarChart : LineChart;
 
   return (
-    <div className="w-full h-64 bg-white p-4 border rounded-lg shadow-sm">
+    <div className="w-full bg-white p-4 border rounded-lg shadow-sm" style={{ height: "400px" }}>
       <ResponsiveContainer width="100%" height="100%">
-        <ChartComponent data={data}>
+        <ChartComponent data={data} margin={{ bottom: 80, left: 0, right: 0, top: 0 }}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey={xField} />
+          <XAxis 
+            dataKey={xField} 
+            angle={-45}
+            textAnchor="end"
+            height={120}
+          />
           <YAxis />
           <Tooltip />
 
