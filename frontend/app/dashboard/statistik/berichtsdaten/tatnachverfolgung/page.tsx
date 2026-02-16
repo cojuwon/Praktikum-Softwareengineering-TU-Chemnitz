@@ -5,6 +5,7 @@ import { useStatistik } from "@/app/dashboard/statistik/StatistikContext";
 import { DynamicKPIs } from "@/components/dashboard/statistik/DynamicKPIs";
 import { DynamicTable } from "@/components/dashboard/statistik/DynamicTable";
 import { DynamicChart } from "@/components/dashboard/statistik/DynamicChart";
+import { formatQuestionLabel } from "@/lib/statistik/labels";
 
 export default function TatnachverfolgungPage() {
   const { data } = useStatistik();
@@ -36,6 +37,7 @@ export default function TatnachverfolgungPage() {
           <div key={abschnitt.label} className="mb-10">
             <h2 className="text-lg font-semibold mb-3">
               {abschnitt.label}
+              {formatQuestionLabel(abschnitt.label)}
             </h2>
 
          
