@@ -8,6 +8,7 @@ Alle Serializers werden hier re-exportiert für einfachen Import:
 from .auth import (
     KontoSerializer,
     KontoMeSerializer,
+    KontoAdminSerializer,
     CustomLoginSerializer,
     CustomRegisterSerializer,
 )
@@ -28,6 +29,7 @@ __all__ = [
     # Auth
     'KontoSerializer',
     'KontoMeSerializer',
+    'KontoAdminSerializer',
     'CustomLoginSerializer',
     'CustomRegisterSerializer',
     # Models

@@ -7,7 +7,7 @@ import { FieldDefinition } from "@/components/form/DynamicForm";
 import AnfrageHeader from "@/components/dashboard/anfrage/list/AnfrageHeader";
 import AnfrageFilterSection from "@/components/dashboard/anfrage/list/AnfrageFilterSection";
 import AnfrageList from "@/components/dashboard/anfrage/list/AnfrageList";
-import AnfragePagination from "@/components/dashboard/anfrage/list/AnfragePagination";
+import Pagination from "@/components/ui/pagination";
 
 export default function AnfrageListPage() {
   const router = useRouter();
@@ -100,7 +100,7 @@ export default function AnfrageListPage() {
       <AnfrageHeader />
 
       <div className="bg-white rounded-b-xl overflow-visible shadow-sm">
-        <AnfrageFilterSection 
+        <AnfrageFilterSection
           formDefinition={formDefinition}
           onSearch={(f) => fetchAnfragen(f, 1)}
         />
@@ -113,7 +113,7 @@ export default function AnfrageListPage() {
           />
 
           {!loading && count > 0 && (
-            <AnfragePagination
+            <Pagination
               page={page}
               totalPages={totalPages}
               count={count}

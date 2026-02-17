@@ -11,8 +11,36 @@ class KontoSerializer(serializers.ModelSerializer):
     """Serializer für Benutzerdetails ohne Berechtigungen."""
     class Meta:
         model = Konto
-        fields = ('id', 'vorname_mb', 'nachname_mb', 'mail_mb', 'rolle_mb')
+        fields = ('id', 'vorname_mb', 'nachname_mb', 'mail_mb', 'rolle_mb', 'is_active')
         read_only_fields = ('id',)
+
+
+class KontoAdminSerializer(serializers.ModelSerializer):
+    """
+    Serializer für Admins: Kann User anlegen/bearbeiten inkl. Passwort und Status.
+    """
+    password = serializers.CharField(write_only=True, required=False)
+    
+    class Meta:
+        model = Konto
+        fields = ('id', 'vorname_mb', 'nachname_mb', 'mail_mb', 'rolle_mb', 'password', 'is_active')
+        read_only_fields = ('id',)
+
+    def create(self, validated_data):
+        password = validated_data.pop('password', None)
+        user = super().create(validated_data)
+        if password:
+            user.set_password(password)
+            user.save()
+        return user
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        user = super().update(instance, validated_data)
+        if password:
+            user.set_password(password)
+            user.save()
+        return user
 
 
 class KontoMeSerializer(serializers.ModelSerializer):

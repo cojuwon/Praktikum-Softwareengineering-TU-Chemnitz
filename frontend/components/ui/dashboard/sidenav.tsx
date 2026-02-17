@@ -10,7 +10,8 @@ import {
   Settings,
   LogOut,
   User as UserIcon,
-  LayoutDashboard
+  LayoutDashboard,
+  ShieldCheck
 } from 'lucide-react';
 import { useUser } from '@/lib/userContext';
 import { logout } from '@/lib/auth';
@@ -87,6 +88,23 @@ export default function SideNav() {
             </Link>
           );
         })}
+
+        {/* Administration Link - Only for Admins */}
+        {user?.rolle_mb === 'AD' && (
+          <Link
+            href="/dashboard/admin"
+            className={clsx(
+              'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 mt-2 border-t border-gray-100',
+              {
+                'bg-red-50 text-red-700 shadow-sm': isActive('/dashboard/admin'),
+                'text-gray-600 hover:bg-red-50 hover:text-red-700': !isActive('/dashboard/admin'),
+              },
+            )}
+          >
+            <ShieldCheck className={clsx("w-5 h-5", { "text-red-600": isActive('/dashboard/admin') })} />
+            <span>Administration</span>
+          </Link>
+        )}
       </div>
 
       {/* Session Timer */}

@@ -10,7 +10,7 @@ const NAV_LINKS: NavigationLink[] = [
   { href: "dashboard/fall", label: "Fall" },
   { href: "dashboard/statistik", label: "Statistik" },
   { href: "dashboard/extended/edit", label: "Eingabemaske" },
-  { href: "dashboard/admin/konto", label: "Konten" },
+  { href: "/dashboard/admin/users", label: "Konten" },
 ];
 
 export default function AdminNavigation() {
