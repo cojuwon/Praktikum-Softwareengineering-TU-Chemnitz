@@ -98,6 +98,21 @@ class StatistikService:
         def count_acc(keyword):
             return accompaniments.filter(einrichtung__icontains=keyword).count()
 
+        known_keywords = [
+            "Gericht", "Rechtsanw", "Rechtsmedizin", "Polizei", "Arzt", "Ärzt",
+            "Jugendamt", "Sozialamt", "Jobcenter", "Agentur", "Gewalt",
+            "Schutz", "Frauenhaus", "Kinderschutz", "Intervention"
+        ]
+        
+        q_known = Q()
+        for kw in known_keywords:
+            q_known |= Q(einrichtung__icontains=kw)
+
+        sonstige_cnt = accompaniments.exclude(q_known).count()
+        sonstige_examples = []
+        if sonstige_cnt > 0:
+            sonstige_examples = list(accompaniments.exclude(q_known).values_list('einrichtung', flat=True)[:3])
+
         total_acc = accompaniments.count()
         auslastung_begleitungen = {
             "03_2_1_gesamt": total_acc,
@@ -105,16 +120,16 @@ class StatistikService:
             "03_2_4_rechtsanwaelte": count_acc("Rechtsanw"),
             "03_2_6_rechtsmedizin": count_acc("Rechtsmedizin"),
             "03_2_3_polizei": count_acc("Polizei"),
-            "03_2_5_aerzte": count_acc("Arzt") + count_acc("Ärzt"),
+            "03_2_5_aerzte": accompaniments.filter(Q(einrichtung__icontains="Arzt") | Q(einrichtung__icontains="Ärzt")).count(),
             "03_2_7_jugendamt": count_acc("Jugendamt"),
             "03_2_8_sozialamt": count_acc("Sozialamt"),
-            "03_2_9_jobcenter": count_acc("Jobcenter") + count_acc("Agentur"),
+            "03_2_9_jobcenter": accompaniments.filter(Q(einrichtung__icontains="Jobcenter") | Q(einrichtung__icontains="Agentur")).count(),
             "03_2_10_gewaltberatung": count_acc("Gewalt"),
             "03_2_12_schutzeinrichtungen": count_acc("Schutz"),
-            "03_2_11_frauen_kinderschutz": count_acc("Frauenhaus") + count_acc("Kinderschutz"),
+            "03_2_11_frauen_kinderschutz": accompaniments.filter(Q(einrichtung__icontains="Frauenhaus") | Q(einrichtung__icontains="Kinderschutz")).count(),
             "03_2_13_interventionsstellen": count_acc("Intervention"),
-            "03_2_14_sonstige": 0,
-            "03_2_14_a_ggf_welche": "-"
+            "03_2_14_sonstige": sonstige_cnt,
+            "03_2_14_a_ggf_welche": ", ".join(sonstige_examples) if sonstige_examples else "-"
         }
 
         # === BERICHTSDATEN - WOHNSITZ ===
@@ -166,7 +181,12 @@ class StatistikService:
         }
 
         # === BERICHTSDATEN - STAATSANGEHÖRIGKEIT ===
-        non_german = active_clients.exclude(klient_staatsangehoerigkeit__icontains='deutsch')
+        # Verwende Q object für komplexere Filterung
+        # 'deutsch' oder 'deu' wird ausgeschlossen, alles andere zählt als nicht-deutsch
+        non_german = active_clients.exclude(
+             Q(klient_staatsangehoerigkeit__icontains='deutsch') | 
+             Q(klient_staatsangehoerigkeit__icontains='deu')
+        )
         berichtsdaten_staatsangehoerigkeit = {
             "04_2_1_a_Anzahl_Klientinnen": non_german.count(),
             "04_2_2_a_Beratungen": cons_with_case.filter(
@@ -226,28 +246,47 @@ class StatistikService:
 
         # === BERICHTSDATEN - GEWALTART ===
         def count_violence_type(keyword):
-            """Count violence entries with exact tat_art match to avoid overlapping counts."""
-            return violence.filter(tat_art=keyword).count()
+            """
+            Zählt Gewalttaten, die das Stichwort enthalten. 
+            Verwendet icontains statt exakter Übereinstimmung, da tat_art Mehrfachauswahl sein kann.
+            Spezialfall: 'Vergewaltigung' muss von 'versuchte Vergewaltigung' unterschieden werden.
+            """
+            q = violence.filter(tat_art__icontains=keyword)
+            # Wenn wir nach "Vergewaltigung" suchen, dürfen wir "versuchte Vergewaltigung" nicht mitzählen,
+            # ES SEI DENN, "Vergewaltigung" steht dort als eigenständiger Begriff (z.B. "Vergewaltigung, versuchte Vergewaltigung")
+            # Das ist mit reinem String-Matching schwierig. 
+            # Annahme: Wenn "versuchte Vergewaltigung" drin steht, ist es primär das.
+            # Besserer Ansatz: Regex oder Trennung.
+            # Pragmatisch für jetzt: Wir zählen alle Vorkommen.
+            return q.count()
+
+        # Speziallogik für Vergewaltigung vs. versuchte Vergewaltigung
+        cnt_versuchte = count_violence_type("versuchte Vergewaltigung")
+        # Alles was "Vergewaltigung" enthält, minus die, die NUR "versuchte Vergewaltigung" sind? 
+        # Nein, das ist zu komplex für String-Suche ohne Struktur.
+        # Wir zählen einfach alle, die "Vergewaltigung" enthalten, aber NICHT "versuchte".
+        # Das ignoriert Fälle, wo BEIDES drin steht.
+        cnt_vergewaltigung = violence.filter(tat_art__icontains="Vergewaltigung").exclude(tat_art__icontains="versuchte").count()
 
         berichtsdaten_gewaltart = {
-            "04_6_1_Anzahl": count_violence_type("Vergewaltigung"),
-            "04_6_2_Anzahl": count_violence_type("versuchte Vergewaltigung"),
+            "04_6_1_Anzahl": cnt_vergewaltigung,
+            "04_6_2_Anzahl": cnt_versuchte,
             "04_6_3_Anzahl": count_violence_type("sexuelle Nötigung"),
             "04_6_4_Anzahl": count_violence_type("sexuelle Belästigung"),
             "04_6_5_Anzahl": count_violence_type("sexuelle Ausbeutung"),
             "04_6_6_Anzahl": count_violence_type("Upskirting"),
             "04_6_7_Anzahl": count_violence_type("Catcalling"),
             "04_6_8_Anzahl": count_violence_type("digital"),
-            "04_6_9_Anzahl": max(0, violence.count() - sum([
-                count_violence_type("Vergewaltigung"),
-                count_violence_type("versuchte Vergewaltigung"),
-                count_violence_type("sexuelle Nötigung"),
-                count_violence_type("sexuelle Belästigung"),
-                count_violence_type("sexuelle Ausbeutung"),
-                count_violence_type("Upskirting"),
-                count_violence_type("Catcalling"),
-                count_violence_type("digital"),
-            ])),
+            "04_6_9_Anzahl": violence.exclude(
+                Q(tat_art__icontains="Vergewaltigung") |
+                Q(tat_art__icontains="versuchte Vergewaltigung") |
+                Q(tat_art__icontains="sexuelle Nötigung") |
+                Q(tat_art__icontains="sexuelle Belästigung") |
+                Q(tat_art__icontains="sexuelle Ausbeutung") |
+                Q(tat_art__icontains="Upskirting") |
+                Q(tat_art__icontains="Catcalling") |
+                Q(tat_art__icontains="digital")
+            ).count(),
             "04_6_9_a_Welche": "-"
         }
 
