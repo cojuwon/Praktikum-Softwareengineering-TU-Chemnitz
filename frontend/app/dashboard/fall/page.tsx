@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { FieldDefinition } from "@/components/form/DynamicForm";
 import FallHeader from "@/components/dashboard/fall/list/FallHeader";
@@ -11,6 +11,7 @@ import FallPagination from "@/components/dashboard/fall/list/FallPagination";
 
 export default function FallListPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [faelle, setFaelle] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [formDefinition, setFormDefinition] = useState<FieldDefinition[] | null>(null);
@@ -26,8 +27,16 @@ export default function FallListPage() {
   // Initial Fetch
   useEffect(() => {
     fetchFormDefinition();
-    fetchFaelle({}, 1);
-  }, []);
+
+    // Check for initial filters from URL
+    const initialFilters: any = {};
+    const klientId = searchParams.get('klient_id');
+    if (klientId) {
+      initialFilters.klient = klientId;
+    }
+
+    fetchFaelle(initialFilters, 1);
+  }, [searchParams]);
 
   const fetchFormDefinition = () => {
     apiFetch("/api/faelle/form-fields")
@@ -52,6 +61,7 @@ export default function FallListPage() {
     if (filters.search) params.append('search', filters.search);
     if (filters.datumVon) params.append('datum_von', filters.datumVon);
     if (filters.datumBis) params.append('datum_bis', filters.datumBis);
+    if (filters.klient) params.append('klient', filters.klient);
 
     // Multi-select arrays -> comma separated string
     if (filters.status && filters.status.length > 0) params.append('status', filters.status.join(','));

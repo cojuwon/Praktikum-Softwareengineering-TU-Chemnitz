@@ -21,11 +21,20 @@ export default function KlientDetails({ id }: KlientDetailsProps) {
     const [faelle, setFaelle] = useState<Fall[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [fieldDefinitions, setFieldDefinitions] = useState<any[]>([]);
 
     useEffect(() => {
         async function fetchData() {
             try {
                 setLoading(true);
+
+                // Fetch Field Definitions for labels
+                const resFields = await apiFetch('/api/klienten/form-fields/');
+                if (resFields.ok) {
+                    const data = await resFields.json();
+                    if (data.fields) setFieldDefinitions(data.fields);
+                }
+
                 // Fetch Client
                 const resKlient = await apiFetch(`/api/klienten/${id}/`);
                 if (!resKlient.ok) throw new Error('Klient nicht gefunden');
@@ -59,6 +68,20 @@ export default function KlientDetails({ id }: KlientDetailsProps) {
             case 'F': return 'Fachkraft';
             default: return role;
         }
+    };
+
+    // Helper to find label for a dynamic field
+    const getFieldLabel = (fieldName: string) => {
+        const def = fieldDefinitions.find(f => f.name === fieldName);
+        return def ? def.label : fieldName;
+    };
+
+    // Helper to format value
+    const formatValue = (value: any) => {
+        if (value === true) return 'Ja';
+        if (value === false) return 'Nein';
+        if (value === null || value === undefined || value === '') return '-';
+        return value.toString();
     };
 
     return (
@@ -99,53 +122,80 @@ export default function KlientDetails({ id }: KlientDetailsProps) {
                         <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
                             <Info size={18} className="text-blue-500" /> Persönliche Informationen
                         </h3>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
                             <div>
-                                <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Alter</span>
-                                <span className="text-slate-700">{klient.klient_alter ? `${klient.klient_alter} Jahre` : 'Keine Angabe'}</span>
-                            </div>
-                            <div>
-                                <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Geschlechtsidentität</span>
-                                <span className="text-slate-700">{klient.klient_geschlechtsidentitaet || 'Keine Angabe'}</span>
+                                <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Pseudonym</label>
+                                <p className="text-slate-900 font-medium">{klient.klient_pseudonym || '-'}</p>
                             </div>
                             <div>
-                                <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Wohnort</span>
-                                <span className="text-slate-700 flex items-center gap-1">
-                                    <MapPin size={14} className="text-slate-400" /> {klient.klient_wohnort}
-                                </span>
+                                <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Erstellt am</label>
+                                <p className="text-slate-900">{new Date(klient.erstellt_am).toLocaleDateString('de-DE')}</p>
                             </div>
                             <div>
-                                <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Sexualität</span>
-                                <span className="text-slate-700">{klient.klient_sexualitaet}</span>
+                                <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Wohnort</label>
+                                <p className="text-slate-900">{klient.klient_wohnort}</p>
                             </div>
-                            <div className="md:col-span-2">
-                                <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Beruf</span>
-                                <span className="text-slate-700">{klient.klient_beruf || '-'}</span>
+                            <div>
+                                <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Geschlecht</label>
+                                <p className="text-slate-900">{klient.klient_geschlechtsidentitaet}</p>
                             </div>
-                            <div className="md:col-span-2">
-                                <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Staatsangehörigkeit</span>
-                                <span className="text-slate-700">{klient.klient_staatsangehoerigkeit || '-'}</span>
+                            <div>
+                                <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Alter</label>
+                                <p className="text-slate-900">{klient.klient_alter || '-'}</p>
+                            </div>
+                            <div>
+                                <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Sexualität</label>
+                                <p className="text-slate-900">{klient.klient_sexualitaet}</p>
+                            </div>
+                            <div>
+                                <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Staatsangehörigkeit</label>
+                                <p className="text-slate-900">{klient.klient_staatsangehoerigkeit || '-'}</p>
+                            </div>
+                            <div>
+                                <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Beruf</label>
+                                <p className="text-slate-900">{klient.klient_beruf || '-'}</p>
+                            </div>
+                            <div>
+                                <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Kontaktpunkt</label>
+                                <p className="text-slate-900">{klient.klient_kontaktpunkt || '-'}</p>
+                            </div>
+                            <div>
+                                <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Migrationshintergrund</label>
+                                <p className="text-slate-900">{klient.klient_migrationshintergrund === 'J' ? 'Ja' : 'Nein'}</p>
+                            </div>
+                            <div>
+                                <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Schwerbehinderung</label>
+                                <p className="text-slate-900">{klient.klient_schwerbehinderung === 'J' ? 'Ja' : 'Nein'}</p>
                             </div>
                         </div>
+
+                        {/* Dynamic Fields Section */}
+                        {klient.extra_fields && Object.keys(klient.extra_fields).length > 0 && (
+                            <div className="mt-6 pt-6 border-t border-slate-100">
+                                <h4 className="text-sm font-semibold text-slate-700 mb-3">Zusätzliche Daten</h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
+                                    {Object.entries(klient.extra_fields)
+                                        .filter(([key]) => key !== 'extra_fields') // Filter out accidentally nested extra_fields
+                                        .map(([key, value]) => (
+                                            <div key={key}>
+                                                <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                                    {getFieldLabel(key)}
+                                                </label>
+                                                <p className="text-slate-900">{formatValue(value)}</p>
+                                            </div>
+                                        ))}
+                                </div>
+                            </div>
+                        )}
+
                     </div>
 
                     <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
                         <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                            <Activity size={18} className="text-rose-500" /> Besonderheiten
+                            <AlertTriangle size={18} className="text-amber-500" /> Notizen
                         </h3>
-                        <div className="space-y-4">
-                            <div>
-                                <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Schwerbehinderung</span>
-                                <span className="text-slate-700">{klient.klient_schwerbehinderung === 'J' ? 'Ja' : 'Nein'}</span>
-                                {klient.klient_schwerbehinderung_detail && (
-                                    <p className="mt-1 text-sm text-slate-600 bg-slate-50 p-2 rounded-md">{klient.klient_schwerbehinderung_detail}</p>
-                                )}
-                            </div>
-                            <div>
-                                <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Migrationshintergrund</span>
-                                <span className="text-slate-700">{klient.klient_migrationshintergrund === 'J' ? 'Ja' : 'Nein'}</span>
-                            </div>
+                        <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 text-slate-700 whitespace-pre-wrap">
+                            {klient.klient_notizen || 'Keine Notizen vorhanden.'}
                         </div>
                     </div>
                 </div>
@@ -155,7 +205,7 @@ export default function KlientDetails({ id }: KlientDetailsProps) {
                     <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-                                <Briefcase size={18} className="text-emerald-500" /> Zugeordnete Fälle
+                                <Briefcase size={18} className="text-green-500" /> Zugeordnete Fälle
                             </h3>
                             <Link href="/dashboard/fall/neu">
                                 <span className="text-xs bg-emerald-50 text-emerald-700 py-1 px-2 rounded-md hover:bg-emerald-100 cursor-pointer transition-colors">+ Neu</span>
@@ -165,7 +215,7 @@ export default function KlientDetails({ id }: KlientDetailsProps) {
                         {faelle.length > 0 ? (
                             <div className="space-y-3">
                                 {faelle.map(fall => (
-                                    <Link key={fall.fall_id} href={`/dashboard/fall/${fall.fall_id}`}>
+                                    <Link key={fall.fall_id} href={`/dashboard/fall/edit/${fall.fall_id}`}>
                                         <div className="p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors border border-slate-100 cursor-pointer group">
                                             <div className="flex justify-between items-start">
                                                 <span className="font-medium text-slate-700 group-hover:text-blue-600">Fall {fall.fall_id}</span>

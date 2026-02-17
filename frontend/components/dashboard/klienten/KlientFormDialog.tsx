@@ -16,25 +16,46 @@ export default function KlientFormDialog({ open, onOpenChange, onSuccess, klient
     const [formData, setFormData] = useState<any>({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [fieldDefinitions, setFieldDefinitions] = useState<any[]>([]);
+
+    useEffect(() => {
+        // Fetch field definitions
+        apiFetch('/api/klienten/form-fields/')
+            .then(res => res.json())
+            .then(data => {
+                if (data.fields) {
+                    setFieldDefinitions(data.fields);
+                }
+            })
+            .catch(err => console.error("Failed to load form fields", err));
+    }, []);
 
     useEffect(() => {
         if (open) {
             if (klientToEdit) {
-                setFormData(klientToEdit);
+                // Merge extra_fields into formData for flat access
+                const flattenedData = { ...klientToEdit, ...klientToEdit.extra_fields };
+                setFormData(flattenedData);
             } else {
-                setFormData({
-                    klient_rolle: 'B',
-                    klient_pseudonym: '',
-                    klient_wohnort: 'LS', // Default Leipzig Stadt
-                    klient_geschlechtsidentitaet: 'K',
-                    klient_sexualitaet: 'K',
-                    klient_schwerbehinderung: 'KA',
-                    klient_migrationshintergrund: 'KA'
+                // Initialize default values based on definitions
+                const initialData: any = {};
+                fieldDefinitions.forEach(field => {
+                    initialData[field.name] = field.default_value || '';
+                    // Specific defaults for hardcoded fields if needed, 
+                    // but the backend form-fields endpoint should provide defaults if we want them.
+                    // Overriding specific ones:
+                    if (field.name === 'klient_rolle') initialData[field.name] = 'B';
+                    if (field.name === 'klient_wohnort') initialData[field.name] = 'LS';
+                    if (field.name === 'klient_geschlechtsidentitaet') initialData[field.name] = 'K';
+                    if (field.name === 'klient_sexualitaet') initialData[field.name] = 'K';
+                    if (field.name === 'klient_schwerbehinderung') initialData[field.name] = 'KA';
+                    if (field.name === 'klient_migrationshintergrund') initialData[field.name] = 'KA';
                 });
+                setFormData(initialData);
             }
             setError(null);
         }
-    }, [open, klientToEdit]);
+    }, [open, klientToEdit, fieldDefinitions]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -47,6 +68,31 @@ export default function KlientFormDialog({ open, onOpenChange, onSuccess, klient
         setError(null);
 
         try {
+            // Seperate static fields from extra_fields
+            const payload: any = { ...formData };
+            const staticFieldNames = [
+                'klient_pseudonym', 'klient_rolle', 'klient_wohnort', 'klient_alter',
+                'klient_geschlechtsidentitaet', 'klient_sexualitaet', 'klient_staatsangehoerigkeit',
+                'klient_beruf', 'klient_kontaktpunkt', 'klient_schwerbehinderung', 'klient_migrationshintergrund',
+                'klient_schwerbehinderung_detail', 'klient_dolmetschungssprachen',
+                'klient_notizen', 'klient_id', 'erstellt_am' // Add other model fields if they exist as inputs
+            ];
+
+            const extraFields: any = {};
+            Object.keys(formData).forEach(key => {
+                // key might be 'extra_fields' itself from the initial spread (klientToEdit),
+                // we must NOT include it in the new extra_fields object.
+                if (!staticFieldNames.includes(key) && key !== 'extra_fields') {
+                    extraFields[key] = formData[key];
+                    delete payload[key];
+                }
+            });
+            // Also ensure payload doesn't contain 'extra_fields' as a top-level key acting like a field
+            // (It will be assigned below as the JSON object)
+            delete payload.extra_fields;
+
+            payload.extra_fields = extraFields;
+
             const url = klientToEdit
                 ? `/api/klienten/${klientToEdit.klient_id}/`
                 : '/api/klienten/';
@@ -56,13 +102,12 @@ export default function KlientFormDialog({ open, onOpenChange, onSuccess, klient
             const res = await apiFetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(payload),
             });
 
             if (!res.ok) {
                 try {
                     const data = await res.json();
-                    // Handle Django validation errors
                     if (typeof data === 'object') {
                         setError(Object.entries(data).map(([k, v]) => `${k}: ${v}`).join(', '));
                     } else {
@@ -83,7 +128,6 @@ export default function KlientFormDialog({ open, onOpenChange, onSuccess, klient
         }
     };
 
-    // Explicitly define footer content for the Modal
     const footerContent = (
         <>
             <button
@@ -95,7 +139,7 @@ export default function KlientFormDialog({ open, onOpenChange, onSuccess, klient
             </button>
             <button
                 type="button"
-                onClick={handleSubmit} // Trigger submit from footer button
+                onClick={handleSubmit}
                 disabled={loading}
                 className="px-4 py-2 bg-[#42446F] text-white rounded-lg hover:bg-[#36384d] transition-colors disabled:opacity-50"
             >
@@ -118,119 +162,59 @@ export default function KlientFormDialog({ open, onOpenChange, onSuccess, klient
                     </div>
                 )}
 
-                {/* IMPORTANT WARNING */}
                 <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3">
                     <AlertTriangle className="text-amber-600 shrink-0" size={20} />
                     <div className="text-sm text-amber-800">
                         <p className="font-semibold mb-1">Anonymität wahren!</p>
-                        <p>Bitte geben Sie <strong>keine Klarnamen</strong> ein. Verwenden Sie stattdessen Pseudonyme oder Codes, die keine Rückschlüsse auf die reale Person zulassen.</p>
+                        <p>Bitte geben Sie <strong>keine Klarnamen</strong> ein. Verwenden Sie stattdessen Pseudonyme oder Codes.</p>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Pseudonym / Code</label>
-                        <input
-                            name="klient_pseudonym"
-                            value={formData.klient_pseudonym || ''}
-                            onChange={handleChange}
-                            placeholder="z.B. Klient_XY_2024"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">Optional. Falls leer, wird nur die ID verwendet.</p>
-                    </div>
+                    {fieldDefinitions.map((field) => (
+                        <div key={field.name} className={field.name === 'klient_pseudonym' ? 'md:col-span-2' : ''}>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                {field.label} {field.required && '*'}
+                            </label>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Rolle *</label>
-                        <select
-                            name="klient_rolle"
-                            value={formData.klient_rolle || 'B'}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                            required
-                        >
-                            <option value="B">Betroffene:r</option>
-                            <option value="A">Angehörige:r</option>
-                            <option value="F">Fachkraft</option>
-                        </select>
-                    </div>
+                            {field.typ === 'select' ? (
+                                <select
+                                    name={field.name}
+                                    value={formData[field.name] || ''}
+                                    onChange={handleChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                    required={field.required}
+                                >
+                                    {field.options?.map((opt: any) => (
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    ))}
+                                </select>
+                            ) : field.typ === 'textarea' ? (
+                                <textarea
+                                    name={field.name}
+                                    value={formData[field.name] || ''}
+                                    onChange={handleChange}
+                                    required={field.required}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                    rows={3}
+                                />
+                            ) : (
+                                <input
+                                    type={field.typ === 'number' ? 'number' : 'text'}
+                                    name={field.name}
+                                    value={formData[field.name] || ''}
+                                    onChange={handleChange}
+                                    required={field.required}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                    placeholder={field.name === 'klient_pseudonym' ? 'z.B. Klient_XY_2024' : ''}
+                                />
+                            )}
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Wohnort</label>
-                        <select
-                            name="klient_wohnort"
-                            value={formData.klient_wohnort || 'LS'}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                        >
-                            <option value="LS">Leipzig Stadt</option>
-                            <option value="LL">Leipzig Land</option>
-                            <option value="NS">Nordsachsen</option>
-                            <option value="S">Sachsen (Andere)</option>
-                            <option value="D">Deutschland (Andere)</option>
-                            <option value="A">Ausland</option>
-                            <option value="K">keine Angabe</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Alter (Jahre)</label>
-                        <input
-                            type="number"
-                            name="klient_alter"
-                            value={formData.klient_alter || ''}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Geschlechtsidentität</label>
-                        <select
-                            name="klient_geschlechtsidentitaet"
-                            value={formData.klient_geschlechtsidentitaet || 'K'}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                        >
-                            <option value="CW">cis weiblich</option>
-                            <option value="CM">cis männlich</option>
-                            <option value="TW">trans weiblich</option>
-                            <option value="TM">trans männlich</option>
-                            <option value="TN">trans nicht-binär</option>
-                            <option value="I">inter</option>
-                            <option value="A">agender</option>
-                            <option value="D">divers</option>
-                            <option value="K">keine Angabe</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Sexualität</label>
-                        <select
-                            name="klient_sexualitaet"
-                            value={formData.klient_sexualitaet || 'K'}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                        >
-                            <option value="L">lesbisch</option>
-                            <option value="S">schwul</option>
-                            <option value="B">bisexuell</option>
-                            <option value="AX">asexuell</option>
-                            <option value="H">heterosexuell</option>
-                            <option value="K">keine Angabe</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Staatsangehörigkeit</label>
-                        <input
-                            type="text"
-                            name="klient_staatsangehoerigkeit"
-                            value={formData.klient_staatsangehoerigkeit || ''}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                        />
-                    </div>
+                            {field.name === 'klient_pseudonym' && (
+                                <p className="text-xs text-gray-500 mt-1">Optional. Falls leer, wird nur die ID verwendet.</p>
+                            )}
+                        </div>
+                    ))}
                 </div>
             </form>
         </Modal>

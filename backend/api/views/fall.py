@@ -113,6 +113,11 @@ class FallViewSet(viewsets.ModelViewSet):
         if datum_bis:
             queryset = queryset.filter(startdatum__lte=datum_bis)
 
+        # Klient
+        klient_id = params.get('klient')
+        if klient_id:
+            queryset = queryset.filter(klient_id=klient_id)
+
         return queryset
 
     def perform_create(self, serializer):

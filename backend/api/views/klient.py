@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from drf_spectacular.utils import extend_schema
 
-from api.models import KlientIn, Begleitung
+from api.models import KlientIn, Begleitung, Eingabefeld
 from api.serializers import KlientInSerializer, BegleitungSerializer
 from api.permissions import DjangoModelPermissionsWithView
 
@@ -43,6 +43,162 @@ class KlientInViewSet(viewsets.ModelViewSet):
     search_fields = ['klient_code', 'klient_vorname', 'klient_nachname', 'klient_id', 'klient_pseudonym'] # Optional text search
     ordering_fields = ['klient_id', 'erstellt_am', 'klient_nachname', 'klient_pseudonym']
     ordering = ['-klient_id'] # Default: Newest first
+
+    @action(detail=False, methods=['get'], url_path='form-fields')
+    def form_fields(self, request):
+        """
+        Liefert die Konfiguration der Eingabefelder für Klient:innen zurück.
+        Kombiniert hardcodierte Felder (die im Frontend erwartet werden) mit dynamischen Feldern aus `Eingabefeld`.
+        """
+        # 1. Statische / Hardcodierte Felder (Definition analog zu Eingabefeld-Modell)
+        # Diese Felder existieren fest im KlientIn-Model und im React-Formular
+        static_fields = [
+            {
+                "name": "klient_pseudonym",
+                "label": "Pseudonym / Code",
+                "typ": "text",
+                "required": False,
+                "sort_order": 10
+            },
+            {
+                "name": "klient_rolle",
+                "label": "Rolle",
+                "typ": "select",
+                "required": True,
+                "options": [
+                    {"value": "B", "label": "Betroffene:r"},
+                    {"value": "A", "label": "Angehörige:r"},
+                    {"value": "F", "label": "Fachkraft"}
+                ],
+                "sort_order": 20
+            },
+            {
+                "name": "klient_wohnort",
+                "label": "Wohnort",
+                "typ": "select",
+                "required": False, # Default LS set in frontend
+                "options": [
+                    {"value": "LS", "label": "Leipzig Stadt"},
+                    {"value": "LL", "label": "Leipzig Land"},
+                    {"value": "NS", "label": "Nordsachsen"},
+                    {"value": "S", "label": "Sachsen (Andere)"},
+                    {"value": "D", "label": "Deutschland (Andere)"},
+                    {"value": "A", "label": "Ausland"},
+                    {"value": "K", "label": "keine Angabe"}
+                ],
+                "sort_order": 30
+            },
+            {
+                "name": "klient_alter",
+                "label": "Alter (Jahre)",
+                "typ": "number",
+                "required": False,
+                "sort_order": 40
+            },
+            {
+                "name": "klient_geschlechtsidentitaet",
+                "label": "Geschlechtsidentität",
+                "typ": "select",
+                "required": False,
+                "options": [
+                    {"value": "CW", "label": "cis weiblich"},
+                    {"value": "CM", "label": "cis männlich"},
+                    {"value": "TW", "label": "trans weiblich"},
+                    {"value": "TM", "label": "trans männlich"},
+                    {"value": "TN", "label": "trans nicht-binär"},
+                    {"value": "I", "label": "inter"},
+                    {"value": "A", "label": "agender"},
+                    {"value": "D", "label": "divers"},
+                    {"value": "K", "label": "keine Angabe"}
+                ],
+                "sort_order": 50
+            },
+            {
+                "name": "klient_sexualitaet",
+                "label": "Sexualität",
+                "typ": "select",
+                "required": False,
+                "options": [
+                    {"value": "L", "label": "lesbisch"},
+                    {"value": "S", "label": "schwul"},
+                    {"value": "B", "label": "bisexuell"},
+                    {"value": "AX", "label": "asexuell"},
+                    {"value": "H", "label": "heterosexuell"},
+                    {"value": "K", "label": "keine Angabe"}
+                ],
+                "sort_order": 60
+            },
+             {
+                "name": "klient_staatsangehoerigkeit",
+                "label": "Staatsangehörigkeit",
+                "typ": "text",
+                "required": True,
+                "sort_order": 70
+            },
+            {
+                "name": "klient_beruf",
+                "label": "Beruf",
+                "typ": "text",
+                "required": True,
+                "sort_order": 80
+            },
+             {
+                "name": "klient_kontaktpunkt",
+                "label": "Kontaktpunkt (Quelle)",
+                "typ": "text",
+                "required": True,
+                "sort_order": 90
+            },
+            {
+                "name": "klient_schwerbehinderung",
+                "label": "Schwerbehinderung",
+                "typ": "select",
+                "required": False,
+                 "options": [
+                    {"value": "JA", "label": "Ja"},
+                    {"value": "NEIN", "label": "Nein"},
+                    {"value": "KA", "label": "keine Angabe"}
+                ],
+                "sort_order": 100
+            },
+             {
+                "name": "klient_migrationshintergrund",
+                "label": "Migrationshintergrund",
+                "typ": "select",
+                "required": False,
+                 "options": [
+                    {"value": "JA", "label": "Ja"},
+                    {"value": "NEIN", "label": "Nein"},
+                    {"value": "KA", "label": "keine Angabe"}
+                ],
+                "sort_order": 110
+            }
+        ]
+
+        # 2. Dynamische Felder aus der Datenbank
+        dynamic_fields_qs = Eingabefeld.objects.filter(context='klient').order_by('sort_order', 'label')
+        dynamic_fields = []
+        
+        # Sortierungs-Offset, damit dynamische Felder nach den statischen kommen (falls sort_order nicht explizit gesetzt)
+        offset = 200 
+
+        for field in dynamic_fields_qs:
+            field_def = {
+                "name": field.name,
+                "label": field.label,
+                "typ": field.typ,
+                "required": field.required,
+                "options": field.options, # JSONField, ist bereits Liste/Dict
+                "default_value": field.default_value,
+                "sort_order": field.sort_order if field.sort_order > 0 else offset + field.feldID
+            }
+            dynamic_fields.append(field_def)
+
+        # Merge und Sortieren
+        all_fields = static_fields + dynamic_fields
+        all_fields.sort(key=lambda x: x['sort_order'])
+
+        return Response({"fields": all_fields})
 
     def get_queryset(self):
         """

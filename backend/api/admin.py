@@ -47,11 +47,11 @@ class BeratungsterminAdmin(admin.ModelAdmin):
 
 @admin.register(Gewalttat)
 class GewalttatAdmin(admin.ModelAdmin):
-    list_display = ('tat_id', 'klient', 'tatort')
+    list_display = ('tat_id', 'klient', 'tat_ort')
 
 @admin.register(Gewaltfolge)
 class GewaltfolgeAdmin(admin.ModelAdmin):
-    list_display = ('gewalttat', 'psychische_folgen')
+    list_display = ('gewalttat', 'psychische_gewalt')
 
 @admin.register(Anfrage)
 class AnfrageAdmin(admin.ModelAdmin):

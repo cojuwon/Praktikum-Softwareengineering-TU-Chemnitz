@@ -2,7 +2,7 @@ interface Fall {
   fall_id: number;
   startdatum: string;
   status: string;
-  klient_detail?: { klient_id: number };
+  klient_detail?: { klient_id: number; klient_pseudonym?: string };
   klient: number;
   mitarbeiterin_detail?: { vorname_mb: string; nachname_mb: string };
 }
@@ -73,7 +73,11 @@ export default function FallList({
 
             {/* Klient */}
             <span className="text-gray-600 text-sm">
-              {f.klient_detail ? `Klient:in #${f.klient_detail.klient_id}` : `Klient:in #${f.klient}`}
+              {f.klient_detail
+                ? (f.klient_detail.klient_pseudonym
+                  ? `${f.klient_detail.klient_pseudonym} (#${f.klient_detail.klient_id})`
+                  : `Klient:in #${f.klient_detail.klient_id}`)
+                : `Klient:in #${f.klient}`}
             </span>
 
             {/* Mitarbeiter */}

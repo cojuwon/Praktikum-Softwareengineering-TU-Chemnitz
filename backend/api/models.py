@@ -194,6 +194,10 @@ class KlientIn(models.Model):
     # klient_dolmetschungsstunden entfernt (jetzt in Beratungstermin/Begleitung)
     klient_dolmetschungssprachen = models.CharField(max_length=255, blank=True, verbose_name="Dolmetschungssprachen")
     klient_notizen = models.TextField(blank=True, verbose_name="Notizen")
+    
+    # Dynamische Felder
+    extra_fields = models.JSONField(default=dict, blank=True, verbose_name="Zusätzliche Felder")
+    
     erstellt_am = models.DateTimeField(auto_now_add=True, verbose_name="Erstellt am")
 
     class Meta:
@@ -300,55 +304,51 @@ class Begleitung(models.Model):
     fall = models.ForeignKey('Fall', on_delete=models.CASCADE, null=True, related_name='begleitungen', verbose_name="Zugeordneter Fall")
     
     class Meta:
-        verbose_name = "Begleitung/Verweisung"
-        verbose_name_plural = "Begleitungen/Verweisungen"
+        verbose_name = "Begleitung"
+        verbose_name_plural = "Begleitungen"
+        permissions = [
+            ("view_own_begleitung", "Kann eigene Begleitungen einsehen"),
+            ("view_all_begleitung", "Kann alle Begleitungen einsehen"),
+        ]
         
     def __str__(self):
-        return f"Begleitung zu {self.einrichtung} am {self.datum}"
+        return f"Begleitung {self.begleitungs_id} am {self.datum}"
 
 
 class Gewalttat(models.Model):
     tat_id = models.BigAutoField(primary_key=True)
-    tat_alter = models.CharField(max_length=2, choices=JA_NEIN_KA_CHOICES, verbose_name="Alter zum Tatzeitpunkt (JA/NEIN/KA)") 
-    tat_zeitraum = models.CharField(max_length=2, choices=JA_NEIN_KA_CHOICES, verbose_name="Tatzeitraum (JA/NEIN/KA)") 
-    tat_anzahl_vorfaelle = models.CharField(max_length=2, choices=ANZAHL_VORFAELLE_CHOICES, verbose_name="Anzahl Vorfälle")
-    tat_anzahl_taeter_innen = models.CharField(max_length=2, choices=ANZAHL_TAETER_CHOICES, verbose_name="Anzahl Täter:innen")
+    tat_datum = models.DateField(default=timezone.now, verbose_name="Tatzeitpunkt") # Default heute
+    tat_ort = models.CharField(max_length=2, choices=STANDORT_CHOICES, null=True, verbose_name="Tatort (Region)")
+    plz_tatort = models.CharField(max_length=5, blank=True, verbose_name="PLZ Tatort")
     
-    
-    tat_art = models.CharField(max_length=1024, verbose_name="Art der Gewalt (Mehrfachauswahl/Text)")
-    
-    tatort = models.CharField(max_length=2, choices=TATORT_CHOICES, verbose_name="Tatort")
-    tat_anzeige = models.CharField(max_length=2, choices=ANZEIGE_CHOICES, verbose_name="Anzeige")
-    tat_medizinische_versorgung = models.CharField(max_length=2, choices=JA_NEIN_KA_CHOICES, verbose_name="Medizinische Versorgung")
-    tat_spurensicherung = models.CharField(max_length=2, choices=JA_NEIN_KA_CHOICES, verbose_name="Vertrauliche Spurensicherung")
-    tat_mitbetroffene_kinder = models.IntegerField(default=0, verbose_name="Mitbetroffene Kinder", validators=[MinValueValidator(0)])
-    tat_direktbetroffene_kinder = models.IntegerField(default=0, verbose_name="Direkt betroffene Kinder", validators=[MinValueValidator(0)])
-    tat_notizen = models.TextField(blank=True, verbose_name="Notizen")
-
     # Beziehungen:
-    klient = models.ForeignKey(KlientIn, on_delete=models.CASCADE, verbose_name="Klient:in")
-    fall = models.ForeignKey('Fall', on_delete=models.CASCADE, null=True, related_name='gewalttaten', verbose_name="Zugeordneter Fall") 
+    klient = models.ForeignKey(KlientIn, on_delete=models.CASCADE, verbose_name="Betroffene:r")
+    fall = models.ForeignKey('Fall', on_delete=models.CASCADE, null=True, related_name='gewalttaten', verbose_name="Zugeordneter Fall")
     
     class Meta:
         verbose_name = "Gewalttat"
         verbose_name_plural = "Gewalttaten"
         
     def __str__(self):
-        return f"Gewalttat {self.tat_id} von Klient {self.klient.klient_id}"
+        return f"Gewalttat {self.tat_id} ({self.tat_datum})"
 
 
 class Gewaltfolge(models.Model):
-    gewalttat = models.OneToOneField(Gewalttat, on_delete=models.CASCADE, primary_key=True, verbose_name="Zugeordnete Gewalttat")
-
-    psychische_folgen = models.CharField(max_length=4, choices=PSYCH_FOLGEN_CHOICES, verbose_name="Psychische Folgen")
-    koerperliche_folgen = models.CharField(max_length=2, choices=KOERPER_FOLGEN_CHOICES, verbose_name="Körperliche Folgen")
+    folge_id = models.BigAutoField(primary_key=True)
+    gewalttat = models.OneToOneField(Gewalttat, on_delete=models.CASCADE, related_name='gewaltfolge', verbose_name="Zugehörige Gewalttat")
     
-    finanzielle_folgen = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, verbose_name="Finanzielle Folgen")
-    arbeitseinschraenkung = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, verbose_name="Arbeitseinschränkung")
-    verlust_arbeitsstelle = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, verbose_name="Verlust Arbeitsstelle")
-    soziale_isolation = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, verbose_name="Soziale Isolation")
-    suizidalitaet = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, verbose_name="Suizidalität")
-    keine_angabe = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, verbose_name="Falls zuvor kein Feld ausgefüllt")
+    # Folgen Felder (Ja/Nein/KA oder Text)
+    koerperliche_verletzung = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Körperliche Verletzung")
+    gesundheitsschaedigung = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Gesundheitsschädigung")
+    psychische_gewalt = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Psychische Gewalt")
+    sexualisierte_gewalt = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Sexualisierte Gewalt")
+    oekonomische_gewalt = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Ökonomische Gewalt")
+    soziale_gewalt = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Soziale Gewalt/Isolation")
+    digitale_gewalt = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Digitale Gewalt")
+    verfolgung_stalking = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Verfolgung/Stalking")
+    
+    suizidalitaet = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Suizidalität")
+    keine_angabe = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Falls zuvor kein Feld ausgefüllt")
     
     beeintraechtigungen = models.TextField(blank=True, verbose_name="Dauerhafte körperliche Beeinträchtigungen")
     weiteres = models.TextField(blank=True, verbose_name="Weiteres")
@@ -430,6 +430,7 @@ class Eingabefeld(models.Model):
     CONTEXT_CHOICES = [
         ('anfrage', 'Anfrage'),
         ('fall', 'Fall'),
+        ('klient', 'Klient:in'),
     ]
 
     feldID = models.BigAutoField(primary_key=True)
