@@ -26,6 +26,7 @@ Das ganze Projekt läuft zurzeit in einem Docker Stack. Die benötigte docker-co
   - `python manage.py setup_superuser` (oder `createsuperuser` für manuelle Eingabe)
   Hinweis: Wenn `setup_superuser` manuell ausgeführt wird, stelle sicher, dass `setup_groups` vorher gelaufen ist, damit der User automatisch der Admin-Gruppe zugewiesen wird.
 - Eine detaillierte Dokumentation zur Systeminitialisierung finden Sie unter [`docs/setup_initial.md`](docs/setup_initial.md).
+- Eine Übersicht aller Management-Commands finden Sie unter [`docs/management_commands.md`](docs/management_commands.md).
 
 - Der Superuser kann sich nun im Frontend und unter localhost:8000/admin einloggen.
 
