@@ -291,31 +291,59 @@ export async function confirmResetPassword(payload: {
  * Access Token erneuern
  */
 export async function refreshToken(): Promise<string> {
-  const refresh = localStorage.getItem('refreshToken');
-  if (!refresh) throw new Error('Kein Refresh-Token vorhanden');
+  // 1. Try to get token from LocalStorage (if used)
+  let refresh = typeof localStorage !== 'undefined' ? localStorage.getItem('refreshToken') : null;
 
+  // 2. Try to get token from JS-readable cookies (e.g. if HttpOnly is false, or using a different system)
+  // Backend settings use 'app-refresh-token' and HttpOnly=True, so this might not find anything, 
+  // but we leave it for compatibility.
+  if (!refresh && typeof document !== 'undefined') {
+    const match = document.cookie.match(new RegExp('(^| )refreshToken=([^;]+)'));
+    if (match) refresh = match[2];
+
+    // Also check for the backend specific name, just in case HttpOnly is disabled later
+    const matchApp = document.cookie.match(new RegExp('(^| )app-refresh-token=([^;]+)'));
+    if (matchApp) refresh = matchApp[2];
+  }
+
+  // 3. Request Refresh
+  // Note: We do NOT throw if 'refresh' is null. We assume an HttpOnly cookie might exist.
+  // We send 'refresh' in body if we have it, otherwise empty body.
   const res = await fetch(`${API_URL}/api/auth/token/refresh/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refresh }),
+    body: JSON.stringify(refresh ? { refresh } : {}),
+    credentials: 'include', // IMPORTANT: Sends HttpOnly cookies
   });
 
   if (!res.ok) {
+    // NOW we throw, because the backend rejected the request (meaning no valid cookie either)
     throw new Error('Token konnte nicht erneuert werden');
   }
 
   const data = await res.json();
 
-  // TOKEN ROTATION: Backend returns new access AND refresh token
+  // 4. Update Tokens (Token Rotation)
+  // If backend returns new tokens in body, we save them.
+  // If backend sets cookies, browser handles it.
   if (typeof localStorage !== 'undefined') {
-    localStorage.setItem('accessToken', data.access);
-    if (data.refresh) {
-      localStorage.setItem('refreshToken', data.refresh);
-    }
+    if (data.access) localStorage.setItem('accessToken', data.access);
+    if (data.refresh) localStorage.setItem('refreshToken', data.refresh);
 
     // Reset Expiry to +2 hours
     const expiryDate = new Date().getTime() + 2 * 60 * 60 * 1000;
     localStorage.setItem('sessionExpiry', expiryDate.toString());
+  }
+
+  // 5. Update Legacy Cookies (if used by other parts of app)
+  if (typeof document !== 'undefined' && data.access) {
+    // We only set this if we want JS access. The backend manages 'app-auth' HttpOnly cookie.
+    // But api.ts might look for 'accessToken', so we can sync it if needed.
+    // For now, we prefer to let api.ts fail over to cookies if possible.
+    document.cookie = `accessToken=${data.access}; path=/; max-age=7200`;
+    if (data.refresh) {
+      document.cookie = `refreshToken=${data.refresh}; path=/; max-age=7200`;
+    }
   }
 
   return data.access;

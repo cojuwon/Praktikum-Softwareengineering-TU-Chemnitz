@@ -91,21 +91,25 @@ export async function apiFetch(
   if (res.status === 401) {
     // Get refresh token from cookie or localStorage
     let refreshToken = typeof localStorage !== 'undefined' ? localStorage.getItem("refreshToken") : null;
+
+    // Try to get from JS-readable cookies
     if (!refreshToken && typeof document !== 'undefined') {
       const match = document.cookie.match(new RegExp('(^| )refreshToken=([^;]+)'));
       if (match) refreshToken = match[2];
+
+      const matchApp = document.cookie.match(new RegExp('(^| )app-refresh-token=([^;]+)'));
+      if (matchApp) refreshToken = matchApp[2];
     }
 
-    if (!refreshToken) {
-      throw new Error('Kein Refresh Token gefunden');
-    }
+    // Attempt refresh even if we don't have a visible token (assume HttpOnly cookie)
+    // We only throw if the REFRESH REQUEST fails.
 
     const refreshRes = await fetch(`${backendUrl}/api/auth/token/refresh/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ refresh: refreshToken }),
+      body: JSON.stringify(refreshToken ? { refresh: refreshToken } : {}),
       credentials: 'include',
     });
 
