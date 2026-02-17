@@ -210,6 +210,7 @@ REST_AUTH = {
     'JWT_AUTH_HTTPONLY': True,                # JavaScript kann Cookie nicht lesen (Sicherheit!)
     'SESSION_LOGIN': False,
     'USER_DETAILS_SERIALIZER': 'api.serializers.KontoMeSerializer', # Mit Berechtigungen & Gruppen
+    'OLD_PASSWORD_FIELD_ENABLED': True,
 }
 
 REST_AUTH_SERIALIZERS = {
