@@ -20,6 +20,7 @@ from .views.konto import KontoViewSet
 from .views.preset import PresetViewSet
 from .views.statistik import StatistikViewSet
 from .views.eingabefeld import EingabefeldViewSet
+from .views.groups import GroupViewSet, PermissionViewSet
 
 
 # Router für ViewSets mit automatischer URL-Generierung
@@ -36,6 +37,8 @@ router.register(r'konten', KontoViewSet, basename='konto')
 router.register(r'presets', PresetViewSet, basename='preset')
 router.register(r'statistiken', StatistikViewSet, basename='statistik')
 router.register(r'statistik', StatistikViewSet, basename='statistik_singular')
+router.register(r'groups', GroupViewSet, basename='group')
+router.register(r'permissions', PermissionViewSet, basename='permission')
 
 
 urlpatterns = [

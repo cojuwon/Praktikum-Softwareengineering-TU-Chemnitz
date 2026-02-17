@@ -6,6 +6,7 @@ import { Pencil, Trash2, Plus, Check, Search, Filter } from 'lucide-react';
 import { useUser } from '@/lib/userContext';
 import { useRouter } from 'next/navigation';
 import Pagination from '@/components/ui/pagination';
+import { MultiSelect } from '@/components/ui/MultiSelect';
 
 interface User {
     id: number;
@@ -27,7 +28,7 @@ export default function UserList({ embedded = false }: { embedded?: boolean }) {
 
     // Filters
     const [searchTerm, setSearchTerm] = useState('');
-    const [roleFilter, setRoleFilter] = useState('');
+    const [roleFilter, setRoleFilter] = useState<string[]>([]);
     const [statusFilter, setStatusFilter] = useState('');
 
     // Edit State
@@ -61,7 +62,10 @@ export default function UserList({ embedded = false }: { embedded?: boolean }) {
             // params.append('page_size', PAGE_SIZE.toString()); // If backend supports variable page size
 
             if (searchTerm) params.append('search', searchTerm);
-            if (roleFilter) params.append('rolle_mb', roleFilter);
+            if (roleFilter.length > 0) {
+                // Join roles with comma for 'in' lookup
+                params.append('rolle_mb__in', roleFilter.join(','));
+            }
             if (statusFilter) params.append('is_active', statusFilter);
 
             const res = await apiFetch(`/api/konten/?${params.toString()}`);
@@ -184,9 +188,21 @@ export default function UserList({ embedded = false }: { embedded?: boolean }) {
         }
     };
 
+    const toggleActive = () => {
+        setFormData(prev => ({ ...prev, is_active: !prev.is_active }));
+    };
+
     const totalPages = Math.ceil(count / PAGE_SIZE);
 
     if (loading && !users.length) return <div className="p-10 text-center text-gray-500">Laden...</div>;
+
+    const roleOptions = [
+        { label: 'Basis', value: 'B' },
+        { label: 'Erweiterung', value: 'E' },
+        { label: 'Admin', value: 'AD' }
+    ];
+
+    const isFilterActive = searchTerm || roleFilter.length > 0 || statusFilter;
 
     return (
         <div className={embedded ? "" : "p-6 bg-white rounded-lg shadow-sm"}>
@@ -215,25 +231,27 @@ export default function UserList({ embedded = false }: { embedded?: boolean }) {
                     />
                 </div>
 
-                <div className="flex items-center gap-2">
-                    <Filter size={18} className="text-gray-400" />
-                    <select
-                        value={roleFilter}
-                        onChange={(e) => setRoleFilter(e.target.value)}
-                        className="py-2 pl-3 pr-8 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                    >
-                        <option value="">Alle Rollen</option>
-                        <option value="B">Basis</option>
-                        <option value="E">Erweiterung</option>
-                        <option value="AD">Admin</option>
-                    </select>
+                <div className="flex items-center gap-2 relative">
+                    <div className="relative">
+                        <Filter size={18} className={`text-gray-400 ${isFilterActive ? 'text-blue-500' : ''}`} />
+                        {isFilterActive && <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full"></span>}
+                    </div>
+
+                    <div className="w-48">
+                        <MultiSelect
+                            label="Rollen"
+                            options={roleOptions}
+                            selected={roleFilter}
+                            onChange={setRoleFilter}
+                        />
+                    </div>
 
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                         className="py-2 pl-3 pr-8 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                     >
-                        <option value="">Alle Status</option>
+                        <option value="">Status</option>
                         <option value="true">Aktiv</option>
                         <option value="false">Inaktiv</option>
                     </select>
@@ -318,15 +336,22 @@ export default function UserList({ embedded = false }: { embedded?: boolean }) {
                             </div>
                         )}
 
-                        <div className="flex items-center gap-2 mt-2">
-                            <input
-                                type="checkbox"
-                                name="is_active"
-                                checked={formData.is_active ?? true}
-                                onChange={handleChange}
-                                id="is_active"
-                            />
-                            <label htmlFor="is_active" className="text-sm text-gray-700">Aktiv</label>
+                        <div className="flex items-center gap-3 mt-4">
+                            <button
+                                type="button"
+                                onClick={toggleActive}
+                                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${formData.is_active ? 'bg-blue-600' : 'bg-gray-200'}`}
+                                role="switch"
+                                aria-checked={formData.is_active}
+                            >
+                                <span
+                                    aria-hidden="true"
+                                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${formData.is_active ? 'translate-x-5' : 'translate-x-0'}`}
+                                />
+                            </button>
+                            <label onClick={toggleActive} className="text-sm font-medium text-gray-700 cursor-pointer">
+                                {formData.is_active ? 'Benutzer ist Aktiv' : 'Benutzer ist Inaktiv'}
+                            </label>
                         </div>
 
                         <div className="md:col-span-2 flex gap-2 justify-end mt-4">

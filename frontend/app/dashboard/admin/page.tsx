@@ -6,11 +6,13 @@ import { useEffect, useState } from 'react';
 import UserList from '@/components/dashboard/admin/UserList';
 import { Users, Shield, Activity } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
+import GroupList from '@/components/dashboard/admin/GroupList';
 
 export default function AdminPage() {
   const { user, loading } = useUser();
   const router = useRouter();
   const [stats, setStats] = useState({ total: 0, admins: 0, active: 0 });
+  const [activeTab, setActiveTab] = useState<'users' | 'groups'>('users');
 
   useEffect(() => {
     if (!loading && user?.rolle_mb !== 'AD') {
@@ -67,14 +69,30 @@ export default function AdminPage() {
 
       {/* Main Content Area */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-          <h2 className="text-lg font-semibold text-gray-800">Benutzerverwaltung</h2>
-          {/* Quick Actions or Filters could go here */}
+        <div className="px-6 py-4 border-b border-gray-100 flex gap-6 bg-gray-50/50">
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors border-b-2 ${activeTab === 'users' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            <Users size={18} />
+            Benutzerverwaltung
+          </button>
+          <button
+            onClick={() => setActiveTab('groups')}
+            className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors border-b-2 ${activeTab === 'groups' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            <Shield size={18} />
+            Gruppen & Rechte
+          </button>
         </div>
 
-        {/* User List Component with stripped padding to fit container */}
-        <div className=""> {/* Wrapper to control padding if needed */}
-          <UserList embedded={true} />
+        {/* Content */}
+        <div className="">
+          {activeTab === 'users' ? (
+            <UserList embedded={true} />
+          ) : (
+            <GroupList />
+          )}
         </div>
       </div>
     </div>

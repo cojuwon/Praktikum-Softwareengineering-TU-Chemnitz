@@ -24,6 +24,7 @@ from .preset import PresetSerializer
 from .statistik import StatistikSerializer
 from .preset import PresetSerializer
 from .statistik import StatistikSerializer
+from .groups import GroupSerializer, PermissionSerializer
 
 __all__ = [
     # Auth
@@ -42,4 +43,6 @@ __all__ = [
     'AnfrageSerializer',
     'PresetSerializer',
     'StatistikSerializer',
+    'GroupSerializer',
+    'PermissionSerializer',
 ]

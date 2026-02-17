@@ -29,7 +29,7 @@ class KontoViewSet(viewsets.ModelViewSet):
     
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     search_fields = ['vorname_mb', 'nachname_mb', 'mail_mb']
-    filterset_fields = ['rolle_mb', 'is_active']
+    filterset_fields = {'rolle_mb': ['exact', 'in'], 'is_active': ['exact']}
 
     def get_serializer_class(self):
         """
