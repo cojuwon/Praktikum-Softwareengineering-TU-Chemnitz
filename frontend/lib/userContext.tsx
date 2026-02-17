@@ -1,15 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { getCurrentUser } from '@/lib/auth';
-
-type User = {
-  id: number;
-  vorname_mb?: string;
-  nachname_mb?: string;
-  rolle_mb: 'A' | 'E' | 'B' | 'AD';
-  mail_mb: string;
-};
+import { getCurrentUser, User } from '@/lib/auth';
 
 type UserContextType = {
   user: User | null;

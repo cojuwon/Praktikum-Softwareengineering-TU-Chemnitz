@@ -1,12 +1,14 @@
 // lib/auth.ts
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-interface User {
+export interface User {
   id: number;
   vorname_mb: string;
   nachname_mb: string;
   mail_mb: string;
   rolle_mb: 'B' | 'E' | 'A' | 'AD'; // Basis, Erweiterung, Admin
+  permissions: string[];
+  groups: string[];
 }
 
 /**

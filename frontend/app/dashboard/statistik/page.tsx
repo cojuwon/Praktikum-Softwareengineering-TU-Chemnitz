@@ -1,6 +1,7 @@
 "use client";
 
 import { useStatistik } from "./StatistikContext";
+import { useUser } from "@/lib/userContext";
 import { FieldDefinition } from "@/components/dashboard/statistik/DynamicFilterForm";
 import { useState, useEffect } from "react";
 import { apiFetch } from "@/lib/api";
@@ -10,6 +11,7 @@ import StatistikReportLinks from "@/components/dashboard/statistik/StatistikRepo
 import StatistikExportSection from "@/components/dashboard/statistik/StatistikExportSection";
 
 export default function StatistikPage() {
+  const { user, loading } = useUser();
   const { data, setData } = useStatistik();
   const [filters, setFilters] = useState<{ [key: string]: any }>({});
   const [filterDefinition, setFilterDefinition] = useState<FieldDefinition[] | null>(null);
@@ -17,6 +19,8 @@ export default function StatistikPage() {
   const [structure, setStructure] = useState<any | null>(null);
 
   useEffect(() => {
+    if (!user) return;
+    
     apiFetch("/api/statistik/filters/")
       .then(res => res.json())
       .then(json => {
@@ -29,9 +33,11 @@ export default function StatistikPage() {
         setFilterDefinition(defs);
       })
       .catch(err => console.error("Filter konnten nicht geladen werden:", err));
-  }, []);
+  }, [user]);
 
   useEffect(() => {
+    if (!user) return;
+
     async function loadPresets() {
       try {
         const res = await apiFetch("/api/statistik/presets/");
@@ -42,7 +48,16 @@ export default function StatistikPage() {
       }
     }
     loadPresets();
-  }, []);
+  }, [user]);
+
+  if (loading) return <div className="p-8 text-center text-gray-500">Laden...</div>;
+  if (!user?.permissions?.includes('api.can_view_statistics')) {
+    return (
+      <div className="p-8 text-center text-red-500">
+        Sie haben keine Berechtigung, Statistiken einzusehen.
+      </div>
+    );
+  }
 
   const handleSelectPreset = (presetId: string) => {
     if (!presetId) return;

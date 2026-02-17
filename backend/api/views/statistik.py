@@ -113,6 +113,9 @@ class StatistikViewSet(viewsets.ModelViewSet):
         Führt die Statistik-Berechnung basierend auf den Filtern durch.
         (Legacy-Endpoint für Rückwärtskompatibilität)
         """
+        if not request.user.has_perm('api.can_view_statistics'):
+             return Response({'detail': 'Keine Berechtigung.'}, status=status.HTTP_403_FORBIDDEN)
+
         query_serializer = StatistikQuerySerializer(data=request.data)
         if not query_serializer.is_valid():
             return Response(query_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
