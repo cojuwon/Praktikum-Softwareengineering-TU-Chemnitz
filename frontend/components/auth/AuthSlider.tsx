@@ -10,29 +10,54 @@ import Image from 'next/image';
 const OverlayPanel = ({ mode, toggleMode }: { mode: 'login' | 'register'; toggleMode: () => void }) => {
     return (
         <motion.div
-            initial={false}
+            initial={{
+                x: mode === 'login' ? '100%' : '0%',
+            }}
             animate={{
                 x: mode === 'login' ? '100%' : '0%',
             }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="absolute top-0 left-0 h-full w-1/2 bg-[#294D9D] text-white z-20 hidden md:flex flex-col items-center justify-center p-12 text-center"
+            className="absolute top-0 left-0 h-full w-1/2 bg-[#294D9D] text-white z-20 hidden md:block overflow-hidden"
         >
-            <div className="max-w-xs space-y-6 flex flex-col items-center">
-                <h1 className="text-3xl font-bold">
-                    {mode === 'login' ? 'Hallo!' : 'Willkommen zurück!'}
-                </h1>
-                <p className="text-blue-100">
-                    {mode === 'login'
-                        ? 'Du hast noch keinen Account?'
-                        : 'Du hast bereits einen Account?'}
-                </p>
-                <button
-                    onClick={toggleMode}
-                    className="px-8 py-3 bg-white text-[#294D9D] rounded-lg font-semibold uppercase tracking-wider hover:bg-gray-100 transition-colors shadow-md"
-                >
-                    {mode === 'login' ? 'Registrieren' : 'Anmelden'}
-                </button>
-            </div>
+            {/* Inner Container - Moves opposite to overlay to create "stationary" effect */}
+            <motion.div
+                className="flex h-full w-[200%]"
+                initial={{
+                    x: mode === 'login' ? '-50%' : '0%',
+                }}
+                animate={{
+                    x: mode === 'login' ? '-50%' : '0%',
+                }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            >
+                {/* Left Side Content (Visible when Overlay is Left -> Register Mode) */}
+                <div className="w-1/2 flex flex-col items-center justify-center p-12 text-center">
+                    <div className="max-w-xs space-y-6 flex flex-col items-center">
+                        <h1 className="text-3xl font-bold">Willkommen zurück!</h1>
+                        <p className="text-blue-100">Du hast bereits einen Account?</p>
+                        <button
+                            onClick={toggleMode}
+                            className="px-8 py-3 bg-white text-[#294D9D] rounded-lg font-semibold uppercase tracking-wider hover:bg-gray-100 transition-colors shadow-md"
+                        >
+                            Anmelden
+                        </button>
+                    </div>
+                </div>
+
+                {/* Right Side Content (Visible when Overlay is Right -> Login Mode) */}
+                <div className="w-1/2 flex flex-col items-center justify-center p-12 text-center">
+                    <div className="max-w-xs space-y-6 flex flex-col items-center">
+                        <h1 className="text-3xl font-bold">Hallo!</h1>
+                        <p className="text-blue-100">Du hast noch keinen Account?</p>
+                        <button
+                            onClick={toggleMode}
+                            className="px-8 py-3 bg-white text-[#294D9D] rounded-lg font-semibold uppercase tracking-wider hover:bg-gray-100 transition-colors shadow-md"
+                        >
+                            Registrieren
+                        </button>
+                    </div>
+                </div>
+            </motion.div>
         </motion.div>
     );
 };
@@ -55,6 +80,7 @@ export default function AuthSlider({ initialMode = 'login' }: { initialMode?: 'l
                     width={80}
                     height={80}
                     className="object-contain drop-shadow-md"
+                    priority
                 />
             </div>
 

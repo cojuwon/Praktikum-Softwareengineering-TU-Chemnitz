@@ -22,6 +22,7 @@ const links = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Anfrage', href: '/dashboard/anfrage', icon: FileText },
   { name: 'Fall', href: '/dashboard/fall', icon: Briefcase },
+  { name: 'Personen', href: '/dashboard/klienten', icon: UserIcon },
   { name: 'Statistik', href: '/dashboard/statistik', icon: BarChart },
   { name: 'Einstellungen', href: '/dashboard/settings', icon: Settings },
 ];

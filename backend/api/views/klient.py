@@ -40,8 +40,8 @@ class KlientInViewSet(viewsets.ModelViewSet):
         'klient_wohnort': ['exact'],
         'klient_schwerbehinderung': ['exact'],
     }
-    search_fields = ['klient_code', 'klient_vorname', 'klient_nachname', 'klient_id'] # Optional text search
-    ordering_fields = ['klient_id', 'erstellt_am', 'klient_nachname']
+    search_fields = ['klient_code', 'klient_vorname', 'klient_nachname', 'klient_id', 'klient_pseudonym'] # Optional text search
+    ordering_fields = ['klient_id', 'erstellt_am', 'klient_nachname', 'klient_pseudonym']
     ordering = ['-klient_id'] # Default: Newest first
 
     def get_queryset(self):

@@ -128,7 +128,14 @@ class Konto(AbstractBaseUser, PermissionsMixin):
     
     mail_mb = models.EmailField(max_length=255, unique=True, verbose_name="E-Mail")
     
+    STATUS_CHOICES = [
+        ('A', 'Aktiv'),
+        ('I', 'Inaktiv'),
+        ('P', 'Ausstehend'),
+    ]
+
     rolle_mb = models.CharField(max_length=2, choices=BERECHTIGUNG_CHOICES, default='B', verbose_name="Rolle")
+    status_mb = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P', verbose_name="Status")
     
     is_active = models.BooleanField(default=True) #TODO neu, noch ergänzen im Klassendiagramm
     is_staff = models.BooleanField(default=False) #TODO neu, noch ergänzen im Klassendiagramm
@@ -156,6 +163,13 @@ class Konto(AbstractBaseUser, PermissionsMixin):
 class KlientIn(models.Model):
     klient_id = models.BigAutoField(primary_key=True)
     klient_rolle = models.CharField(max_length=2, choices=KLIENT_ROLLE_CHOICES, verbose_name="Rolle")
+    klient_pseudonym = models.CharField(
+        max_length=255, 
+        blank=True, 
+        null=True, 
+        verbose_name="Pseudonym",
+        help_text="ACHTUNG: Hier keine Klarnamen verwenden! Nur Pseudonyme."
+    )
     klient_alter = models.IntegerField(
         null=True, 
         blank=True, 

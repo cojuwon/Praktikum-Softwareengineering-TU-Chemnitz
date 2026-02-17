@@ -26,7 +26,7 @@ export default function AdminPage() {
     }).catch(console.error);
 
     // Check for pending requests count
-    apiFetch('/api/konten/?is_active=false').then(res => res.json()).then(data => {
+    apiFetch('/api/konten/?status_mb=P').then(res => res.json()).then(data => {
       const count = Array.isArray(data) ? data.length : data.count || 0;
       setPendingCount(count);
     }).catch(console.error);
@@ -51,7 +51,7 @@ export default function AdminPage() {
             <Users size={24} />
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-500">Benutzer Gesamt</p>
+            <p className="text-sm font-medium text-gray-500">Benutzer:innen Gesamt</p>
             <p className="text-2xl font-semibold text-gray-900">{stats.total}</p>
           </div>
         </div>
@@ -60,7 +60,7 @@ export default function AdminPage() {
             <Shield size={24} />
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-500">Administratoren</p>
+            <p className="text-sm font-medium text-gray-500">Administrator:innen</p>
             <p className="text-2xl font-semibold text-gray-900">{stats.admins}</p>
           </div>
         </div>
@@ -83,7 +83,7 @@ export default function AdminPage() {
             className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'users' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           >
             <Users size={18} />
-            Benutzerverwaltung
+            Benutzer:innenverwaltung
           </button>
           <button
             onClick={() => setActiveTab('groups')}

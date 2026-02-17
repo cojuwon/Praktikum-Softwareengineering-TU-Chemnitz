@@ -11,7 +11,7 @@ class KontoSerializer(serializers.ModelSerializer):
     """Serializer für Benutzerdetails ohne Berechtigungen."""
     class Meta:
         model = Konto
-        fields = ('id', 'vorname_mb', 'nachname_mb', 'mail_mb', 'rolle_mb', 'is_active')
+        fields = ('id', 'vorname_mb', 'nachname_mb', 'mail_mb', 'rolle_mb', 'status_mb', 'is_active')
         read_only_fields = ('id',)
 
 
@@ -23,7 +23,7 @@ class KontoAdminSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Konto
-        fields = ('id', 'vorname_mb', 'nachname_mb', 'mail_mb', 'rolle_mb', 'password', 'is_active')
+        fields = ('id', 'vorname_mb', 'nachname_mb', 'mail_mb', 'rolle_mb', 'status_mb', 'password', 'is_active')
         read_only_fields = ('id',)
 
     def create(self, validated_data):
@@ -57,8 +57,8 @@ class KontoMeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Konto
-        fields = ['id', 'vorname_mb', 'nachname_mb', 'mail_mb', 'rolle_mb', 'groups', 'permissions']
-        read_only_fields = ['id', 'mail_mb', 'rolle_mb', 'groups', 'permissions']
+        fields = ['id', 'vorname_mb', 'nachname_mb', 'mail_mb', 'rolle_mb', 'status_mb', 'groups', 'permissions']
+        read_only_fields = ['id', 'mail_mb', 'rolle_mb', 'status_mb', 'groups', 'permissions']
 
     def get_permissions(self, user):
         """
@@ -96,5 +96,6 @@ class CustomRegisterSerializer(RegisterSerializer):
         user.vorname_mb = self.cleaned_data.get('vorname_mb')
         user.nachname_mb = self.cleaned_data.get('nachname_mb')
         user.is_active = False  # User muss erst vom Admin freigeschaltet werden
-        user.save(update_fields=['vorname_mb', 'nachname_mb', 'is_active'])
+        user.status_mb = 'P'    # Explizit Pending setzen
+        user.save(update_fields=['vorname_mb', 'nachname_mb', 'is_active', 'status_mb'])
         return user

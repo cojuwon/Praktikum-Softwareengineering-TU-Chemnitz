@@ -15,6 +15,7 @@ interface User {
     mail_mb: string;
     rolle_mb: string;
     is_active: boolean;
+    status_mb: 'A' | 'I' | 'P';
     groups?: string[];
 }
 
@@ -66,7 +67,7 @@ export default function UserList({ embedded = false }: { embedded?: boolean }) {
                 // Join roles with comma for 'in' lookup
                 params.append('rolle_mb__in', roleFilter.join(','));
             }
-            if (statusFilter) params.append('is_active', statusFilter);
+            if (statusFilter) params.append('status_mb', statusFilter);
 
             const res = await apiFetch(`/api/konten/?${params.toString()}`);
             if (!res.ok) throw new Error('Failed to fetch users');
@@ -101,7 +102,7 @@ export default function UserList({ embedded = false }: { embedded?: boolean }) {
 
     const handleCreate = () => {
         setEditingUser(null);
-        setFormData({ rolle_mb: 'B', is_active: true }); // Defaults
+        setFormData({ rolle_mb: 'B', is_active: true, status_mb: 'A' }); // Defaults
         setPassword('');
         setIsCreating(true);
     };
@@ -159,6 +160,7 @@ export default function UserList({ embedded = false }: { embedded?: boolean }) {
                     nachname_mb: formData.nachname_mb,
                     mail_mb: formData.mail_mb,
                     rolle_mb: formData.rolle_mb,
+                    status_mb: formData.status_mb, // Include status_mb
                     is_active: formData.is_active
                 };
 
@@ -189,7 +191,14 @@ export default function UserList({ embedded = false }: { embedded?: boolean }) {
     };
 
     const toggleActive = () => {
-        setFormData(prev => ({ ...prev, is_active: !prev.is_active }));
+        setFormData(prev => {
+            const newActive = !prev.is_active;
+            return {
+                ...prev,
+                is_active: newActive,
+                status_mb: newActive ? 'A' : 'I' // Sync status
+            };
+        });
     };
 
     const totalPages = Math.ceil(count / PAGE_SIZE);
@@ -252,8 +261,9 @@ export default function UserList({ embedded = false }: { embedded?: boolean }) {
                         className="py-2 pl-3 pr-8 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                     >
                         <option value="">Status</option>
-                        <option value="true">Aktiv</option>
-                        <option value="false">Inaktiv</option>
+                        <option value="A">Aktiv</option>
+                        <option value="P">Ausstehend</option>
+                        <option value="I">Inaktiv</option>
                     </select>
                 </div>
 
@@ -336,22 +346,53 @@ export default function UserList({ embedded = false }: { embedded?: boolean }) {
                             </div>
                         )}
 
-                        <div className="flex items-center gap-3 mt-4">
-                            <button
-                                type="button"
-                                onClick={toggleActive}
-                                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${formData.is_active ? 'bg-blue-600' : 'bg-gray-200'}`}
-                                role="switch"
-                                aria-checked={formData.is_active}
-                            >
-                                <span
-                                    aria-hidden="true"
-                                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${formData.is_active ? 'translate-x-5' : 'translate-x-0'}`}
-                                />
-                            </button>
-                            <label onClick={toggleActive} className="text-sm font-medium text-gray-700 cursor-pointer">
-                                {formData.is_active ? 'Benutzer ist Aktiv' : 'Benutzer ist Inaktiv'}
-                            </label>
+                        <div className="md:col-span-2 mt-4">
+                            {formData.status_mb === 'P' ? (
+                                <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                    <div className="flex items-center gap-2 text-yellow-800">
+                                        <span className="font-medium">Benutzer wartet auf Freigabe.</span>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (confirm('Benutzer unwiderruflich ablehnen (löschen)?')) {
+                                                    if (editingUser) handleDelete(editingUser.id);
+                                                    handleCancel();
+                                                }
+                                            }}
+                                            className="px-3 py-1.5 bg-white border border-red-200 text-red-600 rounded-md text-sm font-medium hover:bg-red-50"
+                                        >
+                                            Ablehnen
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, status_mb: 'A', is_active: true }))}
+                                            className="px-3 py-1.5 bg-[#294D9D] text-white rounded-md text-sm font-medium hover:bg-blue-800"
+                                        >
+                                            Freigeben
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={toggleActive}
+                                        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${formData.is_active ? 'bg-blue-600' : 'bg-gray-200'}`}
+                                        role="switch"
+                                        aria-checked={formData.is_active}
+                                    >
+                                        <span
+                                            aria-hidden="true"
+                                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${formData.is_active ? 'translate-x-5' : 'translate-x-0'}`}
+                                        />
+                                    </button>
+                                    <label onClick={toggleActive} className="text-sm font-medium text-gray-700 cursor-pointer">
+                                        {formData.is_active ? 'Benutzer ist Aktiv' : 'Benutzer ist Inaktiv'}
+                                    </label>
+                                </div>
+                            )}
                         </div>
 
                         <div className="md:col-span-2 flex gap-2 justify-end mt-4">
@@ -392,16 +433,14 @@ export default function UserList({ embedded = false }: { embedded?: boolean }) {
                                     </span>
                                 </td>
                                 <td className="py-3 px-6">
-                                    {u.is_active ?
-                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-green-600"></span>
-                                            Aktiv
-                                        </span> :
-                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
-                                            Inaktiv
-                                        </span>
-                                    }
+                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                    ${u.status_mb === 'A' ? 'bg-green-100 text-green-800' :
+                                            u.status_mb === 'P' ? 'bg-yellow-100 text-yellow-800' :
+                                                'bg-red-100 text-red-800'}`}>
+                                        {u.status_mb === 'A' ? 'Aktiv' :
+                                            u.status_mb === 'P' ? 'Ausstehend' :
+                                                'Inaktiv'}
+                                    </span>
                                 </td>
                                 <td className="py-3 px-6 text-right flex justify-end gap-2">
                                     <button
