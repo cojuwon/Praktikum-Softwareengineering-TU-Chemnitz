@@ -13,6 +13,7 @@
     "clsx": "^2.1.1",
     "dev": "^0.1.3",
     "file-saver": "^2.0.5",
+    "framer-motion": "^12.34.1",
     "jspdf": "^3.0.4",
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.556.0",

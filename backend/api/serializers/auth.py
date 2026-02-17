@@ -95,5 +95,6 @@ class CustomRegisterSerializer(RegisterSerializer):
         user = super().save(request)
         user.vorname_mb = self.cleaned_data.get('vorname_mb')
         user.nachname_mb = self.cleaned_data.get('nachname_mb')
-        user.save(update_fields=['vorname_mb', 'nachname_mb'])
+        user.is_active = False  # User muss erst vom Admin freigeschaltet werden
+        user.save(update_fields=['vorname_mb', 'nachname_mb', 'is_active'])
         return user

@@ -47,36 +47,46 @@ export default function PasswordChangeForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
-      <div className="rounded-lg bg-gray-50 px-6 pb-4 pt-8">
-        <h1 className={`${lusitana.className} mb-3 text-2xl`}>Passwort ändern</h1>
+    <form onSubmit={handleSubmit} className="w-full space-y-4">
+      <h1 className={`${lusitana.className} mb-6 text-3xl font-bold text-center text-[#294D9D] md:block hidden`}>Passwort ändern</h1>
 
-        <label className="block text-xs font-medium mt-3">Altes Passwort</label>
-        <input name="old_password" type="password" required className="input" />
-
-        <label className="block text-xs font-medium mt-3">Neues Passwort</label>
-        <input name="new_password1" type="password" required minLength={6} className="input" />
-
-        <label className="block text-xs font-medium mt-3">Neues Passwort wiederholen</label>
-        <input name="new_password2" type="password" required minLength={6} className="input" />
-
-        <Button className="mt-6 w-full" aria-disabled={isPending}>
-          Ändern <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
-        </Button>
-
-        {errorMessage && (
-          <div className="flex items-center space-x-1 text-red-500 mt-2">
-            <ExclamationCircleIcon className="h-5 w-5" />
-            <p className="text-sm">{errorMessage}</p>
-          </div>
-        )}
-
-        {successMessage && (
-          <div className="flex items-center space-x-1 text-green-500 mt-2">
-            <p className="text-sm">{successMessage}</p>
-          </div>
-        )}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Altes Passwort</label>
+        <div className="relative">
+          <input name="old_password" type="password" required className="block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm focus:border-blue-500 focus:ring-blue-500" />
+        </div>
       </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Neues Passwort</label>
+        <div className="relative">
+          <input name="new_password1" type="password" required minLength={6} className="block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm focus:border-blue-500 focus:ring-blue-500" />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Neues Passwort wiederholen</label>
+        <div className="relative">
+          <input name="new_password2" type="password" required minLength={6} className="block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm focus:border-blue-500 focus:ring-blue-500" />
+        </div>
+      </div>
+
+      <Button className="mt-6 w-full bg-[#294D9D] hover:bg-[#1E40AF]" aria-disabled={isPending}>
+        Ändern <ArrowRightIcon className="ml-auto h-5 w-5 text-white" />
+      </Button>
+
+      {errorMessage && (
+        <div className="flex items-center space-x-2 text-red-500 bg-red-50 p-3 rounded-lg mt-4">
+          <ExclamationCircleIcon className="h-5 w-5 flex-shrink-0" />
+          <p className="text-sm">{errorMessage}</p>
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="flex items-center space-x-2 text-green-600 bg-green-50 p-3 rounded-lg mt-4">
+          <p className="text-sm font-medium">{successMessage}</p>
+        </div>
+      )}
     </form>
   );
 }

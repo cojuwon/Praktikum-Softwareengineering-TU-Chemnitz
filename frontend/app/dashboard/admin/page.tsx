@@ -4,15 +4,17 @@ import { useUser } from '@/lib/userContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import UserList from '@/components/dashboard/admin/UserList';
-import { Users, Shield, Activity } from 'lucide-react';
+import { Users, Shield, Activity, UserPlus } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import GroupList from '@/components/dashboard/admin/GroupList';
+import RequestsList from '@/components/dashboard/admin/RequestsList';
 
 export default function AdminPage() {
   const { user, loading } = useUser();
   const router = useRouter();
   const [stats, setStats] = useState({ total: 0, admins: 0, active: 0 });
-  const [activeTab, setActiveTab] = useState<'users' | 'groups'>('users');
+  const [pendingCount, setPendingCount] = useState(0); // Track pending requests
+  const [activeTab, setActiveTab] = useState<'users' | 'groups' | 'requests'>('users');
 
   useEffect(() => {
     if (!loading && user?.rolle_mb !== 'AD') {
@@ -21,6 +23,12 @@ export default function AdminPage() {
     // Fetch simple stats
     apiFetch('/api/konten/stats/').then(res => res.json()).then(data => {
       setStats(data);
+    }).catch(console.error);
+
+    // Check for pending requests count
+    apiFetch('/api/konten/?is_active=false').then(res => res.json()).then(data => {
+      const count = Array.isArray(data) ? data.length : data.count || 0;
+      setPendingCount(count);
     }).catch(console.error);
   }, [user, loading, router]);
 
@@ -69,29 +77,41 @@ export default function AdminPage() {
 
       {/* Main Content Area */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 flex gap-6 bg-gray-50/50">
+        <div className="px-6 py-4 border-b border-gray-100 flex gap-6 bg-gray-50/50 overflow-x-auto">
           <button
             onClick={() => setActiveTab('users')}
-            className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors border-b-2 ${activeTab === 'users' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'users' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           >
             <Users size={18} />
             Benutzerverwaltung
           </button>
           <button
             onClick={() => setActiveTab('groups')}
-            className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors border-b-2 ${activeTab === 'groups' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'groups' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           >
             <Shield size={18} />
             Gruppen & Rechte
+          </button>
+          <button
+            onClick={() => setActiveTab('requests')}
+            className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'requests' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            <div className="relative">
+              <UserPlus size={18} />
+              {pendingCount > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{pendingCount}</span>}
+            </div>
+            Registrierungsanfragen
           </button>
         </div>
 
         {/* Content */}
         <div className="">
-          {activeTab === 'users' ? (
-            <UserList embedded={true} />
-          ) : (
-            <GroupList />
+          {activeTab === 'users' && <UserList embedded={true} />}
+          {activeTab === 'groups' && <GroupList />}
+          {activeTab === 'requests' && (
+            <div className="p-6">
+              <RequestsList />
+            </div>
           )}
         </div>
       </div>
