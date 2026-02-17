@@ -9,11 +9,25 @@ Diese Readme ist temporär für das MVP.
 Das ganze Projekt läuft zurzeit in einem Docker Stack. Die benötigte docker-compose steht hier schon bereit.
 
 # Initial Setup
-- Eventuell müssen in der settings.py (innerhalb des Backends) die Datenbank Einstellungen angepasst werden und eine .env erstellt werden. eine ".env.example" liegt bei.
-- die ".env.example" kopieren zu ".env" und die Werte und Secrets nach belieben (sicher) anpassen
-- Im Backend muss ein Superuser angelegt werden. Dies geschieht, indem im "django_api" Container "python manage.py createsuperuser" ausgeführt wird. Hier wird dann Email und Passwort vergeben.
-- anschließend ist, um erstmalig (temporär fürs MVP) die Berechtigungen festzulegen auch im "django_api" container "python manage.py setup_groups" auszuführen.
-- Zurzeit hat dieser Superuser in der Anwendung nur Admin-Rechte, wenn diese ihm Manuell noch zugewiesen werden. Dies geschieht über localhost:8000/admin - hier kann sich mit dem neu erstellten Superuser Account eingeloggt werden und anschließend diesem die Gruppe "Admin" zugewiesen werden. (Wenn die Gruppe im Admin-Panel nicht erscheint, wurde der obere Schritt nicht richtig ausgeführt)
+- Eventuell müssen in der settings.py (innerhalb des Backends) die Datenbank Einstellungen angepasst werden und eine .env erstellt werden. Eine ".env.example" liegt bei.
+- Kopiere die ".env.example" zu ".env" und passe die Werte und Secrets nach Belieben (sicher) an.
+- Führe im Backend-Container (oder lokal im `backend`-Ordner) den folgenden Befehl aus, um das Projekt vollständig zu initialisieren:
+  `python manage.py init_project`
+  Dies führt folgende Schritte automatisch aus:
+  1. Richtet Gruppen und Berechtigungen ein (`setup_groups`)
+  2. Initialisiert Standard-Eingabefelder (`init_eingabefelder`)
+  3. Initialisiert Statistik-Presets (`init_statistics`)
+  4. Erstellt einen Standard-Superuser (`admin@test.de` mit Passwort `admin123`), falls noch nicht vorhanden (`setup_superuser`)
+
+- Alternativ können diese Schritte auch einzeln ausgeführt werden:
+  - `python manage.py setup_groups`
+  - `python manage.py init_eingabefelder`
+  - `python manage.py init_statistics`
+  - `python manage.py setup_superuser` (oder `createsuperuser` für manuelle Eingabe)
+  Hinweis: Wenn `setup_superuser` manuell ausgeführt wird, stelle sicher, dass `setup_groups` vorher gelaufen ist, damit der User automatisch der Admin-Gruppe zugewiesen wird.
+- Eine detaillierte Dokumentation zur Systeminitialisierung finden Sie unter [`docs/setup_initial.md`](docs/setup_initial.md).
+
+- Der Superuser kann sich nun im Frontend und unter localhost:8000/admin einloggen.
 
 
 # API 

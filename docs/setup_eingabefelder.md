@@ -8,7 +8,13 @@ Die Anwendung nutzt dynamische Formular-Konfigurationen, die in der Datenbanktab
 
 ## Initialisierung ausführen
 
-Um die Standard-Felder basierend auf den Anforderungen (`statistik_bogen.md`) anzulegen oder zu aktualisieren, führen Sie folgenden Befehl im Backend-Container aus:
+Um die Standard-Felder basierend auf den Anforderungen (`statistik_bogen.md`) anzulegen, wird empfohlen, den zentralen Setup-Befehl zu verwenden:
+
+```bash
+python manage.py init_project
+```
+
+Alternativ können die Eingabefelder auch einzeln aktualisiert werden:
 
 ```bash
 python manage.py init_eingabefelder
@@ -19,7 +25,7 @@ python manage.py init_eingabefelder
 Wenn die Anwendung in Docker läuft:
 
 ```bash
-docker compose exec api python manage.py init_eingabefelder
+docker compose exec api python manage.py init_project
 ```
 
 ## Enthaltene Felder
