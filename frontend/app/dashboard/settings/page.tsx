@@ -3,8 +3,12 @@
 import { lusitana } from '@/components/ui/fonts';
 import Link from 'next/link';
 import { Shield, User, Bell, ChevronRight, Lock } from 'lucide-react';
+import { useState } from 'react';
+import ChangePasswordModal from '@/components/auth/ChangePasswordModal';
 
 export default function SettingsPage() {
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+
   return (
     <div className="max-w-5xl mx-auto w-full px-6 py-8">
       {/* Header */}
@@ -35,12 +39,12 @@ export default function SettingsPage() {
                   <Lock size={18} className="text-gray-400" />
                   <span className="text-sm font-medium text-gray-700">Passwort ändern</span>
                 </div>
-                <Link
-                  href="/dashboard/change-password"
+                <button
+                  onClick={() => setIsPasswordModalOpen(true)}
                   className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
                 >
                   Ändern
-                </Link>
+                </button>
               </div>
             </div>
           </div>
@@ -93,6 +97,11 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      <ChangePasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+      />
     </div>
   );
 }

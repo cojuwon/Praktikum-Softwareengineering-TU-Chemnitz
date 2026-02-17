@@ -102,8 +102,13 @@ export async function apiFetch(
         headers,
         credentials: 'include',
       });
-    } catch (error) {
-      console.error("Token Refresh failed in apiFetch", error);
+    } catch (error: any) {
+      if (error.message === 'No refresh token available') {
+        // Expected behavior when logging out or session logically expired
+        console.debug("Session expired (no refresh token available)");
+      } else {
+        console.error("Token Refresh failed in apiFetch", error);
+      }
       throw new Error('Session abgelaufen');
     }
   }

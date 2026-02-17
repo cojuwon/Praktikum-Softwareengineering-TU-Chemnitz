@@ -28,8 +28,8 @@ export default function RequestsList() {
     const fetchRequests = async () => {
         setLoading(true);
         try {
-            // Filter for inactive users
-            const res = await apiFetch('/api/konten/?is_active=false');
+            // Filter for pending status
+            const res = await apiFetch('/api/konten/?status_mb=P');
             if (res.ok) {
                 const data = await res.json();
                 // Handle pagination or list
@@ -69,6 +69,7 @@ export default function RequestsList() {
         try {
             const payload = {
                 is_active: true,
+                status_mb: 'A', // Set status to Active
                 rolle_mb: selectedRole
             };
 

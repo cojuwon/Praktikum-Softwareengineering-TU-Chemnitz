@@ -25,6 +25,12 @@ export default function RegisterForm() {
       nachname_mb: formData.get('nachname_mb') as string,
     };
 
+    if (payload.password1 !== payload.password2) {
+      setErrorMessage("Die Passwörter stimmen nicht überein.");
+      setIsPending(false);
+      return;
+    }
+
     try {
       await register(payload);
       setIsSuccess(true);

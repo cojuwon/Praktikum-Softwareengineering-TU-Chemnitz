@@ -26,10 +26,18 @@ export async function refreshToken(): Promise<string> {
             }
 
             // 3. Request Refresh
+            // If no refresh token found in storage/cookies, we still attempt the request
+            // because it might be in an HttpOnly cookie that we can't see.
+
+            const bodyPayload: any = {};
+            if (refresh) {
+                bodyPayload.refresh = refresh;
+            }
+
             const res = await fetch(`${API_URL}/api/auth/token/refresh/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(refresh ? { refresh } : {}),
+                body: JSON.stringify(bodyPayload),
                 credentials: 'include',
             });
 

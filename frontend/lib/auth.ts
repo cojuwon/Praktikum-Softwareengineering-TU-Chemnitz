@@ -119,7 +119,8 @@ export async function register(payload: {
   }
 
   // Optional Auto-Login (SSR-safe)
-  if (typeof localStorage !== 'undefined') {
+  // Only if tokens are returned (user is active)
+  if (typeof localStorage !== 'undefined' && data.access && data.refresh) {
     localStorage.setItem('accessToken', data.access);
     localStorage.setItem('refreshToken', data.refresh);
   }
