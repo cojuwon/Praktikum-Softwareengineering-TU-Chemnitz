@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Modal from '@/components/ui/Modal';
 import { changePassword } from '@/lib/auth';
 import { ExclamationCircleIcon } from '@heroicons/react/24/outline';
@@ -15,6 +15,15 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
     const [isPending, setIsPending] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+    // Reset state when modal opens
+    useEffect(() => {
+        if (isOpen) {
+            setErrorMessage(null);
+            setSuccessMessage(null);
+            setIsPending(false);
+        }
+    }, [isOpen]);
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -38,11 +47,11 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
         try {
             await changePassword(payload);
             setSuccessMessage('Ihr Passwort wurde erfolgreich geändert.');
-            // Optional: Close after delay or let user close
+
+            // Close after delay
             setTimeout(() => {
                 onClose();
-                setSuccessMessage(null); // Reset for next time
-                (event.target as HTMLFormElement).reset();
+                // State reset is handled by useEffect when opening next time
             }, 2000);
         } catch (error: any) {
             setErrorMessage(error.message || 'Fehler beim Ändern des Passworts.');
@@ -50,6 +59,8 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
             setIsPending(false);
         }
     }
+
+    const isBlocked = isPending || !!successMessage;
 
     return (
         <Modal
@@ -77,7 +88,8 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                         name="old_password"
                         type="password"
                         required
-                        className="block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm focus:border-[#294D9D] focus:ring-[#294D9D]"
+                        disabled={isBlocked}
+                        className="block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm focus:border-[#294D9D] focus:ring-[#294D9D] disabled:opacity-50 disabled:cursor-not-allowed"
                         placeholder="••••••••"
                     />
                 </div>
@@ -91,7 +103,8 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                         type="password"
                         required
                         minLength={8}
-                        className="block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm focus:border-[#294D9D] focus:ring-[#294D9D]"
+                        disabled={isBlocked}
+                        className="block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm focus:border-[#294D9D] focus:ring-[#294D9D] disabled:opacity-50 disabled:cursor-not-allowed"
                         placeholder="Mindestens 8 Zeichen"
                     />
                 </div>
@@ -105,7 +118,8 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                         type="password"
                         required
                         minLength={8}
-                        className="block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm focus:border-[#294D9D] focus:ring-[#294D9D]"
+                        disabled={isBlocked}
+                        className="block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm focus:border-[#294D9D] focus:ring-[#294D9D] disabled:opacity-50 disabled:cursor-not-allowed"
                         placeholder="••••••••"
                     />
                 </div>
@@ -126,10 +140,10 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                 <div className="pt-2">
                     <button
                         type="submit"
-                        disabled={isPending}
-                        className="w-full rounded-lg bg-[#294D9D] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#1E40AF] focus:outline-none focus:ring-4 focus:ring-blue-300 transition-colors shadow-md disabled:opacity-70"
+                        disabled={isBlocked}
+                        className="w-full rounded-lg bg-[#294D9D] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#1E40AF] focus:outline-none focus:ring-4 focus:ring-blue-300 transition-colors shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                        {isPending ? 'Wird gespeichert...' : 'Passwort ändern'}
+                        {isPending ? 'Wird gespeichert...' : successMessage ? 'Gespeichert!' : 'Passwort ändern'}
                     </button>
                 </div>
             </form>
