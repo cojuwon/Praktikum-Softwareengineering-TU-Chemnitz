@@ -39,15 +39,17 @@ export async function GET(request: Request) {
       let preset_type = "user"; // Default to user's own preset
       
       // Check if current user is the creator
-      const isCreator = currentUserId && preset.ersteller === currentUserId;
+      const isCreator = currentUserId !== null && preset.ersteller === currentUserId;
       
-      // If preset has berechtigte (shared with others) and user is not the creator, mark as shared
+      // If preset has berechtigte (shared with others), determine shared status
       // berechtigte is an array of user IDs
       if (preset.berechtigte && Array.isArray(preset.berechtigte) && preset.berechtigte.length > 0) {
-        if (!isCreator && currentUserId && preset.berechtigte.includes(currentUserId)) {
-          preset_type = "shared"; // This preset was shared with the current user
-        } else if (isCreator) {
-          preset_type = "user"; // Creator's own preset (even if shared with others)
+        if (isCreator) {
+          // Creator has shared this preset with others
+          preset_type = "shared";
+        } else if (currentUserId !== null && preset.berechtigte.includes(currentUserId)) {
+          // This preset was shared with the current user (not the creator)
+          preset_type = "shared";
         }
       }
       
