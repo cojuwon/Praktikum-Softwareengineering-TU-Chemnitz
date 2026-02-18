@@ -440,8 +440,8 @@ class StatistikService:
         }
         
         for incident in violence_incidents:
-            result['mitbetroffene'] += incident.tat_mitbetroffene_kinder
-            result['direktbetroffene'] += incident.tat_direktbetroffene_kinder
+            result['mitbetroffene'] += incident.tat_mitbetroffene_kinder or 0
+            result['direktbetroffene'] += incident.tat_direktbetroffene_kinder or 0
         
         return result
     
