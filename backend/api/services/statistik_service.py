@@ -1,6 +1,7 @@
 """Service for calculating statistics from case management data."""
 
 from django.db.models import Count, Q, Sum, Avg
+from django.core.exceptions import ObjectDoesNotExist
 from datetime import date
 from api.models import (
     Fall, KlientIn, Beratungstermin, Gewalttat, Gewaltfolge, 
@@ -26,9 +27,15 @@ class StatistikService:
             dict: Dictionary with calculated statistics
         """
         # Apply preset filters if available
+        # Whitelist of allowed filter keys for security
+        ALLOWED_FILTER_KEYS = {'beratungsstelle', 'zeitraum_start', 'zeitraum_ende'}
         filter_params = {}
         if preset and preset.filterKriterien:
-            filter_params = preset.filterKriterien
+            # Only process whitelisted filter keys to prevent injection
+            filter_params = {
+                k: v for k, v in preset.filterKriterien.items() 
+                if k in ALLOWED_FILTER_KEYS
+            }
         
         # Override with explicit beratungsstelle filter if provided
         if beratungsstelle:
@@ -41,6 +48,8 @@ class StatistikService:
         )
         
         # Filter consultations by beratungsstelle (not Fall!)
+        # Note: termin_beratung is a DateTimeField. The __date lookup extracts the date part
+        # for comparison. Django handles timezone conversion automatically when USE_TZ=True.
         consultations = Beratungstermin.objects.filter(
             termin_beratung__date__gte=zeitraum_start,
             termin_beratung__date__lte=zeitraum_ende
@@ -118,7 +127,7 @@ class StatistikService:
             'inquiries_by_person': StatistikService._count_inquiries_by_person(inquiries),
             
             # Additional metrics
-            'avg_consultation_duration': consultations.aggregate(avg_dauer=Sum('dauer'))['avg_dauer'] or 0,
+            'avg_consultation_duration': consultations.aggregate(avg_dauer=Avg('dauer'))['avg_dauer'] or 0,
             'total_interpreter_hours': (
                 consultations.aggregate(total=Sum('dolmetscher_stunden'))['total'] or 0
             ) + (
@@ -130,24 +139,21 @@ class StatistikService:
     
     @staticmethod
     def _count_by_gender(consultations, clients):
-        """Count consultations by client gender."""
-        result = {
-            'gesamt': consultations.count(),
-            'weiblich': 0,
-            'maennlich': 0,
-            'divers': 0
-        }
+        """Count consultations by client gender using database aggregation."""
+        # Use aggregation with conditional expressions for better performance
+        aggregates = consultations.select_related('fall__klient').aggregate(
+            gesamt=Count('beratungs_id'),
+            weiblich=Count('beratungs_id', filter=Q(fall__klient__klient_geschlechtsidentitaet__in=['CW', 'TW'])),
+            maennlich=Count('beratungs_id', filter=Q(fall__klient__klient_geschlechtsidentitaet__in=['CM', 'TM'])),
+            divers=Count('beratungs_id', filter=Q(fall__klient__klient_geschlechtsidentitaet__in=['TN', 'I', 'A', 'D'])),
+        )
         
-        # Get consultation IDs with client data
-        for consultation in consultations.select_related('fall__klient'):
-            if consultation.fall and consultation.fall.klient:
-                gender = consultation.fall.klient.klient_geschlechtsidentitaet
-                if gender in ['CW', 'TW']:  # cis/trans weiblich
-                    result['weiblich'] += 1
-                elif gender in ['CM', 'TM']:  # cis/trans männlich
-                    result['maennlich'] += 1
-                elif gender in ['TN', 'I', 'A', 'D']:  # trans nicht-binär, inter, agender, divers
-                    result['divers'] += 1
+        result = {
+            'gesamt': aggregates.get('gesamt') or 0,
+            'weiblich': aggregates.get('weiblich') or 0,
+            'maennlich': aggregates.get('maennlich') or 0,
+            'divers': aggregates.get('divers') or 0,
+        }
         
         return result
     
@@ -218,12 +224,12 @@ class StatistikService:
     def _count_consultations_by_type(consultations):
         """Count consultations by type (persönlich, Telefon, etc.)."""
         aggregates = consultations.aggregate(
-            gesamt=Count('id'),
-            persoenlich=Count('id', filter=Q(beratungsart='P')),
-            aufsuchend=Count('id', filter=Q(beratungsart='A')),
-            telefonisch=Count('id', filter=Q(beratungsart='T')),
-            online=Count('id', filter=Q(beratungsart='V')),
-            schriftlich=Count('id', filter=Q(beratungsart='S')),
+            gesamt=Count('beratungs_id'),
+            persoenlich=Count('beratungs_id', filter=Q(beratungsart='P')),
+            aufsuchend=Count('beratungs_id', filter=Q(beratungsart='A')),
+            telefonisch=Count('beratungs_id', filter=Q(beratungsart='T')),
+            online=Count('beratungs_id', filter=Q(beratungsart='V')),
+            schriftlich=Count('beratungs_id', filter=Q(beratungsart='S')),
         )
 
         # Map aggregated values to the expected result structure, defaulting to 0.
@@ -238,7 +244,12 @@ class StatistikService:
     
     @staticmethod
     def _count_accompaniments_by_institution(accompaniments):
-        """Count accompaniments by institution type."""
+        """Count accompaniments by institution type.
+        
+        Note: This uses keyword matching on a free-text einrichtung field.
+        For large datasets, consider adding a proper choice field for institution type
+        to enable database-level aggregation and improve performance.
+        """
         result = {
             'gesamt': accompaniments.count(),
             'gerichte': 0,
@@ -322,11 +333,18 @@ class StatistikService:
     
     @staticmethod
     def _count_clients_by_age_group(clients):
-        """Count clients by age group."""
+        """Count clients by age group.
+        
+        Age groups are defined with exclusive upper bounds:
+        - 18-20 Jahre (18 <= age < 21)
+        - 21-26 Jahre (21 <= age < 27)  
+        - 27-59 Jahre (27 <= age < 60)
+        - 60+ Jahre (age >= 60)
+        """
         result = {
-            '18_21': 0,
-            '21_27': 0,
-            '27_60': 0,
+            '18_21': 0,  # 18-20 years
+            '21_27': 0,  # 21-26 years
+            '27_60': 0,  # 27-59 years
             '60_plus': 0,
             'keine_angabe': 0
         }
@@ -385,7 +403,12 @@ class StatistikService:
     
     @staticmethod
     def _count_violence_by_type(violence_incidents):
-        """Count violence incidents by type."""
+        """Count violence incidents by type.
+        
+        Note: tat_art is a free-text field containing comma-separated violence types.
+        Values should be normalized/validated at data entry to ensure consistent statistics.
+        Expected format: "Type1, Type2, Type3" (e.g., "Körperliche Gewalt, Psychische Gewalt")
+        """
         result = {}
         
         for incident in violence_incidents:
@@ -494,7 +517,8 @@ class StatistikService:
         }
         
         for incident in violence_incidents:
-            try:
+            # Use hasattr to check for OneToOneField relationship existence
+            if hasattr(incident, 'gewaltfolge'):
                 folge = incident.gewaltfolge
                 
                 # Psychological consequences
@@ -518,9 +542,6 @@ class StatistikService:
                     result['soziale_isolation_ja'] += 1
                 if folge.suizidalitaet == 'J':
                     result['suizidalitaet_ja'] += 1
-            except Gewaltfolge.DoesNotExist:
-                # No consequences recorded for this incident
-                pass
         
         return result
     
