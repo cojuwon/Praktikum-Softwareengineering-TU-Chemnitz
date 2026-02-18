@@ -299,7 +299,16 @@ export default function StatistikPage() {
                 justifyContent: "center",
                 zIndex: 1000,
               }}
-              onClick={() => setShowSavePresetModal(false)}
+              onClick={() => {
+                if (
+                  !presetName ||
+                  window.confirm(
+                    "Sie haben bereits einen Namen eingegeben. Möchten Sie das Fenster wirklich schließen? Ihre Eingabe geht dabei verloren."
+                  )
+                ) {
+                  setShowSavePresetModal(false);
+                }
+              }}
             >
               <div
                 style={{
