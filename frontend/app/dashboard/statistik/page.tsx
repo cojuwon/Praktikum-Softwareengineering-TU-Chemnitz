@@ -108,7 +108,9 @@ export default function StatistikPage() {
       setPresetName("");
       
       // Reload presets
-      const presetsResponse = await fetch("/api/statistik/presets");
+      const presetsResponse = await fetch("/api/statistik/presets", {
+        credentials: "include",
+      });
       const presetsData = await presetsResponse.json();
       setPresets(presetsData.presets);
     } catch (error) {
