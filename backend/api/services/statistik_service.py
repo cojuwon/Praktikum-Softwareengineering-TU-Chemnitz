@@ -217,27 +217,23 @@ class StatistikService:
     @staticmethod
     def _count_consultations_by_type(consultations):
         """Count consultations by type (persönlich, Telefon, etc.)."""
+        aggregates = consultations.aggregate(
+            gesamt=Count('id'),
+            persoenlich=Count('id', filter=Q(beratungsart='P')),
+            aufsuchend=Count('id', filter=Q(beratungsart='A')),
+            telefonisch=Count('id', filter=Q(beratungsart='T')),
+            online=Count('id', filter=Q(beratungsart='V')),
+            schriftlich=Count('id', filter=Q(beratungsart='S')),
+        )
+
+        # Map aggregated values to the expected result structure, defaulting to 0.
         result = {
-            'persoenlich': 0,
-            'aufsuchend': 0,
-            'telefonisch': 0,
-            'online': 0,
-            'schriftlich': 0
+            'persoenlich': aggregates.get('persoenlich') or 0,
+            'aufsuchend': aggregates.get('aufsuchend') or 0,
+            'telefonisch': aggregates.get('telefonisch') or 0,
+            'online': aggregates.get('online') or 0,
+            'schriftlich': aggregates.get('schriftlich') or 0,
         }
-        
-        for consultation in consultations:
-            art = consultation.beratungsart
-            if art == 'P':
-                result['persoenlich'] += 1
-            elif art == 'A':
-                result['aufsuchend'] += 1
-            elif art == 'T':
-                result['telefonisch'] += 1
-            elif art == 'V':
-                result['online'] += 1
-            elif art == 'S':
-                result['schriftlich'] += 1
-        
         return result
     
     @staticmethod
