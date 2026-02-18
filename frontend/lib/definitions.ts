@@ -534,3 +534,35 @@ export type KlientIn = {
 
 
 
+
+export enum EingabefeldTyp {
+  Text = 'text',
+  Textarea = 'textarea',
+  Number = 'number',
+  Date = 'date',
+  Select = 'select',
+  Multiselect = 'multiselect',
+}
+
+export enum EingabefeldContext {
+  Anfrage = 'anfrage',
+  Fall = 'fall',
+  Klient = 'klient',
+}
+
+export interface EingabefeldOption {
+  value: string;
+  label: string;
+}
+
+export interface Eingabefeld {
+  feldID: number;
+  context: EingabefeldContext;
+  name: string;
+  label: string;
+  typ: EingabefeldTyp;
+  required: boolean;
+  options: EingabefeldOption[];
+  sort_order: number;
+  default_value: string;
+}

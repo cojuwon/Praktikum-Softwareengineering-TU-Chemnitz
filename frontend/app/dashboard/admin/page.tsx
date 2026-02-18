@@ -4,17 +4,18 @@ import { useUser } from '@/lib/userContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import UserList from '@/components/dashboard/admin/UserList';
-import { Users, Shield, Activity, UserPlus } from 'lucide-react';
+import { Users, Shield, Activity, UserPlus, Settings } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import GroupList from '@/components/dashboard/admin/GroupList';
 import RequestsList from '@/components/dashboard/admin/RequestsList';
+import InputFieldList from '@/components/dashboard/admin/input-fields/InputFieldList';
 
 export default function AdminPage() {
   const { user, loading } = useUser();
   const router = useRouter();
   const [stats, setStats] = useState({ total: 0, admins: 0, active: 0 });
   const [pendingCount, setPendingCount] = useState(0); // Track pending requests
-  const [activeTab, setActiveTab] = useState<'users' | 'groups' | 'requests'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'groups' | 'requests' | 'input-fields'>('users');
 
   useEffect(() => {
     if (!loading && user?.rolle_mb !== 'AD') {
@@ -102,6 +103,13 @@ export default function AdminPage() {
             </div>
             Registrierungsanfragen
           </button>
+          <button
+            onClick={() => setActiveTab('input-fields')}
+            className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'input-fields' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            <Settings size={18} />
+            Eingabefelder
+          </button>
         </div>
 
         {/* Content */}
@@ -113,6 +121,7 @@ export default function AdminPage() {
               <RequestsList />
             </div>
           )}
+          {activeTab === 'input-fields' && <InputFieldList />}
         </div>
       </div>
     </div>

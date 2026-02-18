@@ -1,10 +1,11 @@
 """ViewSet für Eingabefeld-Management."""
 
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiTypes
 from datetime import datetime
+from django_filters.rest_framework import DjangoFilterBackend
 
 from api.models import Eingabefeld
 from api.serializers import EingabefeldSerializer
@@ -17,6 +18,11 @@ class EingabefeldViewSet(viewsets.ModelViewSet):
     queryset = Eingabefeld.objects.all()
     serializer_class = EingabefeldSerializer
     permission_classes = [permissions.IsAuthenticated, DjangoModelPermissionsWithView]
+    
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['context', 'typ', 'required']
+    search_fields = ['name', 'label']
+    ordering_fields = ['sort_order', 'label']
 
     @extend_schema(
         request=OpenApiTypes.OBJECT,
