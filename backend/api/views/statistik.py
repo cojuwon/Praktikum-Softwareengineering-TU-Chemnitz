@@ -74,7 +74,28 @@ class StatistikViewSet(viewsets.ModelViewSet):
         serializer.save(creator=self.request.user, ergebnis=file_obj, creation_date=timezone.localdate())
     
     def _format_stats_report(self, titel, start, ende, filter_info, stats):
-        """Format statistics into a readable report."""
+        """
+        Erzeugt einen formatierten Statistikbericht als Textdateiinhalt.
+
+        Parameters
+        ----------
+        titel : str
+            Titel der Statistik, der im Kopf des Berichts ausgegeben wird.
+        start : date or datetime
+            Startdatum bzw. -zeitpunkt des ausgewerteten Zeitraums.
+        ende : date or datetime
+            Enddatum bzw. -zeitpunkt des ausgewerteten Zeitraums.
+        filter_info : str
+            Beschreibung der verwendeten Filterbasis (z.B. Preset-Beschreibung oder Hinweis auf Ad-hoc-Auswertung).
+        stats : dict
+            Von ``StatistikService.calculate_stats`` berechnete Kennzahlen, aus denen die einzelnen
+            Berichtsektionen (z.B. Fallzahlen, Beratungen nach Geschlecht/Art usw.) befüllt werden.
+
+        Returns
+        -------
+        str
+            Vollständig formatierter Berichtstext, der als Inhalt der erzeugten ``.txt``-Datei verwendet wird.
+        """
         report = (
             f"Statistik Report\n"
             f"================\n"
