@@ -19,13 +19,18 @@ export async function POST(req: Request) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Cookie: cookies || "",
+        ...(cookies && { Cookie: cookies }),
       },
       body: JSON.stringify(backendPayload),
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch {
+        errorData = { error: 'Failed to parse error response' };
+      }
       console.error('Failed to create preset:', response.status, errorData);
       return NextResponse.json({ error: "Failed to create preset", details: errorData }, { status: response.status });
     }
@@ -33,10 +38,12 @@ export async function POST(req: Request) {
     const savedPreset = await response.json();
     
     // Map backend response back to frontend format
+    // Note: preset_type is determined by frontend based on intent, 
+    // but backend doesn't store it directly - it's derived from berechtigte relationship
     return NextResponse.json({
       id: savedPreset.preset_id,
       name: savedPreset.preset_beschreibung,
-      preset_type: body.preset_type, // Use the requested type from frontend
+      preset_type: body.preset_type || "user", // Use requested type, defaulting to "user"
       filters: savedPreset.filterKriterien
     });
   } catch (error) {

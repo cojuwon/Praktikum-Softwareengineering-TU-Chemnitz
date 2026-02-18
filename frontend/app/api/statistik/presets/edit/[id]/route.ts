@@ -19,13 +19,18 @@ export async function PUT(req: Request) {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        Cookie: cookies || "",
+        ...(cookies && { Cookie: cookies }),
       },
       body: JSON.stringify(backendPayload),
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch {
+        errorData = { error: 'Failed to parse error response' };
+      }
       console.error('Failed to update preset:', response.status, errorData);
       return NextResponse.json({ error: "Failed to update preset", details: errorData }, { status: response.status });
     }
@@ -33,10 +38,11 @@ export async function PUT(req: Request) {
     const updatedPreset = await response.json();
     
     // Map backend response back to frontend format
+    // Note: preset_type is a frontend concept based on berechtigte relationship
     return NextResponse.json({
       id: updatedPreset.preset_id,
       name: updatedPreset.preset_beschreibung,
-      preset_type: preset_type,
+      preset_type: preset_type || "user", // Use the frontend's type
       filters: updatedPreset.filterKriterien
     });
   } catch (error) {
