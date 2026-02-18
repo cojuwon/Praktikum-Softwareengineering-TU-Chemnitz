@@ -23,6 +23,7 @@ class EingabefeldViewSet(viewsets.ModelViewSet):
     filterset_fields = ['context', 'typ', 'required']
     search_fields = ['name', 'label']
     ordering_fields = ['sort_order', 'label']
+    pagination_class = None
 
     @extend_schema(
         request=OpenApiTypes.OBJECT,
