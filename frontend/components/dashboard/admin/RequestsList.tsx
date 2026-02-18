@@ -1,38 +1,45 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { apiFetch } from '@/lib/api';
-import { Check, X, Shield, RefreshCw } from 'lucide-react';
+import { Check, X, Shield, RefreshCw, AlertTriangle } from 'lucide-react';
 
 interface InactiveUser {
     id: number;
     vorname_mb: string;
     nachname_mb: string;
     mail_mb: string;
-    date_joined?: string; // If available
+    date_joined?: string;
+}
+
+interface RoleOption {
+    value: string;
+    label: string;
 }
 
 export default function RequestsList() {
     const [requests, setRequests] = useState<InactiveUser[]>([]);
+    const [roles, setRoles] = useState<RoleOption[]>([]);
     const [loading, setLoading] = useState(true);
-    const [isProcessing, setIsProcessing] = useState<number | null>(null); // ID being processed
+    const [isProcessing, setIsProcessing] = useState<number | null>(null);
 
-    // Approval Modal State
+    // Modal States
     const [approvingUser, setApprovingUser] = useState<InactiveUser | null>(null);
+    const [rejectingUser, setRejectingUser] = useState<InactiveUser | null>(null);
     const [selectedRole, setSelectedRole] = useState('B'); // Default Basis
 
     useEffect(() => {
         fetchRequests();
+        fetchRoles();
     }, []);
 
     const fetchRequests = async () => {
         setLoading(true);
         try {
-            // Filter for pending status
             const res = await apiFetch('/api/konten/?status_mb=P');
             if (res.ok) {
                 const data = await res.json();
-                // Handle pagination or list
                 const list = Array.isArray(data) ? data : data.results || [];
                 setRequests(list);
             }
@@ -43,14 +50,34 @@ export default function RequestsList() {
         }
     };
 
-    const handleReject = async (id: number) => {
-        if (!confirm('Möchten Sie diese Anfrage wirklich ablehnen? Der Account wird gelöscht.')) return;
-
-        setIsProcessing(id);
+    const fetchRoles = async () => {
         try {
-            const res = await apiFetch(`/api/konten/${id}/`, { method: 'DELETE' });
+            const res = await apiFetch('/api/konten/roles/');
             if (res.ok) {
-                setRequests(prev => prev.filter(req => req.id !== id));
+                const data = await res.json();
+                setRoles(data);
+            } else {
+                // Fallback if endpoint request fails
+                setRoles([
+                    { value: 'B', label: 'Basis' },
+                    { value: 'E', label: 'Erweiterung' },
+                    { value: 'AD', label: 'Admin' }
+                ]);
+            }
+        } catch (e) {
+            console.error('Failed to fetch roles:', e);
+        }
+    };
+
+    const confirmReject = async () => {
+        if (!rejectingUser) return;
+
+        setIsProcessing(rejectingUser.id);
+        try {
+            const res = await apiFetch(`/api/konten/${rejectingUser.id}/`, { method: 'DELETE' });
+            if (res.ok) {
+                setRequests(prev => prev.filter(req => req.id !== rejectingUser.id));
+                setRejectingUser(null);
             } else {
                 alert('Fehler beim Ablehnen.');
             }
@@ -65,11 +92,10 @@ export default function RequestsList() {
         if (!approvingUser) return;
 
         setIsProcessing(approvingUser.id);
-
         try {
             const payload = {
                 is_active: true,
-                status_mb: 'A', // Set status to Active
+                status_mb: 'A',
                 rolle_mb: selectedRole
             };
 
@@ -121,7 +147,7 @@ export default function RequestsList() {
                     <div className="flex items-center gap-2">
                         <button
                             disabled={isProcessing === req.id}
-                            onClick={() => handleReject(req.id)}
+                            onClick={() => setRejectingUser(req)}
                             className="bg-white border border-red-200 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                         >
                             <X size={16} /> Ablehnen
@@ -137,82 +163,92 @@ export default function RequestsList() {
                 </div>
             ))}
 
-            {/* Approve Modal */}
-            {approvingUser && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
-                        <div className="flex items-center gap-3 mb-4 text-[#294D9D]">
-                            <Shield size={24} />
-                            <h3 className="text-xl font-bold">Benutzer freigeben</h3>
-                        </div>
-
-                        <p className="text-gray-600 mb-6">
-                            Welche Rolle soll <strong>{approvingUser.vorname_mb} {approvingUser.nachname_mb}</strong> erhalten?
-                        </p>
-
-                        <div className="space-y-3 mb-8">
-                            <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-blue-50 transition-colors has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
-                                <input
-                                    type="radio"
-                                    name="role"
-                                    value="B"
-                                    checked={selectedRole === 'B'}
-                                    onChange={(e) => setSelectedRole(e.target.value)}
-                                    className="text-blue-600"
-                                />
-                                <div>
-                                    <span className="block font-medium text-gray-900">Basis</span>
-                                    <span className="block text-xs text-gray-500">Standard-Zugriff</span>
+            {/* Modals using Portal to fix z-index/backdrop issues */}
+            {typeof document !== 'undefined' && createPortal(
+                <>
+                    {/* Approve Modal */}
+                    {approvingUser && (
+                        <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
+                            <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
+                                <div className="flex items-center gap-3 mb-4 text-[#294D9D]">
+                                    <Shield size={24} />
+                                    <h3 className="text-xl font-bold">Benutzer freigeben</h3>
                                 </div>
-                            </label>
 
-                            <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-blue-50 transition-colors has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
-                                <input
-                                    type="radio"
-                                    name="role"
-                                    value="E"
-                                    checked={selectedRole === 'E'}
-                                    onChange={(e) => setSelectedRole(e.target.value)}
-                                    className="text-blue-600"
-                                />
-                                <div>
-                                    <span className="block font-medium text-gray-900">Erweiterung</span>
-                                    <span className="block text-xs text-gray-500">Erweiterte Funktionen</span>
+                                <p className="text-gray-600 mb-6">
+                                    Welche Rolle soll <strong>{approvingUser.vorname_mb} {approvingUser.nachname_mb}</strong> erhalten?
+                                </p>
+
+                                <div className="space-y-3 mb-8">
+                                    {roles.map((role) => (
+                                        <label key={role.value} className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-blue-50 transition-colors has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
+                                            <input
+                                                type="radio"
+                                                name="role"
+                                                value={role.value}
+                                                checked={selectedRole === role.value}
+                                                onChange={(e) => setSelectedRole(e.target.value)}
+                                                className="text-blue-600"
+                                            />
+                                            <div>
+                                                <span className="block font-medium text-gray-900">{role.label}</span>
+                                            </div>
+                                        </label>
+                                    ))}
                                 </div>
-                            </label>
 
-                            <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-purple-50 transition-colors has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50">
-                                <input
-                                    type="radio"
-                                    name="role"
-                                    value="AD"
-                                    checked={selectedRole === 'AD'}
-                                    onChange={(e) => setSelectedRole(e.target.value)}
-                                    className="text-purple-600"
-                                />
-                                <div>
-                                    <span className="block font-medium text-gray-900">Admin</span>
-                                    <span className="block text-xs text-gray-500">Voller Systemzugriff</span>
+                                <div className="flex justify-end gap-3">
+                                    <button
+                                        onClick={() => setApprovingUser(null)}
+                                        className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium"
+                                    >
+                                        Abbrechen
+                                    </button>
+                                    <button
+                                        onClick={confirmApprove}
+                                        className="px-6 py-2 bg-[#294D9D] text-white hover:bg-blue-800 rounded-lg text-sm font-medium shadow-sm"
+                                    >
+                                        Freigeben
+                                    </button>
                                 </div>
-                            </label>
+                            </div>
                         </div>
+                    )}
 
-                        <div className="flex justify-end gap-3">
-                            <button
-                                onClick={() => setApprovingUser(null)}
-                                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium"
-                            >
-                                Abbrechen
-                            </button>
-                            <button
-                                onClick={confirmApprove}
-                                className="px-6 py-2 bg-[#294D9D] text-white hover:bg-blue-800 rounded-lg text-sm font-medium shadow-sm"
-                            >
-                                Freigeben
-                            </button>
+                    {/* Reject Modal */}
+                    {rejectingUser && (
+                        <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
+                            <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
+                                <div className="flex items-center gap-3 mb-4 text-red-600">
+                                    <AlertTriangle size={24} />
+                                    <h3 className="text-xl font-bold">Anfrage ablehnen</h3>
+                                </div>
+
+                                <p className="text-gray-600 mb-6">
+                                    Möchten Sie die Anfrage von <strong>{rejectingUser.vorname_mb} {rejectingUser.nachname_mb}</strong> wirklich ablehnen?
+                                    <br />
+                                    <span className="text-red-600 text-sm mt-2 block">Dieser Vorgang kann nicht rückgängig gemacht werden.</span>
+                                </p>
+
+                                <div className="flex justify-end gap-3">
+                                    <button
+                                        onClick={() => setRejectingUser(null)}
+                                        className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium"
+                                    >
+                                        Abbrechen
+                                    </button>
+                                    <button
+                                        onClick={confirmReject}
+                                        className="px-6 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg text-sm font-medium shadow-sm"
+                                    >
+                                        Ablehnen
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
+                    )}
+                </>,
+                document.body
             )}
         </div>
     );

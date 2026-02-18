@@ -38,8 +38,8 @@ class FallSerializer(serializers.ModelSerializer):
         notizen_data = FallNotizSerializer(notizen, many=True).data
         for n in notizen_data:
             n['type'] = 'note'
-            # Fallback für Sortierung: nutze created_at
-            n['sort_date'] = n.get('created_at')
+            # Fallback für Sortierung: nutze datum
+            n['sort_date'] = n.get('datum')
 
         # 4. Zusammenfügen und Sortieren (neueste zuerst)
         # Beachte: sort_date string comparison (ISO format) works generally well

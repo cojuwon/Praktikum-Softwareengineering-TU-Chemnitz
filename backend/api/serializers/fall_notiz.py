@@ -15,9 +15,22 @@ class FallNotizSerializer(serializers.ModelSerializer):
             'notiz_id', 'fall', 'beratungstermin', 
             'autor', 'autor_id',
             'content', 
+            'datum',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at', 'autor']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.beratungstermin:
+             # Manual serialization or import to avoid circular dependency if strictly needed
+             # But here we just need basic info like date and type
+             representation['beratungstermin_info'] = {
+                 'id': instance.beratungstermin.pk,
+                 'datum': instance.beratungstermin.termin_beratung,
+                 'art': instance.beratungstermin.beratungsart
+             }
+        return representation
 
     def create(self, validated_data):
         # Set author from context request

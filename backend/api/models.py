@@ -274,7 +274,7 @@ class Beratungstermin(models.Model):
     anzahl_beratungen = models.IntegerField(default=1, verbose_name="Anzahl Beratungen (Statistik)", validators=[MinValueValidator(0)])
     
     beratungsart = models.CharField(max_length=2, choices=BERATUNGSART_CHOICES, verbose_name="Durchführungsart")
-    notizen_beratung = models.TextField(blank=True, verbose_name="Notizen")
+    notizen_beratung = models.JSONField(verbose_name="Notizen (JSON)", default=dict, blank=True)
     
     # Beziehungen:
     berater = models.ForeignKey(Konto, on_delete=models.SET_NULL, null=True, verbose_name="Berater:in")
@@ -453,10 +453,13 @@ class FallNotiz(models.Model):
     notiz_id = models.BigAutoField(primary_key=True)
     fall = models.ForeignKey(Fall, on_delete=models.CASCADE, related_name='timeline_notizen', verbose_name="Fall")
     beratungstermin = models.ForeignKey(Beratungstermin, on_delete=models.SET_NULL, null=True, blank=True, related_name='linked_notizen', verbose_name="Zugeordneter Termin")
-    autor = models.ForeignKey(Konto, on_delete=models.SET_NULL, null=True, verbose_name="Autor:in")
+    autor = models.ForeignKey(Konto, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Autor:in")
     
     # Inhalt als JSON für Tiptap/RichText
     content = models.JSONField(verbose_name="Inhalt (JSON)", default=dict)
+    
+    # Manuelles Datum für den Eintrag (Standard: Jetzt)
+    datum = models.DateTimeField(default=timezone.now, verbose_name="Datum")
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Erstellt am")

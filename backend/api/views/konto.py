@@ -10,7 +10,7 @@ from rest_framework.decorators import action
 from django.contrib.auth.models import Group
 from django_filters.rest_framework import DjangoFilterBackend
 
-from api.models import Konto
+from api.models import Konto, BERECHTIGUNG_CHOICES
 from api.serializers import KontoSerializer, KontoMeSerializer, KontoAdminSerializer
 from api.permissions import DjangoModelPermissionsWithView, IsAdminRole
 
@@ -164,3 +164,12 @@ class KontoViewSet(viewsets.ModelViewSet):
             'admins': admins,
             'active': active
         })
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAdminRole])
+    def roles(self, request):
+        """
+        Liefert die verfügbaren Benutzerrollen.
+        Endpoint: /api/konten/roles/
+        """
+        roles = [{'value': choice[0], 'label': choice[1]} for choice in BERECHTIGUNG_CHOICES]
+        return Response(roles)

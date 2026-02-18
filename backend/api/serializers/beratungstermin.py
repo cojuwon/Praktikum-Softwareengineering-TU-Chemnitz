@@ -15,6 +15,7 @@ class BeratungsterminSerializer(serializers.ModelSerializer):
         "%Y-%m-%d %H:%M",
         "iso-8601"
     ])
+    notizen_beratung = serializers.JSONField(required=False, allow_null=True)
     
     class Meta:
         model = Beratungstermin

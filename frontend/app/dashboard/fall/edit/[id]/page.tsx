@@ -10,6 +10,7 @@ import { ArrowLeftIcon, PlusIcon } from "@heroicons/react/24/outline";
 import FallMetadata from "@/components/dashboard/fall/FallMetadata";
 import TimelineItem from "@/components/dashboard/fall/TimelineItem";
 import RichTextEditor from "@/components/editor/RichTextEditor";
+import NoteEditDialog from "@/components/dashboard/fall/NoteEditDialog";
 import AppointmentDialog from "@/components/dashboard/fall/AppointmentDialog";
 
 export default function FallEditPage() {
@@ -22,6 +23,7 @@ export default function FallEditPage() {
   // Edit Modes
   const [isEditingMetadata, setIsEditingMetadata] = useState(false);
   const [showAppointmentDialog, setShowAppointmentDialog] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null); // For Note or Appointment
   const [noteContent, setNoteContent] = useState<any>({});
 
   // ---------------------------------------
@@ -78,6 +80,9 @@ export default function FallEditPage() {
   // ---------------------------------------
   // 3. NOTIZ ERSTELLEN
   // ---------------------------------------
+  const [noteDate, setNoteDate] = useState(new Date().toISOString().slice(0, 16));
+  const [linkedAppointmentId, setLinkedAppointmentId] = useState<string>("");
+
   const handleSaveNote = async () => {
     if (!noteContent || (Object.keys(noteContent).length === 0)) return;
 
@@ -87,13 +92,17 @@ export default function FallEditPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fall: id,
-          content: noteContent
+          content: noteContent,
+          datum: noteDate,
+          beratungstermin: linkedAppointmentId || null
         }),
       });
 
       if (!res.ok) throw new Error("Note creation failed");
 
       setNoteContent({}); // Reset editor
+      setNoteDate(new Date().toISOString().slice(0, 16)); // Reset date
+      setLinkedAppointmentId(""); // Reset link
       loadData(); // Refresh timeline
     } catch (e) {
       console.error(e);
@@ -104,6 +113,11 @@ export default function FallEditPage() {
 
   if (loading) return <div className="p-10 text-center text-slate-500">Lade Fall...</div>;
   if (!data || !definition) return <div className="p-10 text-center text-red-500">Fall nicht gefunden.</div>;
+
+  // Filter appointments for dropdown
+  const appointments = data.timeline
+    ? data.timeline.filter((i: any) => i.type === 'appointment')
+    : [];
 
   return (
     <div className="max-w-[1400px] mx-auto p-6">
@@ -156,12 +170,41 @@ export default function FallEditPage() {
               <h3 className="font-semibold text-slate-700">Neuer Eintrag</h3>
               <button
                 onClick={() => setShowAppointmentDialog(true)}
-                className="text-sm text-blue-600 font-medium hover:underline"
+                className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm"
               >
                 + Termin planen
               </button>
             </div>
-            <div className="p-5">
+
+            <div className="p-5 space-y-4">
+              {/* Optional: Date and Link Inputs */}
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Datum</label>
+                  <input
+                    type="datetime-local"
+                    className="w-full text-sm rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    value={noteDate}
+                    onChange={(e) => setNoteDate(e.target.value)}
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Verknüpfter Termin (Optional)</label>
+                  <select
+                    className="w-full text-sm rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    value={linkedAppointmentId}
+                    onChange={(e) => setLinkedAppointmentId(e.target.value)}
+                  >
+                    <option value="">-- Kein Termin --</option>
+                    {appointments.map((apt: any) => (
+                      <option key={apt.beratungs_id} value={apt.beratungs_id}>
+                        {new Date(apt.termin_beratung).toLocaleString()} ({apt.beratungsart_display || apt.beratungsart})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               <RichTextEditor
                 content={noteContent}
                 onChange={setNoteContent}
@@ -169,7 +212,7 @@ export default function FallEditPage() {
               <div className="mt-3 flex justify-end">
                 <button
                   onClick={handleSaveNote}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm"
+                  className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm disabled:opacity-50"
                 >
                   Notiz speichern
                 </button>
@@ -187,7 +230,7 @@ export default function FallEditPage() {
                   <TimelineItem
                     key={`${item.type}-${item.notiz_id || item.beratungs_id}`}
                     item={item}
-                    onEdit={(i) => console.log("Edit item", i)}
+                    onEdit={(item) => setEditingItem(item)}
                   />
                 ))}
               </div>
@@ -206,6 +249,29 @@ export default function FallEditPage() {
         <AppointmentDialog
           fallId={id}
           onClose={() => setShowAppointmentDialog(false)}
+          onSuccess={() => {
+            loadData();
+          }}
+        />
+      )}
+
+      {editingItem && editingItem.type === 'appointment' && (
+        <AppointmentDialog
+          fallId={id}
+          appointment={editingItem}
+          onClose={() => setEditingItem(null)}
+          onSuccess={() => {
+            loadData();
+          }}
+        />
+      )}
+
+      {editingItem && editingItem.type === 'note' && (
+        <NoteEditDialog
+          fallId={id}
+          note={editingItem}
+          appointments={appointments}
+          onClose={() => setEditingItem(null)}
           onSuccess={() => {
             loadData();
           }}
