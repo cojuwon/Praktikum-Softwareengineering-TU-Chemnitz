@@ -223,7 +223,7 @@ class StatistikService:
         
         # Map keywords in einrichtung field to categories
         for accompaniment in accompaniments:
-            einrichtung = accompaniment.einrichtung.lower()
+            einrichtung = (accompaniment.einrichtung or '').lower()
             if 'gericht' in einrichtung:
                 result['gerichte'] += 1
             elif 'polizei' in einrichtung:
