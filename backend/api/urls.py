@@ -21,6 +21,7 @@ from .views.preset import PresetViewSet
 from .views.statistik import StatistikViewSet
 from .views.eingabefeld import EingabefeldViewSet
 from .views.groups import GroupViewSet, PermissionViewSet
+from .views.fall_notiz import FallNotizViewSet
 
 
 # Router für ViewSets mit automatischer URL-Generierung
@@ -30,6 +31,7 @@ router.register(r'begleitungen', BegleitungViewSet, basename='begleitung')
 router.register(r'beratungstermine', BeratungsterminViewSet, basename='beratungstermin')
 router.register(r'eingabefelder', EingabefeldViewSet, basename='eingabefeld')
 router.register(r'faelle', FallViewSet, basename='fall')
+router.register(r'fall-notizen', FallNotizViewSet, basename='fall-notiz')
 router.register(r'gewaltfolgen', GewaltfolgeViewSet, basename='gewaltfolge')
 router.register(r'gewalttaten', GewalttatViewSet, basename='gewalttat')
 router.register(r'klienten', KlientInViewSet, basename='klient')

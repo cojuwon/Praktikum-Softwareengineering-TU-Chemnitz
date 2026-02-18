@@ -1,27 +1,33 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { DynamicForm, FieldDefinition } from "@/components/form/DynamicForm";
 import Image from "next/image";
 import Link from "next/link";
 import { apiFetch } from "@/lib/api";
-import { ArrowLeftIcon, PencilSquareIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, PlusIcon } from "@heroicons/react/24/outline";
+import FallMetadata from "@/components/dashboard/fall/FallMetadata";
+import TimelineItem from "@/components/dashboard/fall/TimelineItem";
+import RichTextEditor from "@/components/editor/RichTextEditor";
+import AppointmentDialog from "@/components/dashboard/fall/AppointmentDialog";
 
 export default function FallEditPage() {
   const { id } = useParams<{ id: string }>();
-  // const router = useRouter(); // Currently unused but good to have
 
   const [definition, setDefinition] = useState<FieldDefinition[] | null>(null);
   const [data, setData] = useState<Record<string, any> | null>(null);
-  const [originalData, setOriginalData] = useState<Record<string, any> | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
+
+  // Edit Modes
+  const [isEditingMetadata, setIsEditingMetadata] = useState(false);
+  const [showAppointmentDialog, setShowAppointmentDialog] = useState(false);
+  const [noteContent, setNoteContent] = useState<any>({});
 
   // ---------------------------------------
-  // 1. FALL + FELDDEFINITION LADEN
+  // 1. LADE DATEN
   // ---------------------------------------
-  useEffect(() => {
+  const loadData = () => {
     Promise.all([
       apiFetch(`/api/faelle/${id}/`).then((res) => {
         if (!res.ok) throw new Error("Fall fetch failed: " + res.status);
@@ -34,62 +40,35 @@ export default function FallEditPage() {
     ])
       .then(([fallData, fieldsData]) => {
         setData(fallData);
-        setOriginalData({ ...fallData });
         setDefinition(fieldsData.fields);
         setLoading(false);
       })
       .catch((err) => {
         console.error("Fehler beim Laden:", err);
         setLoading(false);
-        alert("Fehler beim Laden der Daten: " + err.message);
       });
+  };
+
+  useEffect(() => {
+    loadData();
   }, [id]);
 
   // ---------------------------------------
-  // 2. FELDÄNDERUNG (Edit Mode)
+  // 2. METADATA SPEICHERN
   // ---------------------------------------
-  const handleChange = (name: string, value: any) => {
-    setData((prev) => (prev ? { ...prev, [name]: value } : null));
-  };
-
-  // ---------------------------------------
-  // 3. SPEICHERN
-  // ---------------------------------------
-  const handleSubmit = async () => {
-    if (!definition || !data) return;
-
-    // Pflichtfelder prüfen
-    const missing = definition.filter(
-      (f) =>
-        f.required &&
-        (data[f.name] === undefined ||
-          data[f.name] === "" ||
-          (Array.isArray(data[f.name]) && data[f.name].length === 0))
-    );
-
-    if (missing.length > 0) {
-      const ok = window.confirm(
-        "Es fehlen folgende Pflichtfelder:\n\n" +
-        missing.map((f) => `• ${f.label}`).join("\n") +
-        "\n\nTrotzdem speichern?"
-      );
-      if (!ok) return;
-    }
-
+  const handleMetadataSubmit = async () => {
+    if (!data) return;
     try {
       const res = await apiFetch(`/api/faelle/${id}/`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(data), // Use data from state
       });
 
       if (!res.ok) throw new Error("Update failed");
 
-      // Refetch to ensure clean state or just switch back
-      setIsEditing(false);
-      alert("Änderungen gespeichert!");
-      // Optional: Reload data to get fresh state from backend
-      // window.location.reload(); 
+      setIsEditingMetadata(false);
+      loadData(); // Reload to get fresh data
     } catch (e) {
       console.error(e);
       alert("Fehler beim Speichern");
@@ -97,209 +76,141 @@ export default function FallEditPage() {
   };
 
   // ---------------------------------------
-  // HELPER: Label für Value finden
+  // 3. NOTIZ ERSTELLEN
   // ---------------------------------------
-  const getDisplayValue = (fieldName: string, value: any) => {
-    if (!definition) return value;
-    const field = definition.find((f) => f.name === fieldName);
-    if (!field) return value;
+  const handleSaveNote = async () => {
+    if (!noteContent || (Object.keys(noteContent).length === 0)) return;
 
-    if (field.type === "select" || field.type === "multiselect") {
-      // Options can be strings or objects {value, label}
-      if (!field.options) return value;
-      // Value from ID might be number, options values are usually strings.
-      // Loose comparison or string conversion.
-      const valStr = String(value);
-      const option = field.options.find(o =>
-        (typeof o === 'string' ? o : o.value) === valStr
-      );
-      if (option) {
-        return typeof option === 'string' ? option : option.label;
-      }
+    try {
+      const res = await apiFetch(`/api/fall-notizen/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fall: id,
+          content: noteContent
+        }),
+      });
+
+      if (!res.ok) throw new Error("Note creation failed");
+
+      setNoteContent({}); // Reset editor
+      loadData(); // Refresh timeline
+    } catch (e) {
+      console.error(e);
+      alert("Fehler beim Speichern der Notiz");
     }
-
-    // Date formatting
-    if (field.type === "date" && value) {
-      return new Date(value).toLocaleDateString("de-DE");
-    }
-
-    return value;
-  };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen text-gray-500">
-        Lade Fall...
-      </div>
-    );
   }
 
-  if (!data || !definition) {
-    return (
-      <div className="flex justify-center items-center h-screen text-gray-500">
-        Fall nicht gefunden.
-      </div>
-    );
-  }
+
+  if (loading) return <div className="p-10 text-center text-slate-500">Lade Fall...</div>;
+  if (!data || !definition) return <div className="p-10 text-center text-red-500">Fall nicht gefunden.</div>;
 
   return (
-    <div
-      style={{
-        maxWidth: "1000px",
-        margin: "0 auto",
-        width: "100%",
-        padding: "24px",
-      }}
-    >
-      <Image
-        src="/bellis-favicon.png"
-        alt="Bellis Logo"
-        width={100}
-        height={100}
-        style={{
-          width: "60px",
-          height: "auto",
-          objectFit: "contain",
-          display: "block",
-          margin: "0 auto 20px auto",
-        }}
-      />
-
-      {/* BIG BOX AROUND EVERYTHING */}
-      <div
-        style={{
-          backgroundColor: "white",
-          borderRadius: "12px",
-          overflow: "hidden", // Ensure header/footer radius respects container
-          boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
-        }}
-      >
-        {/* HEADER SECTION */}
-        <div
-          style={{
-            padding: "30px 40px",
-            borderBottom: "1px solid #e5e7eb",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <div className="flex items-center gap-4">
-            <Link
-              href="/dashboard/fall"
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <ArrowLeftIcon className="h-6 w-6" />
-            </Link>
-            <div>
-              <h1
-                style={{
-                  fontSize: "24px",
-                  fontWeight: "600",
-                  color: "#42446F",
-                  margin: 0,
-                }}
-              >
-                Fall #{data.fall_id}
-              </h1>
-              <p
-                style={{
-                  fontSize: "14px",
-                  color: "#6b7280",
-                  margin: "4px 0 0 0",
-                }}
-              >
-                {isEditing ? "Fall bearbeiten" : "Fall Details"}
-              </p>
-            </div>
-          </div>
-
-          {/* EDIT BUTTON (Only in View Mode) */}
-          {!isEditing && (
-            <button
-              onClick={() => {
-                if (data) {
-                  setOriginalData({ ...data });
-                }
-                setIsEditing(true);
-              }}
-              style={{
-                backgroundColor: "white",
-                border: "1px solid #d1d5db",
-                color: "#374151",
-                borderRadius: "6px",
-                padding: "8px 16px",
-                fontSize: "14px",
-                fontWeight: "500",
-                cursor: "pointer",
-                transition: "all 0.2s",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#f9fafb";
-                e.currentTarget.style.borderColor = "#c6cdd5";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "white";
-                e.currentTarget.style.borderColor = "#d1d5db";
-              }}
-            >
-              <PencilSquareIcon className="h-4 w-4" />
-              Bearbeiten
-            </button>
-          )}
+    <div className="max-w-[1400px] mx-auto p-6">
+      {/* HEADER */}
+      <div className="flex items-center gap-4 mb-6">
+        <Link href="/dashboard/fall" className="text-slate-400 hover:text-slate-600 transition-colors">
+          <ArrowLeftIcon className="h-6 w-6" />
+        </Link>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">Fall #{data.fall_id}</h1>
+          <p className="text-sm text-slate-500">Details und Verlauf</p>
         </div>
+      </div>
 
-        {/* CONTENT SECTION */}
-        <div style={{ padding: "40px", backgroundColor: "#fff" }}>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-          {/* VIEW MODE */}
-          {!isEditing && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-              {definition.map((field) => (
-                <div key={field.name} className="flex flex-col border-b border-gray-100 pb-2">
-                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                    {field.label}
-                  </span>
-                  <span className="text-gray-900 font-medium text-lg">
-                    {getDisplayValue(field.name, data[field.name]) || "—"}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* EDIT MODE */}
-          {isEditing && (
-            <div className="max-w-2xl mx-auto">
+        {/* LEFT COLUMN: METADATA (Sidebar) */}
+        <div className="lg:col-span-4 space-y-6 sticky top-6">
+          {isEditingMetadata ? (
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+              <h3 className="font-semibold text-lg mb-4">Stammdaten bearbeiten</h3>
               <DynamicForm
                 definition={definition}
                 values={data}
-                onChange={handleChange}
-                onSubmit={handleSubmit}
+                onSubmit={handleMetadataSubmit}
+                onChange={() => { }} // Controlled in DynamicForm mostly
               />
-
-              {/* Cancel Button */}
               <button
-                onClick={() => {
-                  // Restore original data
-                  if (originalData) {
-                    setData({ ...originalData });
-                  }
-                  setIsEditing(false);
-                }}
-                className="w-full mt-3 flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                onClick={() => setIsEditingMetadata(false)}
+                className="mt-3 w-full text-center text-sm text-slate-500 hover:text-slate-800"
               >
                 Abbrechen
               </button>
             </div>
+          ) : (
+            <FallMetadata
+              data={data}
+              definition={definition}
+              onEdit={() => setIsEditingMetadata(true)}
+            />
           )}
+        </div>
+
+        {/* RIGHT COLUMN: TIMELINE & ACTIONS */}
+        <div className="lg:col-span-8 space-y-8">
+
+          {/* ACTION AREA: ADD NOTE / APPOINTMENT */}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+              <h3 className="font-semibold text-slate-700">Neuer Eintrag</h3>
+              <button
+                onClick={() => setShowAppointmentDialog(true)}
+                className="text-sm text-blue-600 font-medium hover:underline"
+              >
+                + Termin planen
+              </button>
+            </div>
+            <div className="p-5">
+              <RichTextEditor
+                content={noteContent}
+                onChange={setNoteContent}
+              />
+              <div className="mt-3 flex justify-end">
+                <button
+                  onClick={handleSaveNote}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm"
+                >
+                  Notiz speichern
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* TIMELINE */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold text-slate-800 px-2">Verlauf</h3>
+
+            {data.timeline && data.timeline.length > 0 ? (
+              <div className="relative pl-4">
+                {data.timeline.map((item: any, idx: number) => (
+                  <TimelineItem
+                    key={`${item.type}-${item.notiz_id || item.beratungs_id}`}
+                    item={item}
+                    onEdit={(i) => console.log("Edit item", i)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-10 text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                Noch keine Einträge vorhanden.
+              </div>
+            )}
+          </div>
 
         </div>
+
       </div>
+
+      {showAppointmentDialog && (
+        <AppointmentDialog
+          fallId={id}
+          onClose={() => setShowAppointmentDialog(false)}
+          onSuccess={() => {
+            loadData();
+          }}
+        />
+      )}
     </div>
   );
 }

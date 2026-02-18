@@ -448,5 +448,27 @@ class Eingabefeld(models.Model):
         verbose_name_plural = "Eingabefelder (Konfiguration)"
         ordering = ['sort_order', 'label']
 
+
+class FallNotiz(models.Model):
+    notiz_id = models.BigAutoField(primary_key=True)
+    fall = models.ForeignKey(Fall, on_delete=models.CASCADE, related_name='timeline_notizen', verbose_name="Fall")
+    beratungstermin = models.ForeignKey(Beratungstermin, on_delete=models.SET_NULL, null=True, blank=True, related_name='linked_notizen', verbose_name="Zugeordneter Termin")
+    autor = models.ForeignKey(Konto, on_delete=models.SET_NULL, null=True, verbose_name="Autor:in")
+    
+    # Inhalt als JSON für Tiptap/RichText
+    content = models.JSONField(verbose_name="Inhalt (JSON)", default=dict)
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Erstellt am")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Zuletzt geändert")
+
+    class Meta:
+        verbose_name = "Fall-Notiz"
+        verbose_name_plural = "Fall-Notizen"
+        ordering = ['-created_at']
+        permissions = [
+            ("manage_fall_notizen", "Kann Fall-Notizen verwalten"),
+        ]
+
     def __str__(self):
-        return f"{self.label} ({self.typ})"
+        return f"Notiz {self.notiz_id} zu Fall {self.fall_id}"
