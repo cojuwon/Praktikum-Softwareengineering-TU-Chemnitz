@@ -41,12 +41,13 @@ Der Befehl initialisiert folgende Felder:
 | `anfrage_ort` | Anfrage aus | select | Leipzig Stadt, Leipzig Land, Nordsachsen, ... |
 | `anfrage_person` | Wer hat angefragt | select | Fachkraft, Angehörige:r, Betroffene:r, ... |
 | `anfrage_art` | Art der Anfrage | select | Medizinische Soforthilfe, Spurensicherung, ... |
+| `status` | Status | select | Anfrage, Termin vereinbart, Abgeschlossen |
 
 ### Kontext: Fall
 
 | Name (Technisch) | Label | Typ | Optionen |
 | :--- | :--- | :--- | :--- |
-| `status` | Status | select | Offen, Laufend, Abgeschlossen, Gelöscht |
+| `status` | Status | select | Offen, Laufend, Abgeschlossen |
 | `startdatum` | Startdatum | date | - |
 | `notizen` | Notizen | textarea | - |
 

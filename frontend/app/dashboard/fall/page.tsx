@@ -105,7 +105,6 @@ export default function FallListPage() {
       case 'O': return 'Offen';
       case 'L': return 'Laufend';
       case 'A': return 'Abgeschlossen';
-      case 'G': return 'Gelöscht';
       default: return code;
     }
   };
@@ -115,7 +114,6 @@ export default function FallListPage() {
       case 'O': return { bg: '#e0e7ff', text: '#3730a3' }; // Indigo
       case 'L': return { bg: '#dcfce7', text: '#166534' }; // Green
       case 'A': return { bg: '#f3f4f6', text: '#374151' }; // Gray
-      case 'G': return { bg: '#fee2e2', text: '#991b1b' }; // Red
       default: return { bg: '#f3f4f6', text: '#374151' };
     }
   };

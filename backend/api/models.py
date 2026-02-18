@@ -86,6 +86,12 @@ ANFRAGE_ART_CHOICES = [
     ('B', 'Beratungsbedarf'), ('R', 'rechtliche Fragen'), ('S', 'Sonstiges'),
 ]
 
+ANFRAGE_STATUS_CHOICES = [
+    ('AN', 'Anfrage'),
+    ('TV', 'Termin vereinbart'),
+    ('A', 'Abgeschlossen'),
+]
+
 # 6. BEGLEITUNG
 BEGLEITUNG_ART_CHOICES = [
     ('G', 'Gerichte'), ('P', 'Polizei'), ('R', 'Rechtsanwält:innen'), 
@@ -242,7 +248,7 @@ class Fall(models.Model):
     mitarbeiterin = models.ForeignKey(Konto, on_delete=models.SET_NULL, null=True, verbose_name="Zuständige Mitarbeiter:in")
     
     # Neue Felder:
-    status = models.CharField(max_length=2, choices=[('O', 'Offen'), ('L', 'Laufend'), ('A', 'Abgeschlossen'), ('G', 'Gelöscht')], default='O', verbose_name="Status")
+    status = models.CharField(max_length=2, choices=[('O', 'Offen'), ('L', 'Laufend'), ('A', 'Abgeschlossen')], default='O', verbose_name="Status")
     startdatum = models.DateField(default=timezone.now, verbose_name="Startdatum")
     notizen = models.TextField(blank=True, verbose_name="Notizen")
 
@@ -384,6 +390,7 @@ class Anfrage(models.Model):
     anfrage_ort = models.CharField(max_length=2, choices=STANDORT_CHOICES, blank=True, null=True, verbose_name="Anfrage Ort")
     anfrage_person = models.CharField(max_length=4, choices=ANFRAGE_PERSON_CHOICES, blank=True, null=True, verbose_name="Anfrage Person (wer)")
     anfrage_art = models.CharField(max_length=2, choices=ANFRAGE_ART_CHOICES, blank=True, null=True, verbose_name="Anfrage Art")
+    status = models.CharField(max_length=2, choices=ANFRAGE_STATUS_CHOICES, default='AN', verbose_name="Status")
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Erstellt am")

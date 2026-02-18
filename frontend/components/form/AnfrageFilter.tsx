@@ -10,6 +10,7 @@ type FilterState = {
     art: string[];
     ort: string[];
     person: string[];
+    status: string[];
 };
 
 type Props = {
@@ -25,12 +26,14 @@ export function AnfrageFilter({ definition, onSearch }: Props) {
         art: [],
         ort: [],
         person: [],
+        status: [],
     });
 
     // Extract options from definition
     const artOptions = resolveOptions(definition.find((f) => f.name === "anfrage_art")?.options);
     const ortOptions = resolveOptions(definition.find((f) => f.name === "anfrage_ort")?.options);
     const personOptions = resolveOptions(definition.find((f) => f.name === "anfrage_person")?.options);
+    const statusOptions = resolveOptions(definition.find((f) => f.name === "status")?.options);
 
     function resolveOptions(options?: (string | { value: string; label: string })[]) {
         if (!options) return [];
@@ -64,7 +67,13 @@ export function AnfrageFilter({ definition, onSearch }: Props) {
             </div>
 
             {/* Middle Row: Filters Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <MultiSelect
+                    label="Status"
+                    options={statusOptions}
+                    selected={filters.status}
+                    onChange={(val) => update("status", val)}
+                />
                 <MultiSelect
                     label="Anfrage Art"
                     options={artOptions}
@@ -120,6 +129,7 @@ export function AnfrageFilter({ definition, onSearch }: Props) {
                         art: [],
                         ort: [],
                         person: [],
+                        status: [],
                     })}
                     className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
                 >
