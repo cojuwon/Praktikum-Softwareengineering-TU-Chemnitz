@@ -43,7 +43,7 @@ services:
   # 3. NEXT.JS FRONTEND SERVICE (SSR/Proxy)
   frontend:
     build:
-      context: ./frontend     
+      context: ./frontend_neu     
       dockerfile: Dockerfile
     container_name: frontend
     
