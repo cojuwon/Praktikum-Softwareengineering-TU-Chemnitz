@@ -9,8 +9,8 @@ Verwendung:
 """
 from django.core.management.base import BaseCommand
 from api.models import (
-    Eingabefeld, Fall, Gewalttat, Gewaltfolge,
-    ANFRAGE_PERSON_CHOICES, ANFRAGE_ART_CHOICES, STANDORT_CHOICES,
+    Eingabefeld, Fall, Anfrage, Gewalttat, Gewaltfolge,
+    ANFRAGE_PERSON_CHOICES, ANFRAGE_ART_CHOICES, ANFRAGE_STATUS_CHOICES, STANDORT_CHOICES,
     JA_NEIN_KA_CHOICES, ANZAHL_VORFAELLE_CHOICES, ANZAHL_TAETER_CHOICES,
     TATORT_CHOICES, ANZEIGE_CHOICES, PSYCH_FOLGEN_CHOICES, KOERPER_FOLGEN_CHOICES
 )
@@ -67,6 +67,14 @@ class Command(BaseCommand):
                 'options': self._transform_choices(ANFRAGE_ART_CHOICES),
                 'required': False,
                 'sort_order': 50
+            },
+            {
+                'name': 'status',
+                'label': 'Status',
+                'typ': 'select',
+                'options': self._transform_choices(ANFRAGE_STATUS_CHOICES),
+                'required': False,
+                'sort_order': 60
             }
         ]
 
