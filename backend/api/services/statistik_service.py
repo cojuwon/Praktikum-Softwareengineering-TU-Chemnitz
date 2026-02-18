@@ -355,7 +355,7 @@ class StatistikService:
         
         for incident in violence_incidents:
             # tat_art is a text field with comma-separated types
-            types = [t.strip() for t in incident.tat_art.split(',')]
+            types = [t.strip() for t in (incident.tat_art or '').split(',')]
             for violence_type in types:
                 if violence_type:
                     result[violence_type] = result.get(violence_type, 0) + 1
