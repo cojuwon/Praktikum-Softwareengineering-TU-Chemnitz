@@ -1,0 +1,11 @@
+Statistik Report
+================
+Titel: Test Report
+Zeitraum: 2025-12-20 bis 2026-02-18
+
+ZUSAMMENFASSUNG
+===============
+Anzahl Fälle: 10
+Anzahl Klient:innen: 10
+Anzahl Beratungen: 30
+Anzahl Begleitungen: 10
