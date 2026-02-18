@@ -1,28 +1,47 @@
 import { NextResponse } from "next/server";
 
-let fakePresets = [
-  { id: 1, name: "Preset 1", preset_type: "shared", filters: {} },
-  { id: 2, name: "Preset 2", preset_type: "private", filters: {} },
-  { id: 3, name: "Preset 3", preset_type: "shared", filters: {} }
-];
-
 export async function PUT(req: Request) {
   try {
     const body = await req.json();
     const { id, name, preset_type, filters } = body;
+    
+    const cookies = req.headers.get("cookie");
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-    const index = fakePresets.findIndex(p => p.id === id); // ID aus Body
-    if (index === -1) {
-      return NextResponse.json({ error: "Preset nicht gefunden" }, { status: 404 });
+    // Map frontend format to backend Preset model fields
+    const backendPayload = {
+      preset_beschreibung: name,
+      filterKriterien: filters || {},
+      preset_daten: {}
+    };
+
+    const response = await fetch(`${backendUrl}/api/presets/${id}/`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: cookies || "",
+      },
+      body: JSON.stringify(backendPayload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Failed to update preset:', response.status, errorData);
+      return NextResponse.json({ error: "Failed to update preset", details: errorData }, { status: response.status });
     }
 
-    fakePresets[index] = { id, name, preset_type, filters };
-    console.log("Preset aktualisiert:", fakePresets[index]);
-
-    return NextResponse.json(fakePresets[index]);
+    const updatedPreset = await response.json();
+    
+    // Map backend response back to frontend format
+    return NextResponse.json({
+      id: updatedPreset.preset_id,
+      name: updatedPreset.preset_beschreibung,
+      preset_type: preset_type,
+      filters: updatedPreset.filterKriterien
+    });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Fehler beim Bearbeiten des Presets" }, { status: 500 });
+    console.error('Preset update proxy error:', error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 
