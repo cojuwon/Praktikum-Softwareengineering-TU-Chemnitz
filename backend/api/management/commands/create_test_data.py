@@ -25,6 +25,8 @@ class Command(BaseCommand):
             }
         )
         if created:
+            # WARNING: Hardcoded password for TEST DATA ONLY. 
+            # Do not use this approach in production or with real user data.
             user.set_password('testpass123')
             user.save()
             self.stdout.write(self.style.SUCCESS(f'Created user: {user.mail_mb}'))
