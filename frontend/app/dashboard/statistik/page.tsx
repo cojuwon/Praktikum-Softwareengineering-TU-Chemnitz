@@ -19,6 +19,28 @@ export default function StatistikPage() {
   const [showSavePresetModal, setShowSavePresetModal] = useState(false);
   const [presetName, setPresetName] = useState("");
 
+  /** ESCAPE KEY HANDLER FOR MODAL */
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showSavePresetModal) {
+        if (
+          !presetName ||
+          window.confirm(
+            "Sie haben bereits einen Namen eingegeben. Möchten Sie das Fenster wirklich schließen? Ihre Eingabe geht dabei verloren."
+          )
+        ) {
+          setShowSavePresetModal(false);
+          setPresetName("");
+        }
+      }
+    };
+
+    if (showSavePresetModal) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [showSavePresetModal, presetName]);
+
   /** FILTERDEFINITIONEN LADEN */
   useEffect(() => {
     fetch("/api/statistik/filters")
@@ -100,7 +122,22 @@ export default function StatistikPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Preset konnte nicht gespeichert werden");
+        let errorMessage = "Preset konnte nicht gespeichert werden";
+        try {
+          const errorData = await response.json();
+          if (errorData.details) {
+            // Show specific backend error details
+            const detailMessages = Object.entries(errorData.details)
+              .map(([field, errors]) => `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`)
+              .join('\n');
+            errorMessage += `\n\n${detailMessages}`;
+          } else if (errorData.error) {
+            errorMessage += `\n\n${errorData.error}`;
+          }
+        } catch {
+          // If we can't parse the error, use the default message
+        }
+        throw new Error(errorMessage);
       }
 
       alert("Preset erfolgreich gespeichert!");
@@ -115,7 +152,7 @@ export default function StatistikPage() {
       setPresets(presetsData.presets);
     } catch (error) {
       console.error(error);
-      alert("Fehler beim Speichern des Presets.");
+      alert(error instanceof Error ? error.message : "Fehler beim Speichern des Presets.");
     }
   };
 
@@ -289,6 +326,9 @@ export default function StatistikPage() {
 
           {showSavePresetModal && (
             <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="preset-modal-title"
               style={{
                 position: "fixed",
                 top: 0,
@@ -323,6 +363,7 @@ export default function StatistikPage() {
                 onClick={(e) => e.stopPropagation()}
               >
                 <h3
+                  id="preset-modal-title"
                   style={{
                     fontSize: "20px",
                     fontWeight: "600",
@@ -341,6 +382,7 @@ export default function StatistikPage() {
                   value={presetName}
                   onChange={(e) => setPresetName(e.target.value)}
                   placeholder="z.B. Mein Monatsreport"
+                  maxLength={255}
                   style={{
                     width: "100%",
                     border: "2px solid #052a61ff",

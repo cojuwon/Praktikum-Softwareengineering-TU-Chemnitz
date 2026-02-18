@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
 
-export async function PUT(req: Request) {
+export async function PUT(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     const body = await req.json();
-    const { id, name, preset_type, filters } = body;
+    const { name, preset_type, filters } = body;
+    
+    // Get ID from route parameters, not from body
+    const id = params.id;
     
     const cookies = req.headers.get("cookie");
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
