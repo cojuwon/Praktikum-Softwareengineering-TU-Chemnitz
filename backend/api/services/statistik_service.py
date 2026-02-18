@@ -320,7 +320,7 @@ class StatistikService:
         }
         
         for client in clients:
-            nationality = client.klient_staatsangehoerigkeit.lower()
+            nationality = (client.klient_staatsangehoerigkeit or '').lower()
             if nationality and 'deutsch' not in nationality:
                 result['foreign'] += 1
                 if client.klient_staatsangehoerigkeit not in result['foreign_countries']:
