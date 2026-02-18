@@ -31,10 +31,19 @@ export default function FallCreatePage() {
 
         // Initialize form state for required fields to avoid "undefined" issues
         const initialForm: Record<string, any> = {};
+
+        // Check for URL search params
+        const urlParams = new URLSearchParams(window.location.search);
+        const preselectedKlient = urlParams.get('klient');
+
         json.fields.forEach((field: FieldDefinition) => {
           initialForm[field.name] = (field.type === 'multiselect') ? [] : "";
           if ((field as any).default) {
             initialForm[field.name] = (field as any).default;
+          }
+          // Pre-select klient if available
+          if (field.name === 'klient' && preselectedKlient) {
+            initialForm[field.name] = parseInt(preselectedKlient);
           }
         });
         setForm(initialForm);

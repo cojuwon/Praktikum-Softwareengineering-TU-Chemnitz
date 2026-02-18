@@ -207,7 +207,7 @@ export default function KlientDetails({ id }: KlientDetailsProps) {
                             <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
                                 <Briefcase size={18} className="text-green-500" /> Zugeordnete Fälle
                             </h3>
-                            <Link href="/dashboard/fall/neu">
+                            <Link href={`/dashboard/fall/create?klient=${id}`}>
                                 <span className="text-xs bg-emerald-50 text-emerald-700 py-1 px-2 rounded-md hover:bg-emerald-100 cursor-pointer transition-colors">+ Neu</span>
                             </Link>
                         </div>
