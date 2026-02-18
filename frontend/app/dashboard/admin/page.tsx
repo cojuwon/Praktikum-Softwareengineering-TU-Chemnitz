@@ -8,7 +8,7 @@ import { Users, Shield, Activity, UserPlus, Settings } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import GroupList from '@/components/dashboard/admin/GroupList';
 import RequestsList from '@/components/dashboard/admin/RequestsList';
-import InputFieldList from '@/components/dashboard/admin/input-fields/InputFieldList';
+import InputFieldsManager from '@/components/dashboard/admin/input-fields/InputFieldsManager';
 
 export default function AdminPage() {
   const { user, loading } = useUser();
@@ -121,7 +121,7 @@ export default function AdminPage() {
               <RequestsList />
             </div>
           )}
-          {activeTab === 'input-fields' && <InputFieldList />}
+          {activeTab === 'input-fields' && <InputFieldsManager />}
         </div>
       </div>
     </div>
