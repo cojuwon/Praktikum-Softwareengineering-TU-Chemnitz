@@ -56,9 +56,8 @@ class StatistikService:
         client_ids = cases.values_list('klient_id', flat=True)
         clients = KlientIn.objects.filter(klient_id__in=client_ids)
         
-        # Get consultations from cases
+        # Get case IDs for related data (accompaniments, violence incidents, etc.)
         case_ids = cases.values_list('fall_id', flat=True)
-        consultations = consultations.filter(fall_id__in=case_ids)
         
         # Get accompaniments
         accompaniments = Begleitung.objects.filter(
