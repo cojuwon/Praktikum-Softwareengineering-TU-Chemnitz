@@ -5,10 +5,23 @@ export async function GET(request: Request) {
   const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
   try {
+    // First, get current user info to determine preset ownership
+    let currentUserId: number | null = null;
+    try {
+      const userResponse = await fetch(`${backendUrl}/api/auth/user/`, {
+        headers: cookies ? { Cookie: cookies } : {},
+      });
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        currentUserId = userData.konto_id;
+      }
+    } catch (e) {
+      console.warn('Could not fetch current user for preset type determination:', e);
+    }
+
+    // Fetch presets from backend
     const response = await fetch(`${backendUrl}/api/presets/`, {
-      headers: {
-        Cookie: cookies || "",
-      },
+      headers: cookies ? { Cookie: cookies } : {},
     });
 
     if (!response.ok) {
@@ -22,16 +35,24 @@ export async function GET(request: Request) {
     // Backend fields: preset_id, preset_daten, preset_beschreibung, filterKriterien, ersteller, berechtigte
     // Frontend expects: id, name, preset_type, filters
     const presets = backendPresets.map((preset: any) => {
-      // Determine preset type based on sharing
+      // Determine preset type based on ownership and sharing
       let preset_type = "user"; // Default to user's own preset
       
-      // If preset has berechtigte (shared with others), mark as shared
-      if (preset.berechtigte && preset.berechtigte.length > 0) {
-        preset_type = "shared";
+      // Check if current user is the creator
+      const isCreator = currentUserId && preset.ersteller === currentUserId;
+      
+      // If preset has berechtigte (shared with others) and user is not the creator, mark as shared
+      // berechtigte is an array of user IDs
+      if (preset.berechtigte && Array.isArray(preset.berechtigte) && preset.berechtigte.length > 0) {
+        if (!isCreator && currentUserId && preset.berechtigte.includes(currentUserId)) {
+          preset_type = "shared"; // This preset was shared with the current user
+        } else if (isCreator) {
+          preset_type = "user"; // Creator's own preset (even if shared with others)
+        }
       }
       
-      // TODO: Add logic to identify system presets if needed
-      // For now, system presets could be identified by a specific ersteller or flag
+      // TODO: Add logic to identify system presets
+      // System presets could be identified by a specific flag or creator ID
       
       return {
         id: preset.preset_id,
