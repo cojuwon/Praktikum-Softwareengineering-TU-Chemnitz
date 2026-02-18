@@ -16,6 +16,8 @@ export default function StatistikPage() {
   const [filterDefinition, setFilterDefinition] = useState<FieldDefinition[] | null>(null);
   const [presets, setPresets] = useState<any[]>([]);
   const [structure, setStructure] = useState<any | null>(null);
+  const [showSavePresetModal, setShowSavePresetModal] = useState(false);
+  const [presetName, setPresetName] = useState("");
 
   /** FILTERDEFINITIONEN LADEN */
   useEffect(() => {
@@ -76,6 +78,42 @@ export default function StatistikPage() {
 
     } catch (error) {
       console.error("Fehler beim Laden der Statistik:", error);
+    }
+  };
+
+  const handleSavePreset = async () => {
+    if (!presetName.trim()) {
+      alert("Bitte geben Sie einen Namen für das Preset ein!");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/statistik/presets/new", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: presetName,
+          preset_type: "user",
+          filters: filters
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Preset konnte nicht gespeichert werden");
+      }
+
+      alert("Preset erfolgreich gespeichert!");
+      setShowSavePresetModal(false);
+      setPresetName("");
+      
+      // Reload presets
+      const presetsResponse = await fetch("/api/statistik/presets");
+      const presetsData = await presetsResponse.json();
+      setPresets(presetsData.presets);
+    } catch (error) {
+      console.error(error);
+      alert("Fehler beim Speichern des Presets.");
     }
   };
 
@@ -200,12 +238,147 @@ export default function StatistikPage() {
           {!filterDefinition && <p style={{ textAlign: "center" }}>Filter werden geladen…</p>}
 
           {filterDefinition && (
-            <DynamicFilterForm
-              definition={filterDefinition}
-              values={filters}
-              onChange={handleFilterChange}
-              onSubmit={handleSubmit}
-            />
+            <>
+              <DynamicFilterForm
+                definition={filterDefinition}
+                values={filters}
+                onChange={handleFilterChange}
+              />
+              
+              <div style={{ display: "flex", gap: "10px", marginTop: "20px", flexWrap: "wrap" }}>
+                <button
+                  onClick={handleSubmit}
+                  style={{
+                    flex: "1",
+                    minWidth: "200px",
+                    backgroundColor: "#052a61ff",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    padding: "12px 20px",
+                    fontSize: "16px",
+                    fontWeight: "500",
+                    cursor: "pointer",
+                  }}
+                >
+                  Auswertung aktualisieren
+                </button>
+                
+                <button
+                  onClick={() => setShowSavePresetModal(true)}
+                  style={{
+                    flex: "1",
+                    minWidth: "200px",
+                    backgroundColor: "transparent",
+                    color: "#052a61ff",
+                    border: "2px solid #052a61ff",
+                    borderRadius: "8px",
+                    padding: "12px 20px",
+                    fontSize: "16px",
+                    fontWeight: "500",
+                    cursor: "pointer",
+                  }}
+                >
+                  Aktuelle Auswahl als Preset speichern
+                </button>
+              </div>
+            </>
+          )}
+
+          {showSavePresetModal && (
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(0, 0, 0, 0.5)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 1000,
+              }}
+              onClick={() => setShowSavePresetModal(false)}
+            >
+              <div
+                style={{
+                  backgroundColor: "white",
+                  borderRadius: "12px",
+                  padding: "30px",
+                  maxWidth: "500px",
+                  width: "90%",
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3
+                  style={{
+                    fontSize: "20px",
+                    fontWeight: "600",
+                    color: "#42446F",
+                    marginBottom: "20px",
+                  }}
+                >
+                  Preset speichern
+                </h3>
+                
+                <label style={{ display: "block", marginBottom: "8px", fontWeight: "500", color: "#374151" }}>
+                  Name des Presets:
+                </label>
+                <input
+                  type="text"
+                  value={presetName}
+                  onChange={(e) => setPresetName(e.target.value)}
+                  placeholder="z.B. Mein Monatsreport"
+                  style={{
+                    width: "100%",
+                    border: "2px solid #052a61ff",
+                    borderRadius: "6px",
+                    padding: "10px",
+                    fontSize: "16px",
+                    boxSizing: "border-box",
+                    marginBottom: "20px",
+                  }}
+                />
+                
+                <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+                  <button
+                    onClick={() => {
+                      setShowSavePresetModal(false);
+                      setPresetName("");
+                    }}
+                    style={{
+                      backgroundColor: "transparent",
+                      color: "#6b7280",
+                      border: "2px solid #e5e7eb",
+                      borderRadius: "8px",
+                      padding: "10px 20px",
+                      fontSize: "16px",
+                      fontWeight: "500",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Abbrechen
+                  </button>
+                  
+                  <button
+                    onClick={handleSavePreset}
+                    style={{
+                      backgroundColor: "#052a61ff",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "8px",
+                      padding: "10px 20px",
+                      fontSize: "16px",
+                      fontWeight: "500",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Speichern
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
 
           {data && (
