@@ -16,7 +16,7 @@ class PresetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Preset
-        fields = ['id', 'name', 'filters', 'preset_daten', 'preset_type', 'preset_id', 'preset_beschreibung', 'filterKriterien']
+        fields = ['id', 'name', 'filters', 'preset_daten', 'preset_type', 'preset_id', 'preset_beschreibung', 'filterKriterien', 'is_global']
         read_only_fields = ['ersteller', 'berechtigte', 'preset_id']
         extra_kwargs = {
             'preset_daten': {'required': False},

@@ -18,9 +18,24 @@ export default function StatistikPage() {
   const [presets, setPresets] = useState<any[]>([]);
   const [structure, setStructure] = useState<any | null>(null);
 
+  // State for visible sections (Modular Selection)
+  const [visibleSections, setVisibleSections] = useState<{ [key: string]: boolean }>({
+    auslastung: true,
+    wohnsitz: true,
+    staatsangehoerigkeit: true,
+    altersstruktur: true,
+    behinderung: true,
+    taeterOpferBeziehung: true,
+    gewaltart: true,
+    gewaltfolgen: true,
+    tatnachverfolgung: true,
+    netzwerk: true,
+    finanzierung: true,
+  });
+
   useEffect(() => {
     if (!user) return;
-    
+
     apiFetch("/api/statistik/filters/")
       .then(res => res.json())
       .then(json => {
@@ -59,24 +74,57 @@ export default function StatistikPage() {
     );
   }
 
-  const handleSelectPreset = (presetId: string) => {
-    if (!presetId) return;
-    const preset = presets.find(p => String(p.id) === String(presetId));
-    if (!preset) return;
-    setFilters(preset.filters);
+  const handleFilterChange = (name: string, value: any) => {
+    setFilters((prev: any) => ({ ...prev, [name]: value }));
   };
 
-  const handleFilterChange = (name: string, value: any) => {
-    setFilters(prev => ({ ...prev, [name]: value }));
+  const handleSectionChange = (section: string, isVisible: boolean) => {
+    setVisibleSections((prev) => ({ ...prev, [section]: isVisible }));
+  };
+
+  const handleSelectPreset = (presetId: string) => {
+    const preset = presets.find((p: any) => p.id.toString() === presetId);
+    if (preset) {
+      // 1. Filter setzen
+      if (preset.filters) {
+        setFilters(preset.filters);
+      }
+      // 2. Bereiche setzen (falls im Preset gespeichert)
+      if (preset.preset_daten && preset.preset_daten.visible_sections) {
+        // Wenn "all", dann alle auf true
+        if (Array.isArray(preset.preset_daten.visible_sections) && preset.preset_daten.visible_sections.includes('all')) {
+          setVisibleSections(prev => {
+            const next = { ...prev };
+            Object.keys(next).forEach(k => next[k] = true);
+            return next;
+          });
+        } else if (typeof preset.preset_daten.visible_sections === 'object' && !Array.isArray(preset.preset_daten.visible_sections)) {
+          // Wenn es ein Objekt ist (alte/andere Struktur), übernehmen
+          setVisibleSections(prev => ({ ...prev, ...preset.preset_daten.visible_sections }));
+        }
+      }
+    } else {
+      setFilters({}); // Reset
+    }
   };
 
   const handleSubmit = async () => {
     try {
+      const payload = {
+        ...filters,
+        _visible_sections: visibleSections
+      };
+
       const response = await apiFetch("/api/statistik/query/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(filters),
+        body: JSON.stringify(payload),
       });
+
+      if (!response.ok) {
+        console.error("Fehler beim Laden:", response.statusText);
+        return;
+      }
 
       const result = await response.json();
       setData(result);
@@ -87,15 +135,17 @@ export default function StatistikPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto w-full pt-6">
+    <div className="max-w-7xl mx-auto w-full pt-6">
       <StatistikHeader />
 
       <StatistikFilterSection
         presets={presets}
         filterDefinition={filterDefinition}
         filters={filters}
+        visibleSections={visibleSections}
         onSelectPreset={handleSelectPreset}
         onFilterChange={handleFilterChange}
+        onSectionChange={handleSectionChange}
         onSubmit={handleSubmit}
       />
 

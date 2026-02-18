@@ -22,6 +22,29 @@ class StatistikQuerySerializer(serializers.Serializer):
     """Serializer for validating statistics query parameters."""
     zeitraum_start = serializers.DateField(required=False, allow_null=True)
     zeitraum_ende = serializers.DateField(required=False, allow_null=True)
+    _visible_sections = serializers.DictField(required=False, allow_null=True, child=serializers.BooleanField())
+    # Allow extra fields for dynamic filters (we will validate them in the service)
+    # But DRF Serializer by default ignores extra fields.
+    # We need to explicitly define them or use a wildcard?
+    # Better: explicitly define the known filters from get_filters()
+    anfrage_ort = serializers.ListField(child=serializers.CharField(), required=False)
+    anfrage_person = serializers.ListField(child=serializers.CharField(), required=False)
+    anfrage_art = serializers.ListField(child=serializers.CharField(), required=False)
+    beratungsstelle = serializers.ListField(child=serializers.CharField(), required=False)
+    beratungsart = serializers.ListField(child=serializers.CharField(), required=False)
+    tatort = serializers.ListField(child=serializers.CharField(), required=False)
+    psychische_folgen = serializers.ListField(child=serializers.CharField(), required=False)
+    koerperliche_folgen = serializers.ListField(child=serializers.CharField(), required=False)
+    anzeige = serializers.ListField(child=serializers.CharField(), required=False)
+
+    # Legacy support for single values (if frontend sends strings instead of lists)
+    def to_internal_value(self, data):
+        data = data.copy()
+        list_fields = ['anfrage_ort', 'anfrage_person', 'anfrage_art', 'beratungsstelle', 'beratungsart', 'tatort', 'psychische_folgen', 'koerperliche_folgen', 'anzeige']
+        for field in list_fields:
+            if field in data and not isinstance(data[field], list):
+                data[field] = [data[field]]
+        return super().to_internal_value(data)
 
 
 class StatistikViewSet(viewsets.ModelViewSet):
@@ -102,7 +125,7 @@ class StatistikViewSet(viewsets.ModelViewSet):
             presets = Preset.objects.all()
         else:
             presets = Preset.objects.filter(
-                Q(ersteller=request.user) | Q(berechtigte=request.user)
+                Q(ersteller=request.user) | Q(berechtigte=request.user) | Q(is_global=True)
             ).distinct()
         serializer = PresetSerializer(presets, many=True)
         return Response({"presets": serializer.data})

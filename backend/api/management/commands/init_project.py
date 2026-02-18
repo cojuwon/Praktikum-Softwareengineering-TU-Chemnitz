@@ -14,13 +14,25 @@ class Command(BaseCommand):
         # 2. Eingabefelder
         self.stdout.write("\n2. Initialisiere Eingabefelder...")
         call_command('init_eingabefelder')
-
-        # 3. Statistik-Presets
-        self.stdout.write("\n3. Initialisiere Statistik-Presets...")
+        
+        # 3. Migrations
+        self.stdout.write("Running migrations...")
+        call_command('migrate')
+        
+        # 4. Permissions & Groups
+        self.stdout.write("Setting up permissions...")
+        call_command('setup_permissions')
+        
+        # 5. Statistik-Presets
+        self.stdout.write("\n5. Initialisiere Statistik-Presets...")
         call_command('init_statistics')
-
-        # 4. Superuser
-        self.stdout.write("\n4. Erstelle Superuser (falls nicht vorhanden)...")
+        
+        # 6. Superuser
+        self.stdout.write("\n6. Erstelle Superuser (falls nicht vorhanden)...")
         call_command('setup_superuser')
+        
+        # 7. Default Presets
+        self.stdout.write("Seeding default presets...")
+        call_command('seed_presets')
 
-        self.stdout.write(self.style.SUCCESS('\n✓ Projekt-Initialisierung abgeschlossen!'))
+        self.stdout.write(self.style.SUCCESS("Project initialization complete!"))

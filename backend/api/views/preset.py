@@ -27,20 +27,33 @@ class PresetViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """
-        User sehen ihre eigenen Presets und Presets, die mit ihnen geteilt wurden.
+        User sehen ihre eigenen Presets, Presets, die mit ihnen geteilt wurden,
+        und globale Presets (is_global=True).
         Admins sehen alle Presets.
         """
         user = self.request.user
         if user.rolle_mb == 'AD':
             return Preset.objects.all()
-        # Eigene Presets + geteilte Presets
+        # Eigene Presets + geteilte Presets + globale Presets
         return Preset.objects.filter(
-            models.Q(ersteller=user) | models.Q(berechtigte=user)
+            models.Q(ersteller=user) | 
+            models.Q(berechtigte=user) |
+            models.Q(is_global=True)
         ).distinct()
 
     def perform_create(self, serializer):
-        """Setzt automatisch den aktuellen User als Ersteller."""
-        serializer.save(ersteller=self.request.user)
+        """Setzt automatisch den aktuellen User als Ersteller und prüft Admin-Rechte für global."""
+        is_global = serializer.validated_data.get('is_global', False)
+        if is_global and self.request.user.rolle_mb != 'AD':
+            # Wenn kein Admin, verbiete globales Preset (silent override oder error - hier override)
+            # Alternativ: serializer.save(ersteller=self.request.user, is_global=False)
+            pass 
+        
+        # Besser: explizit setzen
+        if self.request.user.rolle_mb != 'AD':
+            serializer.save(ersteller=self.request.user, is_global=False)
+        else:
+            serializer.save(ersteller=self.request.user)
 
     @action(detail=True, methods=['post'])
     def share(self, request, pk=None):

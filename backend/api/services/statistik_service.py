@@ -7,7 +7,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from api.models import (
-    Fall, Beratungstermin, Begleitung, KlientIn, Gewalttat, Gewaltfolge, Anfrage,
+    Fall, KlientIn, Beratungstermin, Begleitung, Gewalttat, Gewaltfolge, Anfrage,
     BERATUNGSSTELLE_CHOICES, STANDORT_CHOICES, KLIENT_GESCHLECHT_CHOICES,
     KLIENT_ROLLE_CHOICES, BERATUNGSART_CHOICES, TATORT_CHOICES,
     ANZAHL_TAETER_CHOICES, ANZEIGE_CHOICES, PSYCH_FOLGEN_CHOICES,
@@ -19,51 +19,73 @@ from api.models import (
 class StatistikService:
     """Service für die Berechnung von Statistik-KPIs aus echten Datenbank-Daten."""
 
+
     @staticmethod
     def calculate_stats(filters: dict) -> dict:
         """
         Berechnet alle Statistik-KPIs basierend auf den übergebenen Filtern.
-        
-        Args:
-            filters: Dict mit Filterkriterien (zeitraum_start, zeitraum_ende, etc.)
-            
-        Returns:
-            Dict mit 'structure' (Metadaten für UI) und 'data' (aggregierte Werte)
         """
         start_date = filters.get('zeitraum_start')
         end_date = filters.get('zeitraum_ende')
         
-        # === QUERYSETS MIT ZEITFILTER ===
-        cases = Fall.objects.all()
-        if start_date:
-            cases = cases.filter(startdatum__gte=start_date)
-        if end_date:
-            cases = cases.filter(startdatum__lte=end_date)
+        # Helper for multi-select filtering
+        def apply_filter(qs, field_name, filter_key):
+            val = filters.get(filter_key)
+            if val:
+                # If validation ensures lists, we can always use __in
+                if isinstance(val, list):
+                     return qs.filter(**{f"{field_name}__in": val})
+                # Fallback if single value slips through
+                return qs.filter(**{field_name: val})
+            return qs
 
-        consultations = Beratungstermin.objects.filter(status='s')  # nur stattgefundene
-        if start_date:
-            consultations = consultations.filter(termin_beratung__date__gte=start_date)
-        if end_date:
-            consultations = consultations.filter(termin_beratung__date__lte=end_date)
-            
-        accompaniments = Begleitung.objects.all()
-        if start_date:
-            accompaniments = accompaniments.filter(datum__gte=start_date)
-        if end_date:
-            accompaniments = accompaniments.filter(datum__lte=end_date)
-            
-        violence = Gewalttat.objects.filter(fall__in=cases)
-        violence_consequences = Gewaltfolge.objects.filter(gewalttat__in=violence)
+        # === QUERYSETS MIT FILTERN ===
+        cases = Fall.objects.all()
+        if start_date: cases = cases.filter(startdatum__gte=start_date)
+        if end_date: cases = cases.filter(startdatum__lte=end_date)
         
-        # Aktive Klienten im Zeitraum (Klienten mit Fällen im Zeitraum)
+        # Apply filters to cases directly where possible
+        cases = apply_filter(cases, "beratungsstelle", "beratungsstelle")
+        
+        # ACTIVE CLIENTS (linked to active cases)
         active_clients = KlientIn.objects.filter(fall__in=cases).distinct()
         
-        # Anfragen im Zeitraum
+        # CONSULTATIONS
+        consultations = Beratungstermin.objects.filter(status='s')
+        if start_date: consultations = consultations.filter(termin_beratung__date__gte=start_date)
+        if end_date: consultations = consultations.filter(termin_beratung__date__lte=end_date)
+        
+        consultations = apply_filter(consultations, "beratungsart", "beratungsart")
+        # Ensure consultations are linked to filtered cases
+        consultations = consultations.filter(fall__in=cases)
+        
+        # ANFRAGEN
         anfragen = Anfrage.objects.all()
-        if start_date:
-            anfragen = anfragen.filter(anfrage_datum__gte=start_date)
-        if end_date:
-            anfragen = anfragen.filter(anfrage_datum__lte=end_date)
+        if start_date: anfragen = anfragen.filter(anfrage_datum__gte=start_date)
+        if end_date: anfragen = anfragen.filter(anfrage_datum__lte=end_date)
+        
+        anfragen = apply_filter(anfragen, "anfrage_ort", "anfrage_ort")
+        anfragen = apply_filter(anfragen, "anfrage_person", "anfrage_person")
+        anfragen = apply_filter(anfragen, "anfrage_art", "anfrage_art")
+        
+        # ACCOMPANIMENTS
+        accompaniments = Begleitung.objects.all()
+        if start_date: accompaniments = accompaniments.filter(datum__gte=start_date)
+        if end_date: accompaniments = accompaniments.filter(datum__lte=end_date)
+        # Ensure accompaniments are linked to filtered cases (via Fall?)
+        # Begleitung hat Foreign Key auf 'Fall'.
+        accompaniments = accompaniments.filter(fall__in=cases)
+        
+        # VIOLENCE
+        violence = Gewalttat.objects.filter(fall__in=cases)
+        violence = apply_filter(violence, "tat_ort", "tatort")
+        violence = apply_filter(violence, "tat_anzeige", "anzeige") # Corrected mapping
+        
+        # CONSEQUENCES
+        violence_consequences = Gewaltfolge.objects.filter(gewalttat__in=violence)
+        violence_consequences = apply_filter(violence_consequences, "psychische_gewalt", "psychische_folgen")
+        violence_consequences = apply_filter(violence_consequences, "koerperliche_verletzung", "koerperliche_folgen")
+
 
         # === AUSLASTUNG - BERATUNGEN ===
         gender_map = {
@@ -292,8 +314,8 @@ class StatistikService:
 
         # === BERICHTSDATEN - GEWALTFOLGEN ===
         berichtsdaten_gewaltfolgen = {
-            "04_7_1_Anzahl": violence_consequences.exclude(koerperliche_folgen='N').count(),
-            "04_7_2_Anzahl": violence_consequences.exclude(psychische_folgen='N').count(),
+            "04_7_1_Anzahl": violence_consequences.exclude(koerperliche_verletzung='N').count(),
+            "04_7_2_Anzahl": violence_consequences.exclude(psychische_gewalt='N').count(),
             "04_7_3_Anzahl": violence_consequences.filter(arbeitseinschraenkung='J').count(),
             "04_7_4_Anzahl": violence_consequences.filter(finanzielle_folgen='J').count(),
             "04_7_5_Anzahl": violence_consequences.filter(verlust_arbeitsstelle='J').count(),
@@ -347,55 +369,150 @@ class StatistikService:
         }
 
         # === RESULT ===
+        structure = StatistikService.get_structure()
+        data = {
+            "auslastung": {
+                "beratungen": auslastung_beratungen,
+                "begleitungen": auslastung_begleitungen
+            },
+            "berichtsdaten": {
+                "wohnsitz": berichtsdaten_wohnsitz,
+                "staatsangehoerigkeit": berichtsdaten_staatsangehoerigkeit,
+                "altersstruktur": berichtsdaten_altersstruktur,
+                "behinderung": berichtsdaten_behinderung,
+                "taeterOpferBeziehung": berichtsdaten_taeterOpferBeziehung,
+                "gewaltart": berichtsdaten_gewaltart,
+                "gewaltfolgen": berichtsdaten_gewaltfolgen,
+                "tatnachverfolgung": berichtsdaten_tatnachverfolgung
+            },
+            "netzwerk": netzwerk_data,
+            "finanzierung": finanzierung_data
+        }
+
+        # Falls _visible_sections übergeben wurde, filtern wir die Struktur
+        # Die Struktur bestimmt, was im Frontend angezeigt wird.
+        visible_sections = filters.get('_visible_sections')
+        if visible_sections and isinstance(visible_sections, dict):
+            # Helper zum Filtern
+            def filter_category(cat_key, category_data):
+                # Wenn Top-Level (z.B. auslastung), checken wir das direkt
+                if cat_key in visible_sections and not visible_sections[cat_key]:
+                    return None
+                
+                # Wenn es Unterkategorien gibt (z.B. berichtsdaten -> wohnsitz)
+                if 'unterkategorien' in category_data:
+                    new_subs = {}
+                    for sub_key, sub_val in category_data['unterkategorien'].items():
+                        # Ist diese Unterkategorie sichtbar?
+                        # Wir checken, ob der Key in visible_sections ist (z.B. "wohnsitz")
+                        # Wenn nicht im Dict, default true. Wenn False, dann weg.
+                        if visible_sections.get(sub_key, True):
+                            new_subs[sub_key] = sub_val
+                    
+                    if not new_subs:
+                        return None # Wenn leer, ganze Kat weg
+                    
+                    category_data['unterkategorien'] = new_subs
+                
+                return category_data
+
+            new_structure = {}
+            for key, val in structure.items():
+                # Special handling for "berichtsdaten" container which isn't a toggle itself but contains toggles
+                if key == 'berichtsdaten':
+                    filtered = filter_category(key, val.copy())
+                    if filtered:
+                        new_structure[key] = filtered
+                # Direct check for others
+                elif visible_sections.get(key, True):
+                    new_structure[key] = val
+            
+            structure = new_structure
+
         return {
-            "structure": StatistikService.get_structure(),
-            "data": {
-                "auslastung": {
-                    "beratungen": auslastung_beratungen,
-                    "begleitungen": auslastung_begleitungen
-                },
-                "berichtsdaten": {
-                    "wohnsitz": berichtsdaten_wohnsitz,
-                    "staatsangehoerigkeit": berichtsdaten_staatsangehoerigkeit,
-                    "altersstruktur": berichtsdaten_altersstruktur,
-                    "behinderung": berichtsdaten_behinderung,
-                    "taeterOpferBeziehung": berichtsdaten_taeterOpferBeziehung,
-                    "gewaltart": berichtsdaten_gewaltart,
-                    "gewaltfolgen": berichtsdaten_gewaltfolgen,
-                    "tatnachverfolgung": berichtsdaten_tatnachverfolgung
-                },
-                "netzwerk": netzwerk_data,
-                "finanzierung": finanzierung_data
-            }
+            "structure": structure,
+            "data": data
         }
 
     @staticmethod
-    def get_filters() -> list:
-        """Liefert alle verfügbaren Filter mit echten Enum-Optionen."""
-        def choices_to_options(choices):
+    def get_filters():
+        """
+        Gibt die verfügbaren Filter als JSON-Struktur zurück.
+        """
+    @staticmethod
+    def get_filters():
+        """
+        Gibt die verfügbaren Filter als JSON-Struktur zurück.
+        """
+        # Helper to format choices
+        def format_choices(choices):
             return [{"value": c[0], "label": c[1]} for c in choices]
 
         return [
-            {"name": "zeitraum_start", "label": "Von", "type": "date"},
-            {"name": "zeitraum_ende", "label": "Bis", "type": "date"},
-            {"name": "anfrage_ort", "label": "Anfrage-Ort", "type": "select", 
-             "options": choices_to_options(STANDORT_CHOICES)},
-            {"name": "anfrage_person", "label": "Anfragende Person", "type": "select",
-             "options": choices_to_options(ANFRAGE_PERSON_CHOICES)},
-            {"name": "anfrage_art", "label": "Art der Anfrage", "type": "select",
-             "options": choices_to_options(ANFRAGE_ART_CHOICES)},
-            {"name": "beratungsstelle", "label": "Beratungsstelle", "type": "select",
-             "options": choices_to_options(BERATUNGSSTELLE_CHOICES)},
-            {"name": "beratungsart", "label": "Beratungsart", "type": "select",
-             "options": choices_to_options(BERATUNGSART_CHOICES)},
-            {"name": "tatort", "label": "Tatort", "type": "select",
-             "options": choices_to_options(TATORT_CHOICES)},
-            {"name": "psychische_folgen", "label": "Psychische Folgen", "type": "select",
-             "options": choices_to_options(PSYCH_FOLGEN_CHOICES)},
-            {"name": "koerperliche_folgen", "label": "Körperliche Folgen", "type": "select",
-             "options": choices_to_options(KOERPER_FOLGEN_CHOICES)},
-            {"name": "anzeige", "label": "Anzeige", "type": "select",
-             "options": choices_to_options(ANZEIGE_CHOICES)},
+            {
+                "name": "zeitraum_start",
+                "label": "Zeitraum Von",
+                "type": "date"
+            },
+            {
+                "name": "zeitraum_ende",
+                "label": "Zeitraum Bis",
+                "type": "date"
+            },
+            {
+                "name": "anfrage_ort",
+                "label": "Anfrage-Ort",
+                "type": "multiselect",
+                "options": format_choices(STANDORT_CHOICES)
+            },
+            {
+                "name": "anfrage_person",
+                "label": "Anfragende Person",
+                "type": "multiselect",
+                "options": format_choices(ANFRAGE_PERSON_CHOICES)
+            },
+            {
+                "name": "anfrage_art",
+                "label": "Art der Anfrage",
+                "type": "multiselect",
+                "options": format_choices(ANFRAGE_ART_CHOICES)
+            },
+            {
+                "name": "beratungsstelle",
+                "label": "Beratungsstelle",
+                "type": "multiselect",
+                "options": format_choices(STANDORT_CHOICES)
+            },
+            {
+                "name": "beratungsart",
+                "label": "Beratungsart",
+                "type": "multiselect",
+                "options": format_choices(BERATUNGSART_CHOICES)
+            },
+            {
+                "name": "tatort",
+                "label": "Tatort",
+                "type": "multiselect",
+                "options": format_choices(TATORT_CHOICES)
+            },
+            {
+                "name": "psychische_folgen",
+                "label": "Psychische Folgen",
+                "type": "multiselect",
+                "options": [{"value": "J", "label": "Ja"}, {"value": "N", "label": "Nein"}, {"value": "K", "label": "Keine Angabe"}]
+            },
+            {
+                "name": "koerperliche_folgen",
+                "label": "Körperliche Folgen",
+                "type": "multiselect",
+                "options": [{"value": "J", "label": "Ja"}, {"value": "N", "label": "Nein"}, {"value": "K", "label": "Keine Angabe"}]
+            },
+            {
+                "name": "anzeige",
+                "label": "Anzeige",
+                "type": "multiselect",
+                "options": [{"value": "J", "label": "Ja"}, {"value": "N", "label": "Nein"}, {"value": "K", "label": "Keine Angabe"}]
+            }
         ]
 
     @staticmethod

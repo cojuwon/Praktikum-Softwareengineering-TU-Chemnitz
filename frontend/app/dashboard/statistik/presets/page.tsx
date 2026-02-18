@@ -22,7 +22,8 @@ export default function PresetPage() {
         const res = await apiFetch("/api/presets/");
         if (!res.ok) throw new Error("Fehler beim Laden der Presets");
         const json = await res.json();
-        setPresets(json.presets || json); // Support both list and {presets: []} format just in case
+        const loadedPresets = json.presets || json;
+        setPresets(Array.isArray(loadedPresets) ? loadedPresets : []);
       } catch (e) {
         console.error("Presets konnten nicht geladen werden:", e);
       }

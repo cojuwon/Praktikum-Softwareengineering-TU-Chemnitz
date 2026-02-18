@@ -219,9 +219,10 @@ class Preset(models.Model):
     filterKriterien = models.JSONField(verbose_name="Filterkriterien")
     
     # Beziehungen:
-    ersteller = models.ForeignKey(Konto, on_delete=models.SET_NULL, null=True, verbose_name="Ersteller:in")
-    berechtigte = models.ManyToManyField(Konto, related_name='teilbare_presets', verbose_name="Berechtigte Konten")
-    
+    ersteller = models.ForeignKey(Konto, on_delete=models.SET_NULL, null=True, related_name='erstellte_presets', verbose_name="Ersteller:in")
+    berechtigte = models.ManyToManyField(Konto, related_name='teilbare_presets', verbose_name="Berechtigte Konten", blank=True)
+    is_global = models.BooleanField(default=False, verbose_name="Globales Preset (für alle sichtbar)")
+
     class Meta:
         verbose_name = "Preset"
         verbose_name_plural = "Presets"
@@ -321,6 +322,15 @@ class Gewalttat(models.Model):
     tat_ort = models.CharField(max_length=2, choices=STANDORT_CHOICES, null=True, verbose_name="Tatort (Region)")
     plz_tatort = models.CharField(max_length=5, blank=True, verbose_name="PLZ Tatort")
     
+    # Kinder
+    tat_mitbetroffene_kinder = models.PositiveIntegerField(default=0, verbose_name="Mitbetroffene Kinder (gesamt)")
+    tat_direktbetroffene_kinder = models.PositiveIntegerField(default=0, verbose_name="Davon direkt betroffen")
+    
+    # Details zur Tat
+    tat_art = models.TextField(verbose_name="Art der Gewalt (Mehrfachauswahl)", blank=True)
+    tat_anzeige = models.CharField(max_length=3, choices=ANZEIGE_CHOICES, null=True, verbose_name="Wurde Anzeige erstattet?")
+    tat_spurensicherung = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Vertrauliche Spurensicherung?")
+    
     # Beziehungen:
     klient = models.ForeignKey(KlientIn, on_delete=models.CASCADE, verbose_name="Betroffene:r")
     fall = models.ForeignKey('Fall', on_delete=models.CASCADE, null=True, related_name='gewalttaten', verbose_name="Zugeordneter Fall")
@@ -346,6 +356,11 @@ class Gewaltfolge(models.Model):
     soziale_gewalt = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Soziale Gewalt/Isolation")
     digitale_gewalt = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Digitale Gewalt")
     verfolgung_stalking = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Verfolgung/Stalking")
+    
+    # Weitere Folgen aus Statistik-Bogen
+    arbeitseinschraenkung = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Arbeitseinschränkung/Arbeitsunfähigkeit")
+    finanzielle_folgen = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Finanzielle Folgen")
+    verlust_arbeitsstelle = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Verlust Arbeitsstelle")
     
     suizidalitaet = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Suizidalität")
     keine_angabe = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Falls zuvor kein Feld ausgefüllt")

@@ -11,7 +11,8 @@ import {
   LogOut,
   User as UserIcon,
   LayoutDashboard,
-  ShieldCheck
+  ShieldCheck,
+  BookOpen
 } from 'lucide-react';
 import { useUser } from '@/lib/userContext';
 import { logout } from '@/lib/auth';
@@ -24,6 +25,7 @@ const links = [
   { name: 'Fall', href: '/dashboard/fall', icon: Briefcase },
   { name: 'Personen', href: '/dashboard/klienten', icon: UserIcon },
   { name: 'Statistik', href: '/dashboard/statistik', icon: BarChart },
+  { name: 'Handbuch', href: '/dashboard/handbuch', icon: BookOpen },
   { name: 'Einstellungen', href: '/dashboard/settings', icon: Settings },
 ];
 

@@ -1,5 +1,5 @@
 
-
+import MultiSelectDropdown from "@/components/ui/MultiSelectDropdown";
 export type FieldDefinition = {
   name: string;
   label: string;
@@ -64,27 +64,12 @@ export function DynamicFilterForm({ definition, values, onChange, onSubmit }: Pr
           )}
 
           {field.type === "multiselect" && (
-            <select
-              multiple
-              className="border p-2 rounded w-full"
-              value={values?.[field.name] || []}
-              onChange={(e) =>
-                onChange(
-                  field.name,
-                  Array.from(e.target.selectedOptions, (option) => option.value)
-                )
-              }
-            >
-              {field.options?.map((o) => {
-                const val = typeof o === "string" ? o : o.value;
-                const lab = typeof o === "string" ? o : o.label;
-                return (
-                  <option key={val} value={val}>
-                    {lab}
-                  </option>
-                );
-              })}
-            </select>
+            <MultiSelectDropdown
+              options={field.options?.map(o => typeof o === 'string' ? { value: o, label: o } : o) || []}
+              selectedValues={values?.[field.name] || []}
+              onChange={(newValues) => onChange(field.name, newValues)}
+              label={field.label}
+            />
           )}
         </div>
       ))}
