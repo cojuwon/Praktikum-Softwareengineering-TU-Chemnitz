@@ -3,6 +3,7 @@
 from rest_framework import serializers
 
 from api.models import Beratungstermin
+from api.serializers.auth import KontoSerializer
 
 
 class BeratungsterminSerializer(serializers.ModelSerializer):
@@ -16,6 +17,7 @@ class BeratungsterminSerializer(serializers.ModelSerializer):
         "iso-8601"
     ])
     notizen_beratung = serializers.JSONField(required=False, allow_null=True)
+    berater_detail = KontoSerializer(source='berater', read_only=True)
     
     class Meta:
         model = Beratungstermin

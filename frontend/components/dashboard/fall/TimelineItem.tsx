@@ -50,7 +50,7 @@ export default function TimelineItem({ item, onEdit }: TimelineItemProps) {
                                 <span>
                                     {isNote
                                         ? `${item.autor?.vorname_mb} ${item.autor?.nachname_mb}`
-                                        : item.berater_name || "Berater:in"}
+                                        : (item.berater_detail ? `${item.berater_detail.vorname_mb} ${item.berater_detail.nachname_mb}` : "Berater:in")}
                                 </span>
                             </div>
                         )}

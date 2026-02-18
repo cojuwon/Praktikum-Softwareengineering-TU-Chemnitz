@@ -163,6 +163,18 @@ export default function AppointmentDialog({ fallId, appointment, onClose, onSucc
                                 />
                             </div>
                         </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
+                            <select
+                                className="w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                value={formData.status}
+                                onChange={e => setFormData({ ...formData, status: e.target.value })}
+                            >
+                                <option value="g">Geplant</option>
+                                <option value="s">Durchgeführt</option>
+                                <option value="a">Abgesagt</option>
+                            </select>
+                        </div>
 
                         {/* Notizen */}
                         <div>
@@ -195,7 +207,7 @@ export default function AppointmentDialog({ fallId, appointment, onClose, onSucc
                     </button>
                 </div>
 
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
