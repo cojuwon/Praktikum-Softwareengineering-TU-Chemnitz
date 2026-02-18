@@ -59,10 +59,12 @@ class StatistikTests(APITestCase):
         self.assertEqual(stat.creator, self.user_basis)
         self.assertTrue(stat.ergebnis) # File should exist
         
-        # Check file content (dummy)
+        # Check file content - verify real statistics calculation
         content = stat.ergebnis.read().decode('utf-8')
         self.assertIn("Statistik Report", content)
-        self.assertIn("Ergebnisse:", content)
+        self.assertIn("ZUSAMMENFASSUNG", content)
+        self.assertIn("Anzahl Fälle:", content)
+        self.assertIn("Anzahl Beratungen:", content)
 
     def test_export_permission(self):
         """Test export permission logic."""
