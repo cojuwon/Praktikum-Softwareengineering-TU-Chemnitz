@@ -154,23 +154,63 @@ class StatistikService:
     @staticmethod
     def _count_by_age(consultations, clients):
         """Count consultations by client age."""
+        # Age groups: <18, 18-26, 27-49, 50-64, 65+
         result = {
             'gesamt': consultations.count(),
-            'weiblich': 0,
-            'maennlich': 0,
-            'divers': 0
+            'unter_18': 0,
+            '18_bis_26': 0,
+            '27_bis_49': 0,
+            '50_bis_64': 0,
+            '65_und_aelter': 0,
         }
         
-        # Similar to gender counting
+        today = date.today()
+        
         for consultation in consultations.select_related('fall__klient'):
-            if consultation.fall and consultation.fall.klient:
-                gender = consultation.fall.klient.klient_geschlechtsidentitaet
-                if gender in ['CW', 'TW']:
-                    result['weiblich'] += 1
-                elif gender in ['CM', 'TM']:
-                    result['maennlich'] += 1
-                elif gender in ['TN', 'I', 'A', 'D']:
-                    result['divers'] += 1
+            klient = getattr(consultation, 'fall', None)
+            klient = getattr(klient, 'klient', None) if klient is not None else None
+            if not klient:
+                continue
+            
+            age = None
+            
+            # Try several common patterns for age information on the client
+            geburtsdatum = getattr(klient, 'geburtsdatum', None)
+            geburtsjahr = getattr(klient, 'geburtsjahr', None)
+            direktes_alter = getattr(klient, 'alter', None)
+            
+            if geburtsdatum:
+                try:
+                    age = today.year - geburtsdatum.year - (
+                        (today.month, today.day) < (geburtsdatum.month, geburtsdatum.day)
+                    )
+                except Exception:
+                    age = None
+            elif geburtsjahr:
+                try:
+                    age = today.year - int(geburtsjahr)
+                except (TypeError, ValueError):
+                    age = None
+            elif direktes_alter is not None:
+                try:
+                    age = int(direktes_alter)
+                except (TypeError, ValueError):
+                    age = None
+            
+            if age is None or age < 0:
+                # Skip if age cannot be determined
+                continue
+            
+            if age < 18:
+                result['unter_18'] += 1
+            elif 18 <= age <= 26:
+                result['18_bis_26'] += 1
+            elif 27 <= age <= 49:
+                result['27_bis_49'] += 1
+            elif 50 <= age <= 64:
+                result['50_bis_64'] += 1
+            else:
+                result['65_und_aelter'] += 1
         
         return result
     
