@@ -11,8 +11,36 @@ class KontoSerializer(serializers.ModelSerializer):
     """Serializer für Benutzerdetails ohne Berechtigungen."""
     class Meta:
         model = Konto
-        fields = ('id', 'vorname_mb', 'nachname_mb', 'mail_mb', 'rolle_mb')
+        fields = ('id', 'vorname_mb', 'nachname_mb', 'mail_mb', 'rolle_mb', 'status_mb', 'is_active')
         read_only_fields = ('id',)
+
+
+class KontoAdminSerializer(serializers.ModelSerializer):
+    """
+    Serializer für Admins: Kann User anlegen/bearbeiten inkl. Passwort und Status.
+    """
+    password = serializers.CharField(write_only=True, required=False)
+    
+    class Meta:
+        model = Konto
+        fields = ('id', 'vorname_mb', 'nachname_mb', 'mail_mb', 'rolle_mb', 'status_mb', 'password', 'is_active')
+        read_only_fields = ('id',)
+
+    def create(self, validated_data):
+        password = validated_data.pop('password', None)
+        user = super().create(validated_data)
+        if password:
+            user.set_password(password)
+            user.save()
+        return user
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        user = super().update(instance, validated_data)
+        if password:
+            user.set_password(password)
+            user.save()
+        return user
 
 
 class KontoMeSerializer(serializers.ModelSerializer):
@@ -29,8 +57,8 @@ class KontoMeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Konto
-        fields = ['id', 'vorname_mb', 'nachname_mb', 'mail_mb', 'rolle_mb', 'groups', 'permissions']
-        read_only_fields = ['id', 'mail_mb', 'rolle_mb', 'groups', 'permissions']
+        fields = ['id', 'vorname_mb', 'nachname_mb', 'mail_mb', 'rolle_mb', 'status_mb', 'groups', 'permissions']
+        read_only_fields = ['id', 'mail_mb', 'rolle_mb', 'status_mb', 'groups', 'permissions']
 
     def get_permissions(self, user):
         """
@@ -67,5 +95,7 @@ class CustomRegisterSerializer(RegisterSerializer):
         user = super().save(request)
         user.vorname_mb = self.cleaned_data.get('vorname_mb')
         user.nachname_mb = self.cleaned_data.get('nachname_mb')
-        user.save(update_fields=['vorname_mb', 'nachname_mb'])
+        user.is_active = False  # User muss erst vom Admin freigeschaltet werden
+        user.status_mb = 'P'    # Explizit Pending setzen
+        user.save(update_fields=['vorname_mb', 'nachname_mb', 'is_active', 'status_mb'])
         return user

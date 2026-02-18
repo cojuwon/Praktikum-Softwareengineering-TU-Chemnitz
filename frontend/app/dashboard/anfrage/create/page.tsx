@@ -1,27 +1,41 @@
 "use client";
 
-import { DynamicForm, FieldDefinition } from "@/components/form/DynamicForm";
+import { FieldDefinition } from "@/components/form/DynamicForm";
 import { useState, useEffect } from "react";
-import Image from "next/image";
+import { apiFetch } from "@/lib/api";
+import Modal from "@/components/ui/Modal";
+import AnfrageCreateHeader from "@/components/dashboard/anfrage/create/AnfrageCreateHeader";
+import AnfrageCreateForm from "@/components/dashboard/anfrage/create/AnfrageCreateForm";
 
-export default function AnfragePage() {
+export default function AnfrageCreatePage() {
   const [form, setForm] = useState<Record<string, any>>({});
   const [formDefinition, setFormDefinition] = useState<FieldDefinition[] | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Modal States
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; missingFields: string[]; onConfirm: () => void } | null>(null);
+  const [feedbackModal, setFeedbackModal] = useState<{ isOpen: boolean; type: 'success' | 'error'; message: string; onClose?: () => void } | null>(null);
+
   /** FELDER LADEN */
   useEffect(() => {
-    fetch("/api/anfrage")
-      .then(res => res.json())
+    apiFetch("/api/anfragen/form-fields")
+      .then(res => {
+        if (res.status === 401) throw new Error('Session abgelaufen');
+        return res.json();
+      })
       .then(json => {
-        const defs: FieldDefinition[] = json.fields.map((f: any) => ({
-          name: f.name,
-          label: f.label,
-          type: f.type,
-          options: f.options ?? [],
-          required: f.required ?? false,
-        }));
-        setFormDefinition(defs);
+        setFormDefinition(json.fields);
+
+        // Initialize form state for required fields to avoid "undefined" issues
+        const initialForm: Record<string, any> = {};
+        json.fields.forEach((field: FieldDefinition) => {
+          // For text/textarea/select, init with empty string
+          // For multiselect/checkbox (if added later), init with []
+          // This ensures controlled inputs don't start as uncontrolled (undefined)
+          initialForm[field.name] = (field.type === 'multiselect') ? [] : "";
+        });
+        setForm(initialForm);
+
         setLoading(false);
       })
       .catch(err => {
@@ -35,7 +49,40 @@ export default function AnfragePage() {
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  /** SPEICHERN MIT PFLICHTFELD-PRÜFUNG */
+  /** FORM SUBMISSION LOGIC */
+  const executeSubmit = async () => {
+    try {
+      const response = await apiFetch("/api/anfragen/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      if (!response.ok) throw new Error(`Fehler: ${response.status}`);
+
+      const result = await response.json();
+      console.log("Anfrage gespeichert:", result);
+
+      setFeedbackModal({
+        isOpen: true,
+        type: 'success',
+        message: "Anfrage erfolgreich gespeichert!",
+        onClose: () => {
+          // Optional: redirect logic here
+          // window.location.href = "/dashboard/anfrage";
+        }
+      });
+    } catch (error) {
+      console.error("Fehler beim Speichern:", error);
+      setFeedbackModal({
+        isOpen: true,
+        type: 'error',
+        message: "Fehler beim Speichern der Anfrage."
+      });
+    }
+  };
+
+  /** VALIDIERUNG UND INITIIERUNG */
   const handleSubmit = async () => {
     if (!formDefinition) return;
 
@@ -44,142 +91,114 @@ export default function AnfragePage() {
       .filter(f => {
         const v = form[f.name];
         return v === undefined || v === "" || (Array.isArray(v) && v.length === 0);
-      });
+      })
+      .map(f => f.label);
 
     if (missingFields.length > 0) {
-      const message =
-        "Es fehlen folgende Pflichtfelder:\n\n" +
-        missingFields.map(f => `• ${f.label}`).join("\n") +
-        "\n\nMöchten Sie trotzdem speichern?";
-
-      const proceed = window.confirm(message);
-      if (!proceed) return;
-    }
-
-    try {
-      const response = await fetch("/api/anfrage", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+      setConfirmModal({
+        isOpen: true,
+        missingFields,
+        onConfirm: () => {
+          setConfirmModal(null);
+          executeSubmit();
+        }
       });
-
-      const result = await response.json();
-      console.log("Anfrage gespeichert:", result);
-      alert("Anfrage erfolgreich gespeichert!");
-    } catch (error) {
-      console.error("Fehler beim Speichern:", error);
-      alert("Fehler beim Speichern der Anfrage.");
+      return;
     }
+
+    // No missing fields, proceed directly
+    await executeSubmit();
   };
 
   return (
-    <div
-  style={{
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    overflow: "auto",
-    minHeight: "100vh",
-    padding: "10px 24px 0 24px",
-    backgroundColor: "#F3EEEE",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-  }}
->
-      <div
-        style={{
-          maxWidth: "700px",
-          margin: "0 auto",
-          width: "100%",
-        }}
-      >
-        <Image
-          src="/bellis-favicon.png"
-          alt="Bellis Logo"
-          width={100}
-          height={100}
-          style={{
-            width: "60px",
-            height: "auto",
-            objectFit: "contain",
-            display: "block",
-            margin: "20px auto",
-          }}
+    <div className="max-w-5xl mx-auto w-full px-6">
+      <AnfrageCreateHeader />
+
+      <div className="bg-white rounded-b-xl overflow-hidden shadow-sm">
+        <AnfrageCreateForm
+          loading={loading}
+          formDefinition={formDefinition}
+          values={form}
+          onChange={handleChange}
+          onSubmit={handleSubmit}
         />
-
-        <div
-          style={{
-            backgroundColor: "white",
-            padding: "40px 40px",
-            margin: "0 20px 0px 20px",
-            borderRadius: "12px 12px 0 0",
-          }}
-        >
-          <h1
-            style={{
-              fontSize: "28px",
-              fontWeight: "600",
-              color: "#42446F",
-              marginBottom: "6px",
-              textAlign: "center",
-            }}
-          >
-            Anfrage anlegen
-          </h1>
-          <p
-            style={{
-              fontSize: "14px",
-              color: "#6b7280",
-              textAlign: "center",
-              margin: 0,
-            }}
-          >
-            Füllen Sie das Formular aus
-          </p>
-        </div>
-
-        <div
-          style={{
-            backgroundColor: "white",
-            padding: "20px 40px 30px 40px",
-            margin: "0 20px",
-            borderRadius: "0 0 12px 12px",
-          }}
-        >
-          {loading && <p style={{ textAlign: "center" }}>Formular wird geladen…</p>}
-
-          {!loading && formDefinition && (
-            <DynamicForm
-              definition={formDefinition}
-              values={form}
-              onChange={handleChange}
-              onSubmit={handleSubmit}
-            />
-          )}
-
-          {!loading && formDefinition?.length === 0 && (
-            <p style={{ textAlign: "center" }}>Keine Felder definiert.</p>
-          )}
-        </div>
       </div>
 
-      <Image
-        src="/drei-welle-zusammenblau.png"
-        alt=""
-        width={1400}
-        height={100}
-        style={{
-          width: "150%",
-          height: "auto",
-          objectFit: "cover",
-          transform: "scaleY(1) scaleX(1.21)",
-          display: "block",
-          marginLeft: "-10%",
-        }}
-      />
+      {/* CONFIRM MODAL */}
+      {confirmModal && (
+        <Modal
+          isOpen={confirmModal.isOpen}
+          onClose={() => setConfirmModal(null)}
+          title="Unvollständige Anfrage"
+          footer={
+            <>
+              <button
+                onClick={() => setConfirmModal(null)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 font-medium"
+              >
+                Abbrechen
+              </button>
+              <button
+                onClick={confirmModal.onConfirm}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium"
+              >
+                Trotzdem speichern
+              </button>
+            </>
+          }
+        >
+          <p className="mb-4 text-gray-600">
+            Es fehlen folgende Pflichtfelder:
+          </p>
+          <ul className="list-disc list-inside mb-4 text-red-600">
+            {confirmModal.missingFields.map((field, idx) => (
+              <li key={idx}>{field}</li>
+            ))}
+          </ul>
+          <p className="text-gray-600">
+            Möchten Sie die Anfrage trotzdem speichern? Sie wird als unvollständig markiert.
+          </p>
+        </Modal>
+      )}
+
+      {/* FEEDBACK MODAL */}
+      {feedbackModal && (
+        <Modal
+          isOpen={feedbackModal.isOpen}
+          onClose={() => {
+            setFeedbackModal(null);
+            feedbackModal.onClose?.();
+          }}
+          title={feedbackModal.type === 'success' ? 'Erfolg' : 'Fehler'}
+          footer={
+            <button
+              onClick={() => {
+                setFeedbackModal(null);
+                feedbackModal.onClose?.();
+              }}
+              className={`px-4 py-2 rounded-md text-white font-medium ${feedbackModal.type === 'success' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
+                }`}
+            >
+              OK
+            </button>
+          }
+        >
+          <div className="flex items-center gap-3">
+            {feedbackModal.type === 'success' ? (
+              <div className="h-10 w-10 text-green-500 bg-green-100 rounded-full flex items-center justify-center">
+                ✓
+              </div>
+            ) : (
+              <div className="h-10 w-10 text-red-500 bg-red-100 rounded-full flex items-center justify-center">
+                !
+              </div>
+            )}
+            <p className="text-gray-700 text-lg">
+              {feedbackModal.message}
+            </p>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

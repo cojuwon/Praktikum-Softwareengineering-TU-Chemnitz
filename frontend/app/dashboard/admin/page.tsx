@@ -1,209 +1,129 @@
-import Link from 'next/link';
-import { lusitana } from '@/components/ui/fonts';
-import Image from 'next/image';
+'use client';
 
-export default function Page() {
+import { useUser } from '@/lib/userContext';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import UserList from '@/components/dashboard/admin/UserList';
+import { Users, Shield, Activity, UserPlus, Settings } from 'lucide-react';
+import { apiFetch } from '@/lib/api';
+import GroupList from '@/components/dashboard/admin/GroupList';
+import RequestsList from '@/components/dashboard/admin/RequestsList';
+import InputFieldsManager from '@/components/dashboard/admin/input-fields/InputFieldsManager';
+
+export default function AdminPage() {
+  const { user, loading } = useUser();
+  const router = useRouter();
+  const [stats, setStats] = useState({ total: 0, admins: 0, active: 0 });
+  const [pendingCount, setPendingCount] = useState(0); // Track pending requests
+  const [activeTab, setActiveTab] = useState<'users' | 'groups' | 'requests' | 'input-fields'>('users');
+
+  useEffect(() => {
+    if (!loading && user?.rolle_mb !== 'AD') {
+      router.push('/dashboard');
+    }
+    // Fetch simple stats
+    apiFetch('/api/konten/stats/').then(res => res.json()).then(data => {
+      setStats(data);
+    }).catch(console.error);
+
+    // Check for pending requests count
+    apiFetch('/api/konten/?status_mb=P').then(res => res.json()).then(data => {
+      const count = Array.isArray(data) ? data.length : data.count || 0;
+      setPendingCount(count);
+    }).catch(console.error);
+  }, [user, loading, router]);
+
+  if (loading || !user || user.rolle_mb !== 'AD') {
+    return null;
+  }
+
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        overflow: "auto",
-        padding: "10px 24px 0 24px",
-        backgroundColor: "#F3EEEE",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "700px",
-          margin: "0 auto",
-          width: "100%",
-        }}
-      >
-        <Image
-          src="/bellis-favicon.png"
-          alt="Bellis Logo"
-          width={100}
-          height={100}
-          style={{
-            width: "60px",
-            height: "auto",
-            objectFit: "contain",
-            display: "block",
-            margin: "60px auto 20px auto",
-          }}
-        />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header Section */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Administration</h1>
+        <p className="mt-1 text-sm text-gray-500">Verwalten Sie Benutzer, Rollen und Systemeinstellungen.</p>
+      </div>
 
-        <div
-          style={{
-            backgroundColor: "white",
-            padding: "40px 40px",
-            margin: "0 20px 0px 20px",
-            borderRadius: "12px 12px 0 0",
-          }}
-        >
-          <h1
-            style={{
-              fontSize: "28px",
-              fontWeight: "600",
-              color: "#42446F",
-              marginBottom: "6px",
-              textAlign: "center",
-            }}
-          >
-            Willkommen auf dem Dashboard
-          </h1>
-          <p
-            style={{
-              fontSize: "14px",
-              color: "#6b7280",
-              textAlign: "center",
-              margin: 0,
-            }}
-          >
-            Wählen Sie einen Bereich
-          </p>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white overflow-hidden rounded-xl shadow-sm border border-gray-100 p-6 flex items-center">
+          <div className="p-3 rounded-full bg-blue-50 text-blue-600 mr-4">
+            <Users size={24} />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-500">Benutzer:innen Gesamt</p>
+            <p className="text-2xl font-semibold text-gray-900">{stats.total}</p>
+          </div>
         </div>
-
-        <div
-          style={{
-            backgroundColor: "white",
-            padding: "20px 20px",
-            margin: "0 20px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            borderRadius: "0 0 12px 12px",
-            gap: "15px",
-          }}
-        >
-          <Link
-            href="dashboard/anfrage"
-            style={{
-              width: "100%",
-              maxWidth: "350px",
-              backgroundColor: "transparent",
-              color: "#131313",
-              border: "3px solid #A0A8CD",
-              borderRadius: "8px",
-              padding: "10px 16px",
-              fontSize: "16px",
-              fontWeight: "500",
-              cursor: "pointer",
-              textAlign: "center",
-              textDecoration: "none",
-              display: "block",
-            }}
-          >
-            Anfrage
-          </Link>
-
-          <Link
-            href="dashboard/fall"
-            style={{
-              width: "100%",
-              maxWidth: "350px",
-              backgroundColor: "transparent",
-              color: "#131313",
-              border: "3px solid #A0A8CD",
-              borderRadius: "8px",
-              padding: "10px 16px",
-              fontSize: "16px",
-              fontWeight: "500",
-              cursor: "pointer",
-              textAlign: "center",
-              textDecoration: "none",
-              display: "block",
-            }}
-          >
-            Fall
-          </Link>
-
-          <Link
-            href="dashboard/statistik"
-            style={{
-              width: "100%",
-              maxWidth: "350px",
-              backgroundColor: "transparent",
-              color: "#131313",
-              border: "3px solid #A0A8CD",
-              borderRadius: "8px",
-              padding: "10px 16px",
-              fontSize: "16px",
-              fontWeight: "500",
-              cursor: "pointer",
-              textAlign: "center",
-              textDecoration: "none",
-              display: "block",
-            }}
-          >
-            Statistik
-          </Link>
-
-          <Link
-            href="dashboard/extended/edit"
-            style={{
-              width: "100%",
-              maxWidth: "350px",
-              backgroundColor: "transparent",
-              color: "#131313",
-              border: "3px solid #A0A8CD",
-              borderRadius: "8px",
-              padding: "10px 16px",
-              fontSize: "16px",
-              fontWeight: "500",
-              cursor: "pointer",
-              textAlign: "center",
-              textDecoration: "none",
-              display: "block",
-            }}
-          >
-            Eingabemaske
-          </Link>
-
-          <Link
-            href="dashboard/admin/konto"
-            style={{
-              width: "100%",
-              maxWidth: "350px",
-              backgroundColor: "transparent",
-              color: "#131313",
-              border: "3px solid #A0A8CD",
-              borderRadius: "8px",
-              padding: "10px 16px",
-              fontSize: "16px",
-              fontWeight: "500",
-              cursor: "pointer",
-              textAlign: "center",
-              textDecoration: "none",
-              display: "block",
-            }}
-          >
-            Konten
-          </Link>
+        <div className="bg-white overflow-hidden rounded-xl shadow-sm border border-gray-100 p-6 flex items-center">
+          <div className="p-3 rounded-full bg-purple-50 text-purple-600 mr-4">
+            <Shield size={24} />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-500">Administrator:innen</p>
+            <p className="text-2xl font-semibold text-gray-900">{stats.admins}</p>
+          </div>
+        </div>
+        <div className="bg-white overflow-hidden rounded-xl shadow-sm border border-gray-100 p-6 flex items-center">
+          <div className="p-3 rounded-full bg-green-50 text-green-600 mr-4">
+            <Activity size={24} />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-500">Aktive Konten</p>
+            <p className="text-2xl font-semibold text-gray-900">{stats.active}</p>
+          </div>
         </div>
       </div>
 
-      <Image
-        src="/drei-welle-zusammenblau.png"
-        alt=""
-        width={1400}
-        height={100}
-        style={{
-          width: "150%",
-          height: "auto",
-          objectFit: "cover",
-          transform: "scaleY(1) scaleX(1.21)",
-          display: "block",
-          marginLeft: "-10%",
-        }}
-      />
+      {/* Main Content Area */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 flex gap-6 bg-gray-50/50 overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'users' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            <Users size={18} />
+            Benutzer:innenverwaltung
+          </button>
+          <button
+            onClick={() => setActiveTab('groups')}
+            className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'groups' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            <Shield size={18} />
+            Gruppen & Rechte
+          </button>
+          <button
+            onClick={() => setActiveTab('requests')}
+            className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'requests' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            <div className="relative">
+              <UserPlus size={18} />
+              {pendingCount > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{pendingCount}</span>}
+            </div>
+            Registrierungsanfragen
+          </button>
+          <button
+            onClick={() => setActiveTab('input-fields')}
+            className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'input-fields' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            <Settings size={18} />
+            Eingabefelder
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="">
+          {activeTab === 'users' && <UserList embedded={true} />}
+          {activeTab === 'groups' && <GroupList />}
+          {activeTab === 'requests' && (
+            <div className="p-6">
+              <RequestsList />
+            </div>
+          )}
+          {activeTab === 'input-fields' && <InputFieldsManager />}
+        </div>
+      </div>
     </div>
   );
 }

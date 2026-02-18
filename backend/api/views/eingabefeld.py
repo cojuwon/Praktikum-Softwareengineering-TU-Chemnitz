@@ -1,10 +1,11 @@
 """ViewSet für Eingabefeld-Management."""
 
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiTypes
 from datetime import datetime
+from django_filters.rest_framework import DjangoFilterBackend
 
 from api.models import Eingabefeld
 from api.serializers import EingabefeldSerializer
@@ -17,6 +18,12 @@ class EingabefeldViewSet(viewsets.ModelViewSet):
     queryset = Eingabefeld.objects.all()
     serializer_class = EingabefeldSerializer
     permission_classes = [permissions.IsAuthenticated, DjangoModelPermissionsWithView]
+    
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['context', 'typ', 'required']
+    search_fields = ['name', 'label']
+    ordering_fields = ['sort_order', 'label']
+    pagination_class = None
 
     @extend_schema(
         request=OpenApiTypes.OBJECT,
@@ -81,6 +88,7 @@ class EingabefeldViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(eingabefeld)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
     @extend_schema(
         responses={200: OpenApiTypes.OBJECT},
         description="Liest den Wert des Eingabefeldes typgerecht aus."
@@ -122,3 +130,41 @@ class EingabefeldViewSet(viewsets.ModelViewSet):
             'wert': converted_value,
             'typ': eingabefeld.typ
         }, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        request=OpenApiTypes.OBJECT,
+        responses={200: OpenApiTypes.OBJECT},
+        description="Aktualisiert die Sortierung der Felder."
+    )
+    @action(detail=False, methods=['post'], url_path='reorder')
+    def reorder(self, request):
+        """
+        Erwartet eine Liste von Objekten: [{'id': 1, 'sort_order': 0}, ...]
+        """
+        # Explizite Berechtigungsprüfung für 'change'
+        if not request.user.has_perm('api.change_eingabefeld'):
+             return Response(
+                {"detail": "Sie haben keine Berechtigung, Eingabefelder zu bearbeiten."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        data = request.data
+        if not isinstance(data, list):
+            return Response(
+                {"detail": "Erwartet eine Liste von Objekten."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        for item in data:
+            feld_id = item.get('id')
+            sort_order = item.get('sort_order')
+            
+            if feld_id is not None and sort_order is not None:
+                try:
+                    feld = Eingabefeld.objects.get(pk=feld_id)
+                    feld.sort_order = sort_order
+                    feld.save()
+                except Eingabefeld.DoesNotExist:
+                    continue
+        
+        return Response({"status": "success"}, status=status.HTTP_200_OK)

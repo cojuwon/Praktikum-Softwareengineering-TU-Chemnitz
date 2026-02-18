@@ -1,0 +1,404 @@
+// lib/auth.ts
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+import { refreshToken as refreshTokenInternal } from './token';
+
+export interface User {
+  id: number;
+  vorname_mb: string;
+  nachname_mb: string;
+  mail_mb: string;
+  rolle_mb: 'B' | 'E' | 'A' | 'AD'; // Basis, Erweiterung, Admin
+  permissions: string[];
+  groups: string[];
+}
+
+/**
+ * Login
+ */
+
+export async function login(email: string, password: string) {
+  const res = await fetch(`${API_URL}/api/auth/login/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!res.ok) {
+    let err;
+    try {
+      const errorText = await res.text();
+      err = JSON.parse(errorText);
+    } catch (e) {
+      // Fallback if response is text/html (e.g. 404 or 500)
+      console.error("Login failed with non-JSON response");
+      throw new Error(`Login failed: ${res.status} ${res.statusText}`);
+    }
+    throw new Error(err?.detail || 'Login fehlgeschlagen');
+  }
+
+  let data;
+  try {
+    const bodyText = await res.text();
+    data = JSON.parse(bodyText);
+  } catch (e) {
+    console.error("Login success response is not JSON");
+    throw new Error("Server communication error: Invalid JSON response");
+  }
+
+  // ⚠️ ACCESSTOKEN + REFRESH TOKEN (Rotation)
+  // Expiry Logic: 2 hours (match backend)
+  const expiryDate = new Date().getTime() + 2 * 60 * 60 * 1000;
+
+  // Persist tokens for restarts
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('accessToken', data.access);
+    localStorage.setItem('refreshToken', data.refresh);
+    localStorage.setItem('sessionExpiry', expiryDate.toString());
+  }
+
+  return data;
+}
+
+
+/*
+export async function login({ email, password }: { email: string; password: string }): Promise<User> {
+  const res = await fetch(`${API_URL}/api/auth/login/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData?.detail || 'Login fehlgeschlagen');
+  }
+
+  const data = await res.json();
+
+  localStorage.setItem('accessToken', data.access);
+  localStorage.setItem('refreshToken', data.refresh);
+
+  return data.user;
+}*/
+
+/**
+ * Registrierung
+ */
+export async function register(payload: {
+  email: string;
+  password1: string;
+  password2: string;
+  vorname_mb: string;
+  nachname_mb: string;
+}): Promise<User> {
+  const res = await fetch(`${API_URL}/api/auth/registration/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    let errorData = {};
+    try {
+      const errorText = await res.text();
+      errorData = JSON.parse(errorText);
+    } catch (e) {
+      // Fallback for non-JSON responses
+    }
+    throw new Error((errorData as any)?.detail || 'Registrierung fehlgeschlagen');
+  }
+
+  let data;
+  try {
+    const bodyText = await res.text();
+    data = JSON.parse(bodyText);
+  } catch (e) {
+    console.error("Registration success response is not JSON");
+    throw new Error("Server communication error: Invalid JSON response");
+  }
+
+  // Optional Auto-Login (SSR-safe)
+  // Only if tokens are returned (user is active)
+  if (typeof localStorage !== 'undefined' && data.access && data.refresh) {
+    localStorage.setItem('accessToken', data.access);
+    localStorage.setItem('refreshToken', data.refresh);
+  }
+
+  return data.user;
+}
+
+
+/** ====================
+ * LOGOUT
+ * ==================== */
+
+// lib/auth.ts
+export async function logout() {
+  const API_URL =
+    process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+  const res = await fetch(`${API_URL}/api/auth/logout/`, {
+    method: 'POST',
+    credentials: 'include', // wichtig für Cookies
+  });
+
+  if (!res.ok) {
+    throw new Error('Logout fehlgeschlagen');
+  }
+
+  // Clear local storage and cookies
+  if (typeof localStorage !== 'undefined') {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('sessionExpiry');
+  }
+
+  // SSR-safe cookie clearing
+  if (typeof document !== 'undefined') {
+    document.cookie = 'accessToken=; Max-Age=0; path=/';
+    document.cookie = 'refreshToken=; Max-Age=0; path=/';
+  }
+
+  return true;
+}
+
+import { apiFetch } from './api';
+
+export async function getCurrentUser(): Promise<User> {
+  const res = await apiFetch('/api/auth/user/', {
+    method: 'GET',
+    // credentials: 'include' is handled by apiFetch
+  });
+
+  if (!res.ok) {
+    throw new Error('Nicht eingeloggt');
+  }
+
+  try {
+    const bodyText = await res.text();
+    return JSON.parse(bodyText);
+  } catch (e) {
+    console.error("User fetch response is not JSON");
+    throw new Error("Failed to load user data");
+  }
+}
+/*
+
+export async function logout() {
+  await fetch(`${API_URL}/api/auth/logout/`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+
+  // Cookies löschen
+  document.cookie = 'accessToken=; Max-Age=0; path=/';
+  document.cookie = 'refreshToken=; Max-Age=0; path=/';
+
+  window.location.href = '/login';
+}
+*/
+
+
+/*
+export async function logout() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+  const res = await fetch(`${API_URL}/api/auth/logout/`, {
+    method: 'POST',
+    credentials: 'include', // wenn Session-Cookie genutzt wird
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData?.detail || 'Logout fehlgeschlagen');
+  }
+
+  return res.json();
+}
+*/
+
+
+/*
+export function logout() {
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+  
+}*/
+
+/**
+ * Passwort ändern (eingeloggt)
+ */
+export async function changePassword(payload: {
+  old_password: string;
+  new_password1: string;
+  new_password2: string;
+}) {
+  const accessToken = localStorage.getItem('accessToken');
+  if (!accessToken) throw new Error('Nicht eingeloggt');
+
+  const res = await fetch(`${API_URL}/api/auth/password/change/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData?.detail || 'Passwortänderung fehlgeschlagen');
+  }
+}
+
+/**
+ * Passwort zurücksetzen (Forgot Password)
+ */
+export async function resetPassword(email: string) {
+  const res = await fetch(`${API_URL}/api/auth/password/reset/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData?.detail || 'Passwort zurücksetzen fehlgeschlagen');
+  }
+}
+
+/**
+ * Passwort Reset bestätigen (per Link aus Email)
+ */
+export async function confirmResetPassword(payload: {
+  uid: string;
+  token: string;
+  new_password1: string;
+  new_password2: string;
+}) {
+  const res = await fetch(`${API_URL}/api/auth/password/reset/confirm/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData?.detail || 'Passwort-Reset bestätigen fehlgeschlagen');
+  }
+}
+
+/**
+ * Access Token erneuern
+ */
+export async function refreshToken(): Promise<string> {
+  return refreshTokenInternal();
+}
+
+/**
+ * Token prüfen (optional)
+ */
+export async function verifyToken(token: string): Promise<boolean> {
+  const res = await fetch(`${API_URL}/api/auth/token/verify/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+  });
+
+  return res.ok;
+}
+
+
+
+
+
+/*const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+export async function login({ email, password }: { email: string; password: string }) {
+  // 1. Login Request
+  const response = await fetch(`${API_URL}/api/auth/login/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData?.detail || 'Login fehlgeschlagen');
+  }
+
+  const data = await response.json();
+
+ 
+
+  // Token speichern (Memory oder localStorage)
+  localStorage.setItem('accessToken', data.access);
+  localStorage.setItem('refreshToken', data.refresh);
+
+  return data.user;
+}
+
+export function logout() {
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+}
+
+export async function register({
+  email,
+  password1,
+  password2,
+  vorname_mb,
+  nachname_mb,
+}: {
+  email: string;
+  password1: string;
+  password2: string;
+  vorname_mb: string;
+  nachname_mb: string;
+}) {
+  const response = await fetch(`${API_URL}/api/auth/registration/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password1, password2, vorname_mb, nachname_mb }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData?.detail || 'Registrierung fehlgeschlagen');
+  }
+
+  const data = await response.json();
+
+  // Optional: Tokens speichern oder Auto-Login
+  // localStorage.setItem('accessToken', data.access);
+  // localStorage.setItem('refreshToken', data.refresh);
+
+  return data.user;
+}
+
+
+
+*/
+
+/*
+
+export async function refreshToken() { ... }
+
+export async function changePassword(payload) {
+  const accessToken = localStorage.getItem('accessToken');
+
+  const res = await fetch(`${API_URL}/api/auth/password/change/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) throw new Error('Password change failed');
+}
+export async function resetPassword(email) { ... }
+export async function confirmResetPassword(data) { ... }
+*/

@@ -1,150 +1,179 @@
 "use client";
 
-import { DynamicFilterForm, FieldDefinition } from "@/components/statistik/DynamicFilterForm";
+import { DynamicFilterForm, FieldDefinition } from "@/components/dashboard/statistik/DynamicFilterForm";
 import { useState, useEffect } from "react";
-import PresetSelector from "@/components/statistik/PresetSelector";
+import PresetSelector from "@/components/dashboard/statistik/PresetSelector";
+import { apiFetch } from "@/lib/api";
 import Link from 'next/link';
 import Image from 'next/image';
 
+type Preset = {
+  id: string;
+  name: string;
+};
+
 export default function PresetPage() {
+  const [presets, setPresets] = useState<Preset[]>([]); // Placeholder for presets state
+
+  // Fetch presets from API
+  useEffect(() => {
+    async function loadPresets() {
+      try {
+        const res = await apiFetch("/api/presets/");
+        if (!res.ok) throw new Error("Fehler beim Laden der Presets");
+        const json = await res.json();
+        const loadedPresets = json.presets || json;
+        setPresets(Array.isArray(loadedPresets) ? loadedPresets : []);
+      } catch (e) {
+        console.error("Presets konnten nicht geladen werden:", e);
+      }
+    }
+    loadPresets();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await apiFetch(`/api/presets/${id}/`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setPresets(presets.filter(preset => preset.id !== id));
+      } else {
+        console.error("Fehler beim Löschen des Presets");
+      }
+    } catch (e) {
+      console.error("Fehler beim Löschen des Presets:", e);
+    }
+  };
+
   return (
     <div
       style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        overflow: "auto",
-        padding: "10px 24px 0 24px",
-        backgroundColor: "#F3EEEE",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
+        maxWidth: "700px",
+        margin: "0 auto",
+        width: "100%",
+        padding: "24px 24px 0 24px"
       }}
     >
+      <Image
+        src="/bellis-favicon.png"
+        alt="Bellis Logo"
+        width={100}
+        height={100}
+        style={{
+          width: "60px",
+          height: "auto",
+          objectFit: "contain",
+          display: "block",
+          margin: "20px auto",
+        }}
+      />
+
       <div
         style={{
-          maxWidth: "700px",
-          margin: "0 auto",
-          width: "100%",
+          backgroundColor: "white",
+          padding: "40px 40px",
+          margin: "0 20px 0px 20px",
+          borderRadius: "12px 12px 0 0",
         }}
       >
-        <Image
-          src="/bellis-favicon.png"
-          alt="Bellis Logo"
-          width={100}
-          height={100}
+        <h1
           style={{
-            width: "60px",
-            height: "auto",
-            objectFit: "contain",
-            display: "block",
-            margin: "60px auto 20px auto",
-          }}
-        />
-
-        <div
-          style={{
-            backgroundColor: "white",
-            padding: "40px 40px",
-            margin: "0 20px 0px 20px",
-            borderRadius: "12px 12px 0 0",
+            fontSize: "28px",
+            fontWeight: "600",
+            color: "#42446F",
+            marginBottom: "6px",
+            textAlign: "center",
           }}
         >
-          <h1
-            style={{
-              fontSize: "28px",
-              fontWeight: "600",
-              color: "#42446F",
-              marginBottom: "6px",
-              textAlign: "center",
-            }}
-          >
-            Presets verwalten
-          </h1>
-          <p
-            style={{
-              fontSize: "14px",
-              color: "#6b7280",
-              textAlign: "center",
-              margin: 0,
-            }}
-          >
-            Wählen Sie eine Option
-          </p>
-        </div>
-
-        <div
+          Statistik Presets
+        </h1>
+        <p
           style={{
-            backgroundColor: "white",
-            padding: "20px 20px",
-            margin: "0 20px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            borderRadius: "0 0 12px 12px",
-            gap: "15px",
+            fontSize: "14px",
+            color: "#6b7280",
+            textAlign: "center",
+            margin: 0,
           }}
         >
-          <Link
-            href="/dashboard/statistik/presets/edit"
-            style={{
-              width: "100%",
-              maxWidth: "350px",
-              backgroundColor: "transparent",
-              color: "#131313",
-              border: "3px solid #A0A8CD",
-              borderRadius: "8px",
-              padding: "10px 16px",
-              fontSize: "16px",
-              fontWeight: "500",
-              cursor: "pointer",
-              textAlign: "center",
-              textDecoration: "none",
-              display: "block",
-            }}
-          >
-            Presets bearbeiten
-          </Link>
+          Verwalten Sie Ihre Filter-Voreinstellungen
+        </p>
+      </div>
 
+      <div
+        style={{
+          backgroundColor: "white",
+          padding: "20px 40px 30px 40px",
+          margin: "0 20px",
+          borderRadius: "0 0 12px 12px",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
           <Link
             href="/dashboard/statistik/presets/new"
             style={{
-              width: "100%",
-              maxWidth: "350px",
-              backgroundColor: "transparent",
-              color: "#131313",
-              border: "3px solid #A0A8CD",
+              backgroundColor: "#22c55e",
+              color: "white",
+              padding: "10px 20px",
               borderRadius: "8px",
-              padding: "10px 16px",
-              fontSize: "16px",
-              fontWeight: "500",
-              cursor: "pointer",
-              textAlign: "center",
               textDecoration: "none",
-              display: "block",
+              fontWeight: "500",
             }}
           >
-            Neuen Preset anlegen
+            + Neues Preset erstellen
           </Link>
         </div>
-      </div>
 
-      <Image
-        src="/drei-welle-zusammenblau.png"
-        alt=""
-        width={1400}
-        height={100}
-        style={{
-          width: "150%",
-          height: "auto",
-          objectFit: "cover",
-          transform: "scaleY(1) scaleX(1.21)",
-          display: "block",
-          marginLeft: "-10%",
-        }}
-      />
+        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+          {presets.map((preset) => (
+            <li
+              key={preset.id}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "12px 16px",
+                marginBottom: "10px",
+                backgroundColor: "#f9fafb",
+                border: "1px solid #e5e7eb",
+                borderRadius: "8px",
+              }}
+            >
+              <span style={{ fontWeight: "500", color: "#42446F" }}>{preset.name}</span>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <Link
+                  href={`/dashboard/statistik/presets/edit?id=${preset.id}`}
+                  style={{
+                    color: "#3b82f6",
+                    textDecoration: "none",
+                    fontWeight: "500",
+                  }}
+                >
+                  Bearbeiten
+                </Link>
+                <button
+                  onClick={() => handleDelete(preset.id)}
+                  style={{
+                    color: "#ef4444",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontWeight: "500",
+                  }}
+                >
+                  Löschen
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        {presets.length === 0 && (
+          <p style={{ textAlign: "center", color: "#6b7280", marginTop: "20px" }}>
+            Keine Presets vorhanden.
+          </p>
+        )}
+      </div>
     </div>
   );
 }

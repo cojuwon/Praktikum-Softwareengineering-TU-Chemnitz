@@ -1,12 +1,34 @@
-import SideNav from '@/components/ui/dashboard/sidenav';
+"use client";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+import { useUser } from '@/lib/userContext';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <div className="flex h-screen flex-col md:flex-row md:overflow-hidden">
-      <div className="w-full flex-none md:w-64">
-        <SideNav />
-      </div>
-      <div className="grow p-6 md:overflow-y-auto md:p-12">{children}</div>
-    </div>
+    <ClientAuthWrapper>
+      {children}
+    </ClientAuthWrapper>
   );
+}
+
+function ClientAuthWrapper({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  if (loading) return <div className="p-10 text-center">Laden...</div>;
+  if (!user) return null; // Will redirect via effect
+
+  return <>{children}</>;
 }

@@ -86,6 +86,12 @@ ANFRAGE_ART_CHOICES = [
     ('B', 'Beratungsbedarf'), ('R', 'rechtliche Fragen'), ('S', 'Sonstiges'),
 ]
 
+ANFRAGE_STATUS_CHOICES = [
+    ('AN', 'Anfrage'),
+    ('TV', 'Termin vereinbart'),
+    ('A', 'Abgeschlossen'),
+]
+
 # 6. BEGLEITUNG
 BEGLEITUNG_ART_CHOICES = [
     ('G', 'Gerichte'), ('P', 'Polizei'), ('R', 'Rechtsanwält:innen'), 
@@ -128,7 +134,14 @@ class Konto(AbstractBaseUser, PermissionsMixin):
     
     mail_mb = models.EmailField(max_length=255, unique=True, verbose_name="E-Mail")
     
+    STATUS_CHOICES = [
+        ('A', 'Aktiv'),
+        ('I', 'Inaktiv'),
+        ('P', 'Ausstehend'),
+    ]
+
     rolle_mb = models.CharField(max_length=2, choices=BERECHTIGUNG_CHOICES, default='B', verbose_name="Rolle")
+    status_mb = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P', verbose_name="Status")
     
     is_active = models.BooleanField(default=True) #TODO neu, noch ergänzen im Klassendiagramm
     is_staff = models.BooleanField(default=False) #TODO neu, noch ergänzen im Klassendiagramm
@@ -156,6 +169,13 @@ class Konto(AbstractBaseUser, PermissionsMixin):
 class KlientIn(models.Model):
     klient_id = models.BigAutoField(primary_key=True)
     klient_rolle = models.CharField(max_length=2, choices=KLIENT_ROLLE_CHOICES, verbose_name="Rolle")
+    klient_pseudonym = models.CharField(
+        max_length=255, 
+        blank=True, 
+        null=True, 
+        verbose_name="Pseudonym",
+        help_text="ACHTUNG: Hier keine Klarnamen verwenden! Nur Pseudonyme."
+    )
     klient_alter = models.IntegerField(
         null=True, 
         blank=True, 
@@ -169,6 +189,7 @@ class KlientIn(models.Model):
     klient_beruf = models.CharField(max_length=255, verbose_name="Beruf")
     
     klient_schwerbehinderung = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, verbose_name="Schwerbehinderung")
+    klient_migrationshintergrund = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, verbose_name="Migrationshintergrund", default='KA')
     klient_schwerbehinderung_detail = models.TextField(
         blank=True, 
         verbose_name="Form/Grad der Behinderung", 
@@ -179,6 +200,10 @@ class KlientIn(models.Model):
     # klient_dolmetschungsstunden entfernt (jetzt in Beratungstermin/Begleitung)
     klient_dolmetschungssprachen = models.CharField(max_length=255, blank=True, verbose_name="Dolmetschungssprachen")
     klient_notizen = models.TextField(blank=True, verbose_name="Notizen")
+    
+    # Dynamische Felder
+    extra_fields = models.JSONField(default=dict, blank=True, verbose_name="Zusätzliche Felder")
+    
     erstellt_am = models.DateTimeField(auto_now_add=True, verbose_name="Erstellt am")
 
     class Meta:
@@ -200,15 +225,17 @@ class Preset(models.Model):
     filterKriterien = models.JSONField(verbose_name="Filterkriterien")
     
     # Beziehungen:
-    ersteller = models.ForeignKey(Konto, on_delete=models.SET_NULL, null=True, verbose_name="Ersteller:in")
-    berechtigte = models.ManyToManyField(Konto, related_name='teilbare_presets', verbose_name="Berechtigte Konten")
-    
+    ersteller = models.ForeignKey(Konto, on_delete=models.SET_NULL, null=True, related_name='erstellte_presets', verbose_name="Ersteller:in")
+    berechtigte = models.ManyToManyField(Konto, related_name='teilbare_presets', verbose_name="Berechtigte Konten", blank=True)
+    is_global = models.BooleanField(default=False, verbose_name="Globales Preset (für alle sichtbar)")
+
     class Meta:
         verbose_name = "Preset"
         verbose_name_plural = "Presets"
         # Custom Permissions für Preset-Verwaltung
         permissions = [
             ("can_share_preset", "Kann Presets mit anderen teilen"),
+            ("can_manage_presets", "Kann Presets verwalten"),
         ]
         
     def __str__(self):
@@ -221,7 +248,7 @@ class Fall(models.Model):
     mitarbeiterin = models.ForeignKey(Konto, on_delete=models.SET_NULL, null=True, verbose_name="Zuständige Mitarbeiter:in")
     
     # Neue Felder:
-    status = models.CharField(max_length=2, choices=[('O', 'Offen'), ('L', 'Laufend'), ('A', 'Abgeschlossen'), ('G', 'Gelöscht')], default='O', verbose_name="Status")
+    status = models.CharField(max_length=2, choices=[('O', 'Offen'), ('L', 'Laufend'), ('A', 'Abgeschlossen')], default='O', verbose_name="Status")
     startdatum = models.DateField(default=timezone.now, verbose_name="Startdatum")
     notizen = models.TextField(blank=True, verbose_name="Notizen")
 
@@ -254,7 +281,7 @@ class Beratungstermin(models.Model):
     anzahl_beratungen = models.IntegerField(default=1, verbose_name="Anzahl Beratungen (Statistik)", validators=[MinValueValidator(0)])
     
     beratungsart = models.CharField(max_length=2, choices=BERATUNGSART_CHOICES, verbose_name="Durchführungsart")
-    notizen_beratung = models.TextField(blank=True, verbose_name="Notizen")
+    notizen_beratung = models.JSONField(verbose_name="Notizen (JSON)", default=dict, blank=True)
     
     # Beziehungen:
     berater = models.ForeignKey(Konto, on_delete=models.SET_NULL, null=True, verbose_name="Berater:in")
@@ -284,55 +311,65 @@ class Begleitung(models.Model):
     fall = models.ForeignKey('Fall', on_delete=models.CASCADE, null=True, related_name='begleitungen', verbose_name="Zugeordneter Fall")
     
     class Meta:
-        verbose_name = "Begleitung/Verweisung"
-        verbose_name_plural = "Begleitungen/Verweisungen"
+        verbose_name = "Begleitung"
+        verbose_name_plural = "Begleitungen"
+        permissions = [
+            ("view_own_begleitung", "Kann eigene Begleitungen einsehen"),
+            ("view_all_begleitung", "Kann alle Begleitungen einsehen"),
+        ]
         
     def __str__(self):
-        return f"Begleitung zu {self.einrichtung} am {self.datum}"
+        return f"Begleitung {self.begleitungs_id} am {self.datum}"
 
 
 class Gewalttat(models.Model):
     tat_id = models.BigAutoField(primary_key=True)
-    tat_alter = models.CharField(max_length=2, choices=JA_NEIN_KA_CHOICES, verbose_name="Alter zum Tatzeitpunkt (JA/NEIN/KA)") 
-    tat_zeitraum = models.CharField(max_length=2, choices=JA_NEIN_KA_CHOICES, verbose_name="Tatzeitraum (JA/NEIN/KA)") 
-    tat_anzahl_vorfaelle = models.CharField(max_length=2, choices=ANZAHL_VORFAELLE_CHOICES, verbose_name="Anzahl Vorfälle")
-    tat_anzahl_taeter_innen = models.CharField(max_length=2, choices=ANZAHL_TAETER_CHOICES, verbose_name="Anzahl Täter:innen")
+    tat_datum = models.DateField(default=timezone.now, verbose_name="Tatzeitpunkt") # Default heute
+    tat_ort = models.CharField(max_length=2, choices=STANDORT_CHOICES, null=True, verbose_name="Tatort (Region)")
+    plz_tatort = models.CharField(max_length=5, blank=True, verbose_name="PLZ Tatort")
     
+    # Kinder
+    tat_mitbetroffene_kinder = models.PositiveIntegerField(default=0, verbose_name="Mitbetroffene Kinder (gesamt)")
+    tat_direktbetroffene_kinder = models.PositiveIntegerField(default=0, verbose_name="Davon direkt betroffen")
     
-    tat_art = models.CharField(max_length=1024, verbose_name="Art der Gewalt (Mehrfachauswahl/Text)")
+    # Details zur Tat
+    tat_art = models.TextField(verbose_name="Art der Gewalt (Mehrfachauswahl)", blank=True)
+    tat_anzeige = models.CharField(max_length=3, choices=ANZEIGE_CHOICES, null=True, verbose_name="Wurde Anzeige erstattet?")
+    tat_spurensicherung = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Vertrauliche Spurensicherung?")
     
-    tatort = models.CharField(max_length=2, choices=TATORT_CHOICES, verbose_name="Tatort")
-    tat_anzeige = models.CharField(max_length=2, choices=ANZEIGE_CHOICES, verbose_name="Anzeige")
-    tat_medizinische_versorgung = models.CharField(max_length=2, choices=JA_NEIN_KA_CHOICES, verbose_name="Medizinische Versorgung")
-    tat_spurensicherung = models.CharField(max_length=2, choices=JA_NEIN_KA_CHOICES, verbose_name="Vertrauliche Spurensicherung")
-    tat_mitbetroffene_kinder = models.IntegerField(default=0, verbose_name="Mitbetroffene Kinder", validators=[MinValueValidator(0)])
-    tat_direktbetroffene_kinder = models.IntegerField(default=0, verbose_name="Direkt betroffene Kinder", validators=[MinValueValidator(0)])
-    tat_notizen = models.TextField(blank=True, verbose_name="Notizen")
-
     # Beziehungen:
-    klient = models.ForeignKey(KlientIn, on_delete=models.CASCADE, verbose_name="Klient:in")
-    fall = models.ForeignKey('Fall', on_delete=models.CASCADE, null=True, related_name='gewalttaten', verbose_name="Zugeordneter Fall") 
+    klient = models.ForeignKey(KlientIn, on_delete=models.CASCADE, verbose_name="Betroffene:r")
+    fall = models.ForeignKey('Fall', on_delete=models.CASCADE, null=True, related_name='gewalttaten', verbose_name="Zugeordneter Fall")
     
     class Meta:
         verbose_name = "Gewalttat"
         verbose_name_plural = "Gewalttaten"
         
     def __str__(self):
-        return f"Gewalttat {self.tat_id} von Klient {self.klient.klient_id}"
+        return f"Gewalttat {self.tat_id} ({self.tat_datum})"
 
 
 class Gewaltfolge(models.Model):
-    gewalttat = models.OneToOneField(Gewalttat, on_delete=models.CASCADE, primary_key=True, verbose_name="Zugeordnete Gewalttat")
-
-    psychische_folgen = models.CharField(max_length=4, choices=PSYCH_FOLGEN_CHOICES, verbose_name="Psychische Folgen")
-    koerperliche_folgen = models.CharField(max_length=2, choices=KOERPER_FOLGEN_CHOICES, verbose_name="Körperliche Folgen")
+    folge_id = models.BigAutoField(primary_key=True)
+    gewalttat = models.OneToOneField(Gewalttat, on_delete=models.CASCADE, related_name='gewaltfolge', verbose_name="Zugehörige Gewalttat")
     
-    finanzielle_folgen = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, verbose_name="Finanzielle Folgen")
-    arbeitseinschraenkung = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, verbose_name="Arbeitseinschränkung")
-    verlust_arbeitsstelle = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, verbose_name="Verlust Arbeitsstelle")
-    soziale_isolation = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, verbose_name="Soziale Isolation")
-    suizidalitaet = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, verbose_name="Suizidalität")
-    keine_angabe = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, verbose_name="Falls zuvor kein Feld ausgefüllt")
+    # Folgen Felder (Ja/Nein/KA oder Text)
+    koerperliche_verletzung = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Körperliche Verletzung")
+    gesundheitsschaedigung = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Gesundheitsschädigung")
+    psychische_gewalt = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Psychische Gewalt")
+    sexualisierte_gewalt = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Sexualisierte Gewalt")
+    oekonomische_gewalt = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Ökonomische Gewalt")
+    soziale_gewalt = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Soziale Gewalt/Isolation")
+    digitale_gewalt = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Digitale Gewalt")
+    verfolgung_stalking = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Verfolgung/Stalking")
+    
+    # Weitere Folgen aus Statistik-Bogen
+    arbeitseinschraenkung = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Arbeitseinschränkung/Arbeitsunfähigkeit")
+    finanzielle_folgen = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Finanzielle Folgen")
+    verlust_arbeitsstelle = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Verlust Arbeitsstelle")
+    
+    suizidalitaet = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Suizidalität")
+    keine_angabe = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Falls zuvor kein Feld ausgefüllt")
     
     beeintraechtigungen = models.TextField(blank=True, verbose_name="Dauerhafte körperliche Beeinträchtigungen")
     weiteres = models.TextField(blank=True, verbose_name="Weiteres")
@@ -348,11 +385,16 @@ class Gewaltfolge(models.Model):
 
 class Anfrage(models.Model):
     anfrage_id = models.BigAutoField(primary_key=True)
-    anfrage_weg = models.CharField(max_length=100, verbose_name="Anfrageweg (Freitext)")
+    anfrage_weg = models.TextField(blank=True, null=True, verbose_name="Anfrageweg (Freitext)")
     anfrage_datum = models.DateField(default=timezone.localdate, verbose_name="Datum der Anfrage")
-    anfrage_ort = models.CharField(max_length=2, choices=STANDORT_CHOICES, verbose_name="Anfrage Ort")
-    anfrage_person = models.CharField(max_length=4, choices=ANFRAGE_PERSON_CHOICES, verbose_name="Anfrage Person (wer)")
-    anfrage_art = models.CharField(max_length=2, choices=ANFRAGE_ART_CHOICES, verbose_name="Anfrage Art")
+    anfrage_ort = models.CharField(max_length=2, choices=STANDORT_CHOICES, blank=True, null=True, verbose_name="Anfrage Ort")
+    anfrage_person = models.CharField(max_length=4, choices=ANFRAGE_PERSON_CHOICES, blank=True, null=True, verbose_name="Anfrage Person (wer)")
+    anfrage_art = models.CharField(max_length=2, choices=ANFRAGE_ART_CHOICES, blank=True, null=True, verbose_name="Anfrage Art")
+    status = models.CharField(max_length=2, choices=ANFRAGE_STATUS_CHOICES, default='AN', verbose_name="Status")
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Erstellt am")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Zuletzt geändert")
     
     # Beziehungen:
     beratungstermin = models.OneToOneField(Beratungstermin, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Zugeordneter Beratungstermin")
@@ -386,10 +428,11 @@ class Statistik(models.Model):
     class Meta:
         verbose_name = "Statistik"
         verbose_name_plural = "Statistiken"
-        # Custom Permissions für Statistik-Export (nur für erweiterte Benutzer)
+        # Custom Permissions für Statistik-Export und Zugriff
         permissions = [
             ("can_export_statistik", "Kann Statistiken exportieren"),
             ("can_share_statistik", "Kann Statistiken teilen"),
+            ("can_view_statistics", "Kann Statistiken einsehen"),
         ]
         
     def __str__(self):
@@ -398,19 +441,59 @@ class Statistik(models.Model):
 
 class Eingabefeld(models.Model):
     TYP_CHOICES = [
-        ('Text', 'Text'),
-        ('Zahl', 'Zahl'),
-        ('Datum', 'Datum'),
+        ('text', 'Text (kurz)'),
+        ('textarea', 'Text (lang)'),
+        ('number', 'Zahl'),
+        ('date', 'Datum'),
+        ('select', 'Auswahl'),
+        ('multiselect', 'Mehrfachauswahl'),
+    ]
+
+    CONTEXT_CHOICES = [
+        ('anfrage', 'Anfrage'),
+        ('fall', 'Fall'),
+        ('klient', 'Klient:in'),
     ]
 
     feldID = models.BigAutoField(primary_key=True)
-    name = models.CharField(max_length=255, verbose_name="Name des Feldes")
-    typ = models.CharField(max_length=10, choices=TYP_CHOICES, verbose_name="Datentyp")
-    wert = models.TextField(blank=True, null=True, verbose_name="Wert")
+    context = models.CharField(max_length=20, choices=CONTEXT_CHOICES, default='anfrage', verbose_name="Kontext")
+    name = models.CharField(max_length=255, verbose_name="Name des Feldes (Technisch)", help_text="Muss mit dem Modell-Feld übereinstimmen")
+    label = models.CharField(max_length=255, verbose_name="Beschriftung (Label)", default="")
+    typ = models.CharField(max_length=20, choices=TYP_CHOICES, verbose_name="Datentyp")
+    required = models.BooleanField(default=False, verbose_name="Pflichtfeld")
+    options = models.JSONField(default=list, blank=True, verbose_name="Optionen (für Select)", help_text="Liste von Objekten: [{'value': 'X', 'label': 'Y'}]")
+    sort_order = models.IntegerField(default=0, verbose_name="Reihenfolge")
+    default_value = models.TextField(blank=True, null=True, verbose_name="Standardwert")
 
     class Meta:
-        verbose_name = "Eingabefeld"
-        verbose_name_plural = "Eingabefelder"
+        verbose_name = "Eingabefeld (Formular-Konfiguration)"
+        verbose_name_plural = "Eingabefelder (Konfiguration)"
+        ordering = ['sort_order', 'label']
+
+
+class FallNotiz(models.Model):
+    notiz_id = models.BigAutoField(primary_key=True)
+    fall = models.ForeignKey(Fall, on_delete=models.CASCADE, related_name='timeline_notizen', verbose_name="Fall")
+    beratungstermin = models.ForeignKey(Beratungstermin, on_delete=models.SET_NULL, null=True, blank=True, related_name='linked_notizen', verbose_name="Zugeordneter Termin")
+    autor = models.ForeignKey(Konto, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Autor:in")
+    
+    # Inhalt als JSON für Tiptap/RichText
+    content = models.JSONField(verbose_name="Inhalt (JSON)", default=dict)
+    
+    # Manuelles Datum für den Eintrag (Standard: Jetzt)
+    datum = models.DateTimeField(default=timezone.now, verbose_name="Datum")
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Erstellt am")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Zuletzt geändert")
+
+    class Meta:
+        verbose_name = "Fall-Notiz"
+        verbose_name_plural = "Fall-Notizen"
+        ordering = ['-created_at']
+        permissions = [
+            ("manage_fall_notizen", "Kann Fall-Notizen verwalten"),
+        ]
 
     def __str__(self):
-        return f"{self.name} ({self.typ})"
+        return f"Notiz {self.notiz_id} zu Fall {self.fall_id}"

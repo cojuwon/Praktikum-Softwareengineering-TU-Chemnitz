@@ -1,147 +1,153 @@
-import Link from 'next/link';
-import { lusitana } from '@/components/ui/fonts';
-import Image from 'next/image';
+"use client";
 
-export default function Page() {
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { apiFetch } from "@/lib/api";
+import { FieldDefinition } from "@/components/form/DynamicForm";
+import FallHeader from "@/components/dashboard/fall/list/FallHeader";
+import FallFilterSection from "@/components/dashboard/fall/list/FallFilterSection";
+import FallList from "@/components/dashboard/fall/list/FallList";
+import FallPagination from "@/components/dashboard/fall/list/FallPagination";
+
+export default function FallListPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [faelle, setFaelle] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [formDefinition, setFormDefinition] = useState<FieldDefinition[] | null>(null);
+
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const [count, setCount] = useState(0);
+  const PAGE_SIZE = 10;
+
+  // Current filters
+  const [currentFilters, setCurrentFilters] = useState<any>({});
+
+  // Initial Fetch
+  useEffect(() => {
+    fetchFormDefinition();
+
+    // Check for initial filters from URL
+    const initialFilters: any = {};
+    const klientId = searchParams.get('klient_id');
+    if (klientId) {
+      initialFilters.klient = klientId;
+    }
+
+    fetchFaelle(initialFilters, 1);
+  }, [searchParams]);
+
+  const fetchFormDefinition = () => {
+    apiFetch("/api/faelle/form-fields")
+      .then((res) => res.json())
+      .then((json) => {
+        setFormDefinition(json.fields);
+      })
+      .catch((err) => {
+        console.error("Fehler beim Laden der Filter-Optionen:", err);
+      });
+  };
+
+  const fetchFaelle = (filters: any, pageNum: number = 1) => {
+    setLoading(true);
+    setCurrentFilters(filters);
+    setPage(pageNum);
+
+    const params = new URLSearchParams();
+    // Pagination
+    params.append('page', pageNum.toString());
+
+    if (filters.search) params.append('search', filters.search);
+    if (filters.datumVon) params.append('datum_von', filters.datumVon);
+    if (filters.datumBis) params.append('datum_bis', filters.datumBis);
+    if (filters.klient) params.append('klient', filters.klient);
+
+    // Multi-select arrays -> comma separated string
+    if (filters.status && filters.status.length > 0) params.append('status', filters.status.join(','));
+    if (filters.mitarbeiterin && filters.mitarbeiterin.length > 0) params.append('mitarbeiterin', filters.mitarbeiterin.join(','));
+
+    const queryString = params.toString();
+    const url = `/api/faelle/?${queryString}`;
+
+    apiFetch(url)
+      .then((res) => {
+        if (res.status === 401) throw new Error("Nicht autorisiert");
+        return res.json();
+      })
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setFaelle(data);
+          setCount(data.length);
+        } else {
+          setFaelle(data.results || []);
+          setCount(data.count || 0);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Fehler beim Laden der Liste:", err);
+        setLoading(false);
+      });
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1) return;
+    const totalPages = Math.ceil(count / PAGE_SIZE);
+    if (newPage > totalPages && totalPages > 0) return;
+    fetchFaelle(currentFilters, newPage);
+  };
+
+  const totalPages = Math.ceil(count / PAGE_SIZE);
+
+  const getStatusLabel = (code: string) => {
+    switch (code) {
+      case 'O': return 'Offen';
+      case 'L': return 'Laufend';
+      case 'A': return 'Abgeschlossen';
+      default: return code;
+    }
+  };
+
+  const getStatusColor = (code: string) => {
+    switch (code) {
+      case 'O': return { bg: '#e0e7ff', text: '#3730a3' }; // Indigo
+      case 'L': return { bg: '#dcfce7', text: '#166534' }; // Green
+      case 'A': return { bg: '#f3f4f6', text: '#374151' }; // Gray
+      default: return { bg: '#f3f4f6', text: '#374151' };
+    }
+  };
+
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        overflow: "auto",
-        minHeight: "100vh",
-        padding: "10px 24px 0 24px",
-        backgroundColor: "#F3EEEE",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "700px",
-          margin: "0 auto",
-          width: "100%",
-        }}
-      >
-        <Image
-          src="/bellis-favicon.png"
-          alt="Bellis Logo"
-          width={100}
-          height={100}
-          style={{
-            width: "60px",
-            height: "auto",
-            objectFit: "contain",
-            display: "block",
-            margin: "60px auto 20px auto",
-          }}
+    <div className="max-w-5xl mx-auto w-full px-6">
+      <FallHeader />
+
+      <div className="bg-white rounded-b-xl overflow-visible shadow-sm">
+        <FallFilterSection
+          formDefinition={formDefinition}
+          onSearch={(f) => fetchFaelle(f, 1)}
         />
 
-        <div
-          style={{
-            backgroundColor: "white",
-            padding: "40px 40px",
-            margin: "0 20px 0px 20px",
-            borderRadius: "12px 12px 0 0",
-          }}
-        >
-          <h1
-            style={{
-              fontSize: "28px",
-              fontWeight: "600",
-              color: "#42446F",
-              marginBottom: "6px",
-              textAlign: "center",
-            }}
-          >
-            Fälle verwalten
-          </h1>
-          <p
-            style={{
-              fontSize: "14px",
-              color: "#6b7280",
-              textAlign: "center",
-              margin: 0,
-            }}
-          >
-            Wählen Sie eine Option
-          </p>
-        </div>
+        <div className="px-10 py-8 bg-gray-50 rounded-b-xl">
+          <FallList
+            faelle={faelle}
+            loading={loading}
+            onRowClick={(id) => router.push(`/dashboard/fall/edit/${id}`)}
+            getStatusLabel={getStatusLabel}
+            getStatusColor={getStatusColor}
+          />
 
-        <div
-          style={{
-            backgroundColor: "white",
-            padding: "20px 20px",
-            margin: "0 20px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            borderRadius: "0 0 12px 12px",
-            gap: "15px",
-          }}
-        >
-          <Link
-            href="/dashboard/fall/create"
-            style={{
-              width: "100%",
-              maxWidth: "350px",
-              backgroundColor: "transparent",
-              color: "#131313",
-              border: "3px solid #A0A8CD",
-              borderRadius: "8px",
-              padding: "10px 16px",
-              fontSize: "16px",
-              fontWeight: "500",
-              cursor: "pointer",
-              textAlign: "center",
-              textDecoration: "none",
-              display: "block",
-            }}
-          >
-            Neuen Fall erstellen
-          </Link>
-
-          <Link
-            href="/dashboard/fall/edit"
-            style={{
-              width: "100%",
-              maxWidth: "350px",
-              backgroundColor: "transparent",
-              color: "#131313",
-              border: "3px solid #A0A8CD",
-              borderRadius: "8px",
-              padding: "10px 16px",
-              fontSize: "16px",
-              fontWeight: "500",
-              cursor: "pointer",
-              textAlign: "center",
-              textDecoration: "none",
-              display: "block",
-            }}
-          >
-            Fall bearbeiten
-          </Link>
+          {!loading && count > 0 && (
+            <FallPagination
+              page={page}
+              totalPages={totalPages}
+              count={count}
+              pageSize={PAGE_SIZE}
+              onPageChange={handlePageChange}
+            />
+          )}
         </div>
       </div>
-
-      <Image
-        src="/drei-welle-zusammenblau.png"
-        alt=""
-        width={1400}
-        height={100}
-        style={{
-          width: "150%",
-          height: "auto",
-          objectFit: "cover",
-          transform: "scaleY(1) scaleX(1.21)",
-          display: "block",
-          marginLeft: "-10%",
-        }}
-      />
     </div>
   );
 }

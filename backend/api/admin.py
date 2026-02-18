@@ -47,11 +47,11 @@ class BeratungsterminAdmin(admin.ModelAdmin):
 
 @admin.register(Gewalttat)
 class GewalttatAdmin(admin.ModelAdmin):
-    list_display = ('tat_id', 'klient', 'tatort')
+    list_display = ('tat_id', 'klient', 'tat_ort')
 
 @admin.register(Gewaltfolge)
 class GewaltfolgeAdmin(admin.ModelAdmin):
-    list_display = ('gewalttat', 'psychische_folgen')
+    list_display = ('gewalttat', 'psychische_gewalt')
 
 @admin.register(Anfrage)
 class AnfrageAdmin(admin.ModelAdmin):
@@ -63,7 +63,10 @@ class StatistikAdmin(admin.ModelAdmin):
 
 @admin.register(Eingabefeld)
 class EingabefeldAdmin(admin.ModelAdmin):
-    list_display = ('name', 'typ', 'wert')
+    list_display = ('label', 'name', 'context', 'typ', 'required', 'sort_order')
+    list_filter = ('context', 'typ', 'required')
+    search_fields = ('label', 'name')
+    ordering = ('sort_order', 'label')
 
 @admin.register(Preset)
 class PresetAdmin(admin.ModelAdmin):

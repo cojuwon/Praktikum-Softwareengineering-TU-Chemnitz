@@ -1,147 +1,129 @@
-import Link from 'next/link';
-import { lusitana } from '@/components/ui/fonts';
-import Image from 'next/image';
+"use client";
 
-export default function Page() {
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { apiFetch } from "@/lib/api";
+import { FieldDefinition } from "@/components/form/DynamicForm";
+import AnfrageHeader from "@/components/dashboard/anfrage/list/AnfrageHeader";
+import AnfrageFilterSection from "@/components/dashboard/anfrage/list/AnfrageFilterSection";
+import AnfrageList from "@/components/dashboard/anfrage/list/AnfrageList";
+import Pagination from "@/components/ui/pagination";
+
+export default function AnfrageListPage() {
+  const router = useRouter();
+  const [anfragen, setAnfragen] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [formDefinition, setFormDefinition] = useState<FieldDefinition[] | null>(null);
+
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const [count, setCount] = useState(0);
+  const PAGE_SIZE = 10;
+  // Note: Backend default is 10, should match or be dynamic. 
+  // We'll rely on backend's count and page size.
+
+  // Current filters
+  const [currentFilters, setCurrentFilters] = useState<any>({});
+
+  // Initial Fetch
+  useEffect(() => {
+    fetchFormDefinition();
+    fetchAnfragen({}, 1);
+  }, []);
+
+  const fetchFormDefinition = () => {
+    apiFetch("/api/anfragen/form-fields")
+      .then((res) => res.json())
+      .then((json) => {
+        setFormDefinition(json.fields);
+      })
+      .catch((err) => {
+        console.error("Fehler beim Laden der Filter-Optionen:", err);
+      });
+  };
+
+  const fetchAnfragen = (filters: any, pageNum: number = 1) => {
+    setLoading(true);
+    setCurrentFilters(filters);
+    setPage(pageNum);
+
+    const params = new URLSearchParams();
+    // Pagination
+    params.append('page', pageNum.toString());
+
+    if (filters.search) params.append('search', filters.search);
+    if (filters.datumVon) params.append('datum_von', filters.datumVon);
+    if (filters.datumBis) params.append('datum_bis', filters.datumBis);
+
+    // Multi-select arrays -> comma separated string
+    if (filters.art && filters.art.length > 0) params.append('anfrage_art', filters.art.join(','));
+    if (filters.ort && filters.ort.length > 0) params.append('anfrage_ort', filters.ort.join(','));
+    if (filters.person && filters.person.length > 0) params.append('anfrage_person', filters.person.join(','));
+    if (filters.status && filters.status.length > 0) params.append('status', filters.status.join(','));
+
+    const queryString = params.toString();
+    const url = `/api/anfragen/?${queryString}`;
+
+    apiFetch(url)
+      .then((res) => {
+        if (res.status === 401) throw new Error("Nicht autorisiert");
+        return res.json();
+      })
+      .then((data) => {
+        // With pagination, data is { count: number, results: [...] }
+        // Without pagination (fallback), it's [...]
+        if (Array.isArray(data)) {
+          setAnfragen(data);
+          setCount(data.length);
+        } else {
+          setAnfragen(data.results || []);
+          setCount(data.count || 0);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Fehler beim Laden der Liste:", err);
+        setLoading(false);
+      });
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1) return;
+    const totalPages = Math.ceil(count / PAGE_SIZE);
+    if (newPage > totalPages && totalPages > 0) return;
+    fetchAnfragen(currentFilters, newPage);
+  };
+
+  const totalPages = Math.ceil(count / PAGE_SIZE);
+
   return (
-       <div
-  style={{
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    overflow: "auto",
-    minHeight: "100vh",
-    padding: "10px 24px 0 24px",
-    backgroundColor: "#F3EEEE",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-  }}
->
-      <div
-        style={{
-          maxWidth: "700px",
-          margin: "0 auto",
-          width: "100%",
-        }}
-      >
-        <Image
-          src="/bellis-favicon.png"
-          alt="Bellis Logo"
-          width={100}
-          height={100}
-          style={{
-            width: "60px",
-            height: "auto",
-            objectFit: "contain",
-            display: "block",
-            margin: "60px auto 20px auto",
-          }}
+    <div className="max-w-5xl mx-auto w-full px-6">
+      <AnfrageHeader />
+
+      <div className="bg-white rounded-b-xl overflow-visible shadow-sm">
+        <AnfrageFilterSection
+          formDefinition={formDefinition}
+          onSearch={(f) => fetchAnfragen(f, 1)}
         />
 
-        <div
-          style={{
-            backgroundColor: "white",
-            padding: "40px 40px",
-            margin: "0 20px 0px 20px",
-            borderRadius: "12px 12px 0 0",
-          }}
-        >
-          <h1
-            style={{
-              fontSize: "28px",
-              fontWeight: "600",
-              color: "#42446F",
-              marginBottom: "6px",
-              textAlign: "center",
-            }}
-          >
-            Anfragen verwalten
-          </h1>
-          <p
-            style={{
-              fontSize: "14px",
-              color: "#6b7280",
-              textAlign: "center",
-              margin: 0,
-            }}
-          >
-            Wählen Sie eine Option
-          </p>
-        </div>
+        <div className="px-10 py-8 bg-gray-50 rounded-b-xl">
+          <AnfrageList
+            anfragen={anfragen}
+            loading={loading}
+            onRowClick={(id) => router.push(`/dashboard/anfrage/edit/${id}`)}
+          />
 
-        <div
-          style={{
-            backgroundColor: "white",
-            padding: "20px 20px",
-            margin: "0 20px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            borderRadius: "0 0 12px 12px",
-            gap: "15px",
-          }}
-        >
-          <Link
-            href="/dashboard/anfrage/create"
-            style={{
-              width: "100%",
-              maxWidth: "350px",
-              backgroundColor: "transparent",
-              color: "#131313",
-              border: "3px solid #A0A8CD",
-              borderRadius: "8px",
-              padding: "10px 16px",
-              fontSize: "16px",
-              fontWeight: "500",
-              cursor: "pointer",
-              textAlign: "center",
-              textDecoration: "none",
-              display: "block",
-            }}
-          >
-            Neue Anfrage erstellen
-          </Link>
-
-          <Link
-            href="/dashboard/anfrage/edit"
-            style={{
-              width: "100%",
-              maxWidth: "350px",
-              backgroundColor: "transparent",
-              color: "#131313",
-              border: "3px solid #A0A8CD",
-              borderRadius: "8px",
-              padding: "10px 16px",
-              fontSize: "16px",
-              fontWeight: "500",
-              cursor: "pointer",
-              textAlign: "center",
-              textDecoration: "none",
-              display: "block",
-            }}
-          >
-            Anfrage bearbeiten
-          </Link>
+          {!loading && count > 0 && (
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              count={count}
+              pageSize={PAGE_SIZE}
+              onPageChange={handlePageChange}
+            />
+          )}
         </div>
       </div>
-
-      <Image
-        src="/drei-welle-zusammenblau.png"
-        alt=""
-        width={1400}
-        height={100}
-        style={{
-          width: "150%",
-          height: "auto",
-          objectFit: "cover",
-          transform: "scaleY(1) scaleX(1.21)",
-          display: "block",
-          marginLeft: "-10%",
-        }}
-      />
     </div>
   );
 }

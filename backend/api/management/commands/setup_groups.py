@@ -65,6 +65,7 @@ class Command(BaseCommand):
             'view_own_klientin',
             'view_own_fall',
             'view_own_beratungstermin',
+            'can_view_statistics',
         ])
         
         # Erweiterung-Berechtigungen: Alles von Basis + Delete + Custom Permissions

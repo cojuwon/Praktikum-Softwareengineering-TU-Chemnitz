@@ -14,6 +14,7 @@ Suche, Filter und Sortierung:
 - GET /api/anfragen/?anfrage_art=B -> Nach Art filtern
 - GET /api/anfragen/?anfrage_ort=LS -> Nach Ort filtern
 - GET /api/anfragen/?anfrage_person=F -> Nach Person filtern
+- GET /api/anfragen/?status=AN,TV -> Nach Status filtern (AN=Anfrage, TV=Termin vereinbart, A=Abgeschlossen)
 - GET /api/anfragen/?datum_von=2024-01-01&datum_bis=2024-12-31 -> Nach Zeitraum filtern
 - GET /api/anfragen/?ordering=-anfrage_datum -> Sortierung
 """
@@ -23,9 +24,9 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db.models import Q
 
-from api.models import Anfrage, Konto
+from api.models import Anfrage, Konto, STANDORT_CHOICES, ANFRAGE_PERSON_CHOICES, ANFRAGE_ART_CHOICES, ANFRAGE_STATUS_CHOICES, Eingabefeld
 from api.serializers import AnfrageSerializer
-from api.permissions import CanManageOwnData
+from api.permissions import CanManageOwnData, DjangoModelPermissionsWithView
 
 
 class AnfrageViewSet(viewsets.ModelViewSet):
@@ -59,10 +60,10 @@ class AnfrageViewSet(viewsets.ModelViewSet):
     """
     queryset = Anfrage.objects.all()
     serializer_class = AnfrageSerializer
-    permission_classes = [permissions.IsAuthenticated, CanManageOwnData]
+    permission_classes = [permissions.IsAuthenticated, DjangoModelPermissionsWithView, CanManageOwnData]
     filter_backends = [filters.OrderingFilter]
-    ordering_fields = ['anfrage_datum', 'anfrage_art', 'anfrage_ort', 'anfrage_person', 'anfrage_id']
-    ordering = ['-anfrage_datum']  # Default: neueste zuerst
+    ordering_fields = ['created_at', 'updated_at', 'anfrage_datum', 'anfrage_art', 'anfrage_ort', 'anfrage_person', 'anfrage_id']
+    ordering = ['-created_at']  # Default: neueste zuerst
 
     def get_queryset(self):
         """
@@ -116,17 +117,30 @@ class AnfrageViewSet(viewsets.ModelViewSet):
         # Filter nach Anfrage-Art
         anfrage_art = params.get('anfrage_art')
         if anfrage_art:
-            qs = qs.filter(anfrage_art=anfrage_art)
+            arts = [x.strip() for x in anfrage_art.split(',') if x.strip()]
+            if arts:
+                qs = qs.filter(anfrage_art__in=arts)
         
         # Filter nach Anfrage-Ort
         anfrage_ort = params.get('anfrage_ort')
         if anfrage_ort:
-            qs = qs.filter(anfrage_ort=anfrage_ort)
+            orte = [x.strip() for x in anfrage_ort.split(',') if x.strip()]
+            if orte:
+                qs = qs.filter(anfrage_ort__in=orte)
         
         # Filter nach Anfrage-Person
         anfrage_person = params.get('anfrage_person')
         if anfrage_person:
-            qs = qs.filter(anfrage_person=anfrage_person)
+            personen = [x.strip() for x in anfrage_person.split(',') if x.strip()]
+            if personen:
+                qs = qs.filter(anfrage_person__in=personen)
+        
+        # Filter nach Status
+        status_param = params.get('status')
+        if status_param:
+            statuses = [x.strip() for x in status_param.split(',') if x.strip()]
+            if statuses:
+                qs = qs.filter(status__in=statuses)
         
         # Filter nach Datumsbereich
         datum_von = params.get('datum_von')
@@ -138,6 +152,29 @@ class AnfrageViewSet(viewsets.ModelViewSet):
             qs = qs.filter(anfrage_datum__lte=datum_bis)
         
         return qs
+
+    @action(detail=False, methods=['get'], url_path='form-fields')
+    def form_fields(self, request):
+        """
+        Liefert die Definition der Eingabefelder für eine neue Anfrage.
+        Die Felder werden dynamisch aus der Tabelle 'Eingabefeld' geladen.
+        """
+        fields_qs = Eingabefeld.objects.filter(context='anfrage').order_by('sort_order')
+        
+        fields = []
+        for f in fields_qs:
+            field_def = {
+                "name": f.name,
+                "label": f.label,
+                "type": f.typ,
+                "required": f.required,
+            }
+            if f.options:
+                field_def["options"] = f.options
+            
+            fields.append(field_def)
+
+        return Response({"fields": fields})
 
     @action(detail=True, methods=['post'], url_path='assign-employee')
     def assign_employee(self, request, pk=None):

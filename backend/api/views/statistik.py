@@ -1,17 +1,50 @@
 """ViewSet für Statistik-Management."""
 
+import logging
+
 from django.core.files.base import ContentFile
+from django.db.models import Q
 from django.http import FileResponse
 from django.utils import timezone
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
-from api.models import Statistik
-from api.serializers import StatistikSerializer
+logger = logging.getLogger(__name__)
+
+from api.models import Statistik, Preset, STANDORT_CHOICES
+from api.serializers import StatistikSerializer, PresetSerializer
 from api.permissions import DjangoModelPermissionsWithView, IsOwnerOrAdmin
-from api.services.statistik_service import StatistikService
+
+
+class StatistikQuerySerializer(serializers.Serializer):
+    """Serializer for validating statistics query parameters."""
+    zeitraum_start = serializers.DateField(required=False, allow_null=True)
+    zeitraum_ende = serializers.DateField(required=False, allow_null=True)
+    _visible_sections = serializers.DictField(required=False, allow_null=True, child=serializers.BooleanField())
+    # Allow extra fields for dynamic filters (we will validate them in the service)
+    # But DRF Serializer by default ignores extra fields.
+    # We need to explicitly define them or use a wildcard?
+    # Better: explicitly define the known filters from get_filters()
+    anfrage_ort = serializers.ListField(child=serializers.CharField(), required=False)
+    anfrage_person = serializers.ListField(child=serializers.CharField(), required=False)
+    anfrage_art = serializers.ListField(child=serializers.CharField(), required=False)
+    beratungsstelle = serializers.ListField(child=serializers.CharField(), required=False)
+    beratungsart = serializers.ListField(child=serializers.CharField(), required=False)
+    tatort = serializers.ListField(child=serializers.CharField(), required=False)
+    psychische_folgen = serializers.ListField(child=serializers.CharField(), required=False)
+    koerperliche_folgen = serializers.ListField(child=serializers.CharField(), required=False)
+    anzeige = serializers.ListField(child=serializers.CharField(), required=False)
+
+    # Legacy support for single values (if frontend sends strings instead of lists)
+    def to_internal_value(self, data):
+        data = data.copy()
+        list_fields = ['anfrage_ort', 'anfrage_person', 'anfrage_art', 'beratungsstelle', 'beratungsart', 'tatort', 'psychische_folgen', 'koerperliche_folgen', 'anzeige']
+        for field in list_fields:
+            if field in data and not isinstance(data[field], list):
+                data[field] = [data[field]]
+        return super().to_internal_value(data)
 
 
 class StatistikViewSet(viewsets.ModelViewSet):
@@ -39,149 +72,164 @@ class StatistikViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """
-        Erstellt eine Statistik, führt die Berechnung durch und speichert das Ergebnis.
+        Erstellt eine Statistik, führt die (Dummy-)Berechnung durch und speichert das Ergebnis.
         """
         # 1. Daten extrahieren
         start = serializer.validated_data.get('zeitraum_start')
         ende = serializer.validated_data.get('zeitraum_ende')
         preset = serializer.validated_data.get('preset')
         
-        # 2. Filter anwenden
+        # 2. Filter anwenden (Simulation)
         filter_info = "Keine Filter (Ad-hoc)"
         if preset:
             filter_info = f"Filter aus Preset '{preset.preset_beschreibung}'"
         
-        # 3. Statistik berechnen mit StatistikService
-        stats = StatistikService.calculate_stats(
-            zeitraum_start=start,
-            zeitraum_ende=ende,
-            preset=preset
-        )
-        
-        # 4. Ergebnisdatei erstellen
-        content = self._format_stats_report(
-            titel=serializer.validated_data.get('statistik_titel'),
-            start=start,
-            ende=ende,
-            filter_info=filter_info,
-            stats=stats
+        # 3. Berechnung simulieren & Datei erstellen
+        # In einer echten Anwendung würde hier die komplexe Aggregationslogik laufen.
+        content = (
+            f"Statistik Report\n"
+            f"================\n"
+            f"Titel: {serializer.validated_data.get('statistik_titel')}\n"
+            f"Zeitraum: {start} bis {ende}\n"
+            f"Basis: {filter_info}\n"
+            f"Erstellt am: {timezone.now()}\n"
+            f"Erstellt von: {self.request.user}\n\n"
+            f"Ergebnisse:\n"
+            f"- Anzahl Fälle: 42\n"
+            f"- Anzahl Beratungen: 128\n"
+            f"- Durchschnittsalter: 35.5\n"
         )
         
         file_name = f"statistik_{timezone.now().strftime('%Y%m%d_%H%M%S')}.txt"
         file_obj = ContentFile(content.encode('utf-8'), name=file_name)
         
-        # 5. Speichern mit Creator und Ergebnisdatei
+        # 4. Speichern mit Creator und Ergebnisdatei
         serializer.save(creator=self.request.user, ergebnis=file_obj, creation_date=timezone.localdate())
-    
-    def _format_stats_report(self, titel, start, ende, filter_info, stats):
-        """
-        Erzeugt einen formatierten Statistikbericht als Textdateiinhalt.
 
-        Parameters
-        ----------
-        titel : str
-            Titel der Statistik, der im Kopf des Berichts ausgegeben wird.
-        start : date or datetime
-            Startdatum bzw. -zeitpunkt des ausgewerteten Zeitraums.
-        ende : date or datetime
-            Enddatum bzw. -zeitpunkt des ausgewerteten Zeitraums.
-        filter_info : str
-            Beschreibung der verwendeten Filterbasis (z.B. Preset-Beschreibung oder Hinweis auf Ad-hoc-Auswertung).
-        stats : dict
-            Von ``StatistikService.calculate_stats`` berechnete Kennzahlen, aus denen die einzelnen
-            Berichtsektionen (z.B. Fallzahlen, Beratungen nach Geschlecht/Art usw.) befüllt werden.
-
-        Returns
-        -------
-        str
-            Vollständig formatierter Berichtstext, der als Inhalt der erzeugten ``.txt``-Datei verwendet wird.
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated] )
+    def filters(self, request):
         """
-        report = (
-            f"Statistik Report\n"
-            f"================\n"
-            f"Titel: {titel}\n"
-            f"Zeitraum: {start} bis {ende}\n"
-            f"Basis: {filter_info}\n"
-            f"Erstellt am: {timezone.now()}\n"
-            f"Erstellt von: {self.request.user}\n\n"
-            f"ZUSAMMENFASSUNG\n"
-            f"===============\n"
-            f"Anzahl Fälle: {stats['total_cases']}\n"
-            f"Anzahl Klient:innen: {stats['total_clients']}\n"
-            f"Anzahl Beratungen: {stats['total_consultations']}\n"
-            f"Anzahl Begleitungen: {stats['total_accompaniments']}\n"
-            f"Anzahl Anfragen: {stats['total_inquiries']}\n"
-            f"Durchschnittliche Beratungsdauer: {stats['avg_consultation_duration']} Minuten\n"
-            f"Dolmetscherstunden gesamt: {stats['total_interpreter_hours']}\n\n"
-            f"BERATUNGEN NACH GESCHLECHT\n"
-            f"==========================\n"
-            f"Gesamt: {stats['consultations_by_gender']['gesamt']}\n"
-            f"Weiblich: {stats['consultations_by_gender']['weiblich']}\n"
-            f"Männlich: {stats['consultations_by_gender']['maennlich']}\n"
-            f"Divers: {stats['consultations_by_gender']['divers']}\n\n"
-            f"BERATUNGEN NACH ART\n"
-            f"===================\n"
-            f"Persönlich: {stats['consultations_by_type']['persoenlich']}\n"
-            f"Aufsuchend: {stats['consultations_by_type']['aufsuchend']}\n"
-            f"Telefonisch: {stats['consultations_by_type']['telefonisch']}\n"
-            f"Online: {stats['consultations_by_type']['online']}\n"
-            f"Schriftlich: {stats['consultations_by_type']['schriftlich']}\n\n"
-            f"BEGLEITUNGEN NACH INSTITUTION\n"
-            f"=============================\n"
-            f"Gesamt: {stats['accompaniments_by_institution']['gesamt']}\n"
-            f"Gerichte: {stats['accompaniments_by_institution']['gerichte']}\n"
-            f"Polizei: {stats['accompaniments_by_institution']['polizei']}\n"
-            f"Rechtsanwält:innen: {stats['accompaniments_by_institution']['rechtsanwaelte']}\n"
-            f"Ärzt:innen: {stats['accompaniments_by_institution']['aerzte']}\n"
-            f"Rechtsmedizin: {stats['accompaniments_by_institution']['rechtsmedizin']}\n"
-            f"Jugendamt: {stats['accompaniments_by_institution']['jugendamt']}\n"
-            f"Sozialamt: {stats['accompaniments_by_institution']['sozialamt']}\n"
-            f"Jobcenter: {stats['accompaniments_by_institution']['jobcenter']}\n"
-            f"Sonstige: {stats['accompaniments_by_institution']['sonstige']}\n\n"
-            f"KLIENT:INNEN NACH ALTERSGRUPPE\n"
-            f"==============================\n"
-            f"18-21 Jahre: {stats['clients_by_age_group']['18_21']}\n"
-            f"21-27 Jahre: {stats['clients_by_age_group']['21_27']}\n"
-            f"27-60 Jahre: {stats['clients_by_age_group']['27_60']}\n"
-            f"60+ Jahre: {stats['clients_by_age_group']['60_plus']}\n"
-            f"Keine Angabe: {stats['clients_by_age_group']['keine_angabe']}\n\n"
-            f"GEWALT STATISTIKEN\n"
-            f"==================\n"
-            f"Anzeige erstattet: {stats['violence_with_report']['anzeige_ja']}\n"
-            f"Keine Anzeige: {stats['violence_with_report']['anzeige_nein']}\n"
-            f"Spurensicherung: {stats['violence_with_report']['spurensicherung_ja']}\n"
-            f"Mitbetroffene Kinder: {stats['affected_children']['mitbetroffene']}\n"
-            f"Direkt betroffene Kinder: {stats['affected_children']['direktbetroffene']}\n\n"
-            f"BERATUNGEN NACH ALTER\n"
-            f"======================\n"
-            f"{stats.get('consultations_by_age')}\n\n"
-            f"KLIENTINNEN NACH WOHNORT\n"
-            f"========================\n"
-            f"{stats.get('clients_by_location')}\n\n"
-            f"KLIENTINNEN NACH STAATSANGEHÖRIGKEIT\n"
-            f"====================================\n"
-            f"{stats.get('clients_by_nationality')}\n\n"
-            f"KLIENTINNEN MIT BEEINTRÄCHTIGUNG\n"
-            f"================================\n"
-            f"{stats.get('clients_with_disability')}\n\n"
-            f"GEWALTFORMEN\n"
-            f"============\n"
-            f"{stats.get('violence_by_type')}\n\n"
-            f"GEWALTORT\n"
-            f"=========\n"
-            f"{stats.get('violence_by_location')}\n\n"
-            f"FOLGEN DER GEWALT\n"
-            f"=================\n"
-            f"{stats.get('violence_consequences')}\n\n"
-            f"ANFRAGEN NACH ART\n"
-            f"=================\n"
-            f"{stats.get('inquiries_by_type')}\n\n"
-            f"ANFRAGEN NACH PERSON\n"
-            f"====================\n"
-            f"{stats.get('inquiries_by_person')}\n"
-        )
+        Liefert die Definition der verfügbaren Filter mit echten Enum-Optionen.
+        """
+        from api.services.statistik_service import StatistikService
+        filters = StatistikService.get_filters()
+        return Response({"filters": filters})
+
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
+    def presets(self, request):
+        """
+        Liefert gespeicherte Presets.
+        Admins sehen alle Presets, andere User nur eigene oder berechtigte.
+        """
+        if request.user.rolle_mb == 'AD':
+            presets = Preset.objects.all()
+        else:
+            presets = Preset.objects.filter(
+                Q(ersteller=request.user) | Q(berechtigte=request.user) | Q(is_global=True)
+            ).distinct()
+        serializer = PresetSerializer(presets, many=True)
+        return Response({"presets": serializer.data})
+
+    @action(detail=False, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def query(self, request):
+        """
+        Führt die Statistik-Berechnung basierend auf den Filtern durch.
+        (Legacy-Endpoint für Rückwärtskompatibilität)
+        """
+        if not request.user.has_perm('api.can_view_statistics'):
+             return Response({'detail': 'Keine Berechtigung.'}, status=status.HTTP_403_FORBIDDEN)
+
+        query_serializer = StatistikQuerySerializer(data=request.data)
+        if not query_serializer.is_valid():
+            return Response(query_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        return report
+        filters = query_serializer.validated_data
+        try:
+            from api.services.statistik_service import StatistikService
+            result = StatistikService.calculate_stats(filters)
+            return Response(result)
+        except Exception as e:
+            logger.exception("Error calculating statistics")
+            return Response(
+                {'detail': 'Fehler bei der Berechnung der Statistik.'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=False, methods=['get'])
+    def metadata(self, request):
+        """
+        Liefert Metadaten für alle analysierbaren Models.
+        
+        Response enthält pro Model:
+        - filterable_fields: Felder die als Filter verwendet werden können
+        - groupable_fields: Felder nach denen gruppiert werden kann (Dimensionen)
+        - metrics: Verfügbare Aggregationsfunktionen
+        """
+        if not request.user.has_perm('api.can_view_statistics'):
+             return Response({'detail': 'Keine Berechtigung.'}, status=status.HTTP_403_FORBIDDEN)
+
+        from api.services.dynamic_statistik_service import DynamicStatistikService
+        metadata = DynamicStatistikService.get_metadata()
+        return Response(metadata)
+
+    @extend_schema(
+        request={'application/json': {
+            'type': 'object',
+            'properties': {
+                'base_model': {'type': 'string', 'enum': ['Anfrage', 'Fall', 'KlientIn', 'Beratungstermin', 'Begleitung', 'Gewalttat', 'Gewaltfolge']},
+                'filters': {'type': 'object'},
+                'group_by': {'type': 'string'},
+                'metric': {'type': 'string', 'enum': ['count', 'sum']},
+            }
+        }},
+        responses={200: {'type': 'array'}}
+    )
+    @action(detail=False, methods=['post'], url_path='dynamic-query')
+    def dynamic_query(self, request):
+        """
+        Führt eine dynamische Statistik-Abfrage aus.
+        
+        Request Body:
+        - base_model: Name des Models (z.B. "Anfrage")
+        - filters: Dict mit Django-Lookups (z.B. {"anfrage_datum__gte": "2024-01-01"})
+        - group_by: Feld für Gruppierung (z.B. "anfrage_art")
+        - metric: "count" oder "sum"
+        - sum_field: Bei metric="sum" das zu summierende Feld
+        """
+        if not request.user.has_perm('api.can_view_statistics'):
+             return Response({'detail': 'Keine Berechtigung.'}, status=status.HTTP_403_FORBIDDEN)
+
+        from api.serializers.statistik_query import DynamicQuerySerializer
+        from api.services.dynamic_statistik_service import DynamicStatistikService
+        
+        serializer = DynamicQuerySerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            result = DynamicStatistikService.execute_query(
+                base_model=serializer.validated_data['base_model'],
+                filters=serializer.validated_data.get('filters', {}),
+                group_by=serializer.validated_data['group_by'],
+                metric=serializer.get_metric_string()
+            )
+            return Response({
+                'base_model': serializer.validated_data['base_model'],
+                'group_by': serializer.validated_data['group_by'],
+                'metric': serializer.validated_data['metric'],
+                'results': result
+            })
+        except ValueError as e:
+            return Response(
+                {'detail': str(e)}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception:
+            logger.exception("Error executing dynamic query")
+            return Response(
+                {'detail': 'Fehler bei der Ausführung der dynamischen Abfrage.'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     @extend_schema(
         parameters=[OpenApiParameter(name='format', description='Dateiformat (pdf, xlsx, csv)', required=False, type=str)],

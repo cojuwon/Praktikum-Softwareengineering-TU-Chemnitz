@@ -39,12 +39,12 @@ class BeratungsterminViewSet(viewsets.ModelViewSet):
             or user.has_perm('api.can_view_all_data')
         )
 
-        # Explicit request for all data
-        if can_view_all and self.request.query_params.get('view') == 'all':
+        # Admin or permission to view all
+        if can_view_all:
             return queryset
             
         # Filter by own appointments
-        if user.has_perm('api.view_own_beratungstermin') or can_view_all:
+        if user.has_perm('api.view_own_beratungstermin'):
              return queryset.filter(berater=user)
         
         # No permission

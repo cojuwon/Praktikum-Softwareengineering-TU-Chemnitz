@@ -45,7 +45,7 @@ services:
     build:
       context: ./frontend_neu     
       dockerfile: Dockerfile
-    container_name: nextjs_frontend
+    container_name: frontend
     
     # 💡 ENTWICKLUNG: Entferne die Kommentare für Live Reload
     # volumes:
@@ -65,6 +65,7 @@ services:
       - api
     networks:
       - webnet
+
 
 # Definition der Volumes (für Persistenz) und Netzwerke
 volumes:

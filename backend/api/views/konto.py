@@ -4,13 +4,14 @@ ViewSet für Konto/User-Management.
 Enthält spezielle Berechtigungsprüfungen für User-Verwaltung.
 """
 
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.contrib.auth.models import Group
+from django_filters.rest_framework import DjangoFilterBackend
 
-from api.models import Konto
-from api.serializers import KontoSerializer, KontoMeSerializer
+from api.models import Konto, BERECHTIGUNG_CHOICES
+from api.serializers import KontoSerializer, KontoMeSerializer, KontoAdminSerializer
 from api.permissions import DjangoModelPermissionsWithView, IsAdminRole
 
 
@@ -23,8 +24,23 @@ class KontoViewSet(viewsets.ModelViewSet):
     - User können ihre eigenen Daten lesen
     """
     queryset = Konto.objects.all()
-    serializer_class = KontoSerializer
+    # serializer_class = KontoSerializer  <-- Dynamic allocation via get_serializer_class
     permission_classes = [permissions.IsAuthenticated, DjangoModelPermissionsWithView]
+    
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    search_fields = ['vorname_mb', 'nachname_mb', 'mail_mb']
+    filterset_fields = {'rolle_mb': ['exact', 'in'], 'is_active': ['exact'], 'status_mb': ['exact']}
+
+    def get_serializer_class(self):
+        """
+        Wählt den Serializer basierend auf der Rolle.
+        Admins bekommen den AdminSerializer (mit Passwort-Support),
+        andere den normalen (nur Lesen/Basisdaten).
+        """
+        user = self.request.user
+        if (user.is_authenticated and (user.rolle_mb == 'AD' or user.has_perm('api.can_manage_users'))):
+             return KontoAdminSerializer
+        return KontoSerializer
 
     def get_queryset(self):
         """
@@ -133,3 +149,27 @@ class KontoViewSet(viewsets.ModelViewSet):
                 {'detail': f'Gruppe "{group_name}" nicht gefunden.'},
                 status=status.HTTP_404_NOT_FOUND
             )
+    @action(detail=False, methods=['get'], permission_classes=[IsAdminRole])
+    def stats(self, request):
+        """
+        Liefert Statistiken für das Admin-Dashboard.
+        Endpoint: /api/konten/stats/
+        """
+        total = Konto.objects.count()
+        admins = Konto.objects.filter(rolle_mb='AD').count()
+        active = Konto.objects.filter(is_active=True).count()
+        
+        return Response({
+            'total': total,
+            'admins': admins,
+            'active': active
+        })
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAdminRole])
+    def roles(self, request):
+        """
+        Liefert die verfügbaren Benutzerrollen.
+        Endpoint: /api/konten/roles/
+        """
+        roles = [{'value': choice[0], 'label': choice[1]} for choice in BERECHTIGUNG_CHOICES]
+        return Response(roles)

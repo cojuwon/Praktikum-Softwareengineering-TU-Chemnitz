@@ -16,9 +16,9 @@ export enum AnfragePerson {
   A = 'Angehörige:r',
   B = 'Betroffene:r',
   Anonym = 'anonym',
-  qB =  'queer Betroffene:r (qB)',
+  qB = 'queer Betroffene:r (qB)',
   qF = 'queer Fachkraft (qF)',
-  qA = 'queer Angehörige:r (qA)', 
+  qA = 'queer Angehörige:r (qA)',
   QueerAnonym = 'queer anonym',
   FfB = 'Fachkraft für Betroffene (FfB)',
   AfB = 'Angehörige:r für Betroffene (AfB)',
@@ -59,15 +59,15 @@ export interface Anfrage {
   anfrage_ort: AnfrageOrt;        // Ort der Anfrage
   anfrage_person: AnfragePerson;  // Wer hat angefragt
   anfrage_art: AnfrageArt;        // Art der Anfrage
-  anfrage_termin: AnfrageTermin;  
+  anfrage_termin: AnfrageTermin;
   beratungs_id: number;          // Optional, wenn Termin vereinbart
   user_id: number;                // Mitarbeiter:in, der die Anfrage zugewiesen bekommen hat
 };
 
 export enum RolleMb {
-  Admin = 'Admin',
-  Erweiterung = 'Erweiterung',
-  Basis = 'Basis',
+  Admin = 'AD',
+  Erweiterung = 'E',
+  Basis = 'B',
 };
 
 export type Konto = {
@@ -422,15 +422,15 @@ export enum Geschlechtsidentität {
   KeineAngabe = 'keine Angabe'
 }
 
-export type KlientInWohnortDaten = WohnortRegional| WohnortDeutschland| WohnortAndere;
+export type KlientInWohnortDaten = WohnortRegional | WohnortDeutschland | WohnortAndere;
 
 export type WohnortRegional = {
   klient_in_wohnort:
-    | KlientInWohnort.LeipzigStadt
-    | KlientInWohnort.LeipzigLand
-    | KlientInWohnort.Nordsachsen
-    | KlientInWohnort.Sachsen
-    | KlientInWohnort.KeineAngabe;
+  | KlientInWohnort.LeipzigStadt
+  | KlientInWohnort.LeipzigLand
+  | KlientInWohnort.Nordsachsen
+  | KlientInWohnort.Sachsen
+  | KlientInWohnort.KeineAngabe;
 };
 
 export type WohnortDeutschland = {
@@ -534,3 +534,35 @@ export type KlientIn = {
 
 
 
+
+export enum EingabefeldTyp {
+  Text = 'text',
+  Textarea = 'textarea',
+  Number = 'number',
+  Date = 'date',
+  Select = 'select',
+  Multiselect = 'multiselect',
+}
+
+export enum EingabefeldContext {
+  Anfrage = 'anfrage',
+  Fall = 'fall',
+  Klient = 'klient',
+}
+
+export interface EingabefeldOption {
+  value: string;
+  label: string;
+}
+
+export interface Eingabefeld {
+  feldID: number;
+  context: EingabefeldContext;
+  name: string;
+  label: string;
+  typ: EingabefeldTyp;
+  required: boolean;
+  options: EingabefeldOption[];
+  sort_order: number;
+  default_value: string;
+}
