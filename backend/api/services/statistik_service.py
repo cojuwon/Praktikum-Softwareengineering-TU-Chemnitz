@@ -1,6 +1,6 @@
 """Service for calculating statistics from case management data."""
 
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, Q, Sum, Avg
 from datetime import date
 from api.models import (
     Fall, KlientIn, Beratungstermin, Gewalttat, Gewaltfolge, 
