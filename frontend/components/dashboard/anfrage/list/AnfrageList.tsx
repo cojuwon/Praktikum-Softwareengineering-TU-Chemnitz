@@ -6,6 +6,8 @@ interface AnfrageRow {
   anfrage_ort_display?: string;
   anfrage_ort: string;
   anfrage_person: string;
+  status: string;
+  status_display?: string;
 }
 
 interface AnfrageListProps {
@@ -13,6 +15,24 @@ interface AnfrageListProps {
   loading: boolean;
   onRowClick: (id: number) => void;
 }
+
+const getStatusLabel = (code: string) => {
+  switch (code) {
+    case 'AN': return 'Anfrage';
+    case 'TV': return 'Termin vereinbart';
+    case 'A': return 'Abgeschlossen';
+    default: return code;
+  }
+};
+
+const getStatusColor = (code: string) => {
+  switch (code) {
+    case 'AN': return 'bg-indigo-100 text-indigo-700';
+    case 'TV': return 'bg-green-100 text-green-700';
+    case 'A': return 'bg-gray-100 text-gray-600';
+    default: return 'bg-gray-100 text-gray-600';
+  }
+};
 
 export default function AnfrageList({ anfragen, loading, onRowClick }: AnfrageListProps) {
   if (loading) {
@@ -26,9 +46,10 @@ export default function AnfrageList({ anfragen, loading, onRowClick }: AnfrageLi
   return (
     <div className="flex flex-col gap-2.5">
       {/* Header Row */}
-      <div className="grid grid-cols-[80px_120px_1fr_1fr_1fr] gap-4 px-4 mb-1 font-semibold text-gray-500 text-xs">
+      <div className="grid grid-cols-[80px_120px_1fr_1fr_1fr_1fr] gap-4 px-4 mb-1 font-semibold text-gray-500 text-xs">
         <span>ID</span>
         <span>Datum</span>
+        <span>Status</span>
         <span>Art</span>
         <span>Ort</span>
         <span>Person</span>
@@ -39,7 +60,7 @@ export default function AnfrageList({ anfragen, loading, onRowClick }: AnfrageLi
         <div
           key={a.anfrage_id}
           onClick={() => onRowClick(a.anfrage_id)}
-          className="grid grid-cols-[80px_120px_1fr_1fr_1fr] gap-4 items-center bg-white border-2 border-gray-200 rounded-lg px-4 py-4 cursor-pointer transition-all hover:border-[#A0A8CD] hover:bg-[#fefeff]"
+          className="grid grid-cols-[80px_120px_1fr_1fr_1fr_1fr] gap-4 items-center bg-white border-2 border-gray-200 rounded-lg px-4 py-4 cursor-pointer transition-all hover:border-[#A0A8CD] hover:bg-[#fefeff]"
         >
           {/* ID */}
           <span className="font-semibold text-[#42446F]">
@@ -49,6 +70,11 @@ export default function AnfrageList({ anfragen, loading, onRowClick }: AnfrageLi
           {/* Date */}
           <span className="text-gray-700 text-sm">
             {new Date(a.anfrage_datum).toLocaleDateString("de-DE")}
+          </span>
+
+          {/* Status */}
+          <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium w-fit ${getStatusColor(a.status)}`}>
+            {a.status_display || getStatusLabel(a.status)}
           </span>
 
           {/* Art */}

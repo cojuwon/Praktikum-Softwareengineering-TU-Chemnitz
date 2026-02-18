@@ -59,6 +59,7 @@ export default function AnfrageListPage() {
     if (filters.art && filters.art.length > 0) params.append('anfrage_art', filters.art.join(','));
     if (filters.ort && filters.ort.length > 0) params.append('anfrage_ort', filters.ort.join(','));
     if (filters.person && filters.person.length > 0) params.append('anfrage_person', filters.person.join(','));
+    if (filters.status && filters.status.length > 0) params.append('status', filters.status.join(','));
 
     const queryString = params.toString();
     const url = `/api/anfragen/?${queryString}`;
