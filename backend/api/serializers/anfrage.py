@@ -9,7 +9,7 @@ Implementiert die Validierungs- und Transformationslogik für die UML-Methoden:
 from django.db import transaction
 from rest_framework import serializers
 
-from api.models import Anfrage, Beratungstermin, ANFRAGE_PERSON_CHOICES, ANFRAGE_ART_CHOICES, STANDORT_CHOICES
+from api.models import Anfrage, Beratungstermin, ANFRAGE_PERSON_CHOICES, ANFRAGE_ART_CHOICES, ANFRAGE_STATUS_CHOICES, STANDORT_CHOICES
 from .beratungstermin import BeratungsterminSerializer
 
 
@@ -37,12 +37,14 @@ class AnfrageSerializer(serializers.ModelSerializer):
     # Read: Zeigt den verknüpften Beratungstermin an
     anfrage_art_display = serializers.CharField(source='get_anfrage_art_display', read_only=True)
     anfrage_ort_display = serializers.CharField(source='get_anfrage_ort_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
 
     class Meta:
         model = Anfrage
         fields = [
             'anfrage_id', 'anfrage_weg', 'anfrage_datum', 'anfrage_ort', 'anfrage_ort_display',
-            'anfrage_person', 'anfrage_art', 'anfrage_art_display', 'mitarbeiterin', 'mitarbeiterin_display',
+            'anfrage_person', 'anfrage_art', 'anfrage_art_display', 'status', 'status_display',
+            'mitarbeiterin', 'mitarbeiterin_display',
             'fall', 'beratungstermin', 'beratungstermin_data'
         ]
         read_only_fields = ['anfrage_id', 'mitarbeiterin']
@@ -103,6 +105,18 @@ class AnfrageSerializer(serializers.ModelSerializer):
             return value
 
         valid_choices = [choice[0] for choice in ANFRAGE_ART_CHOICES]
+        if value not in valid_choices:
+            raise serializers.ValidationError(
+                f"'{value}' ist kein gültiger Wert. Erlaubt: {', '.join(valid_choices)}"
+            )
+        return value
+
+    def validate_status(self, value):
+        """Validiert, dass status ein gültiger ANFRAGE_STATUS_CHOICES Wert ist."""
+        if not value:
+            return value
+
+        valid_choices = [choice[0] for choice in ANFRAGE_STATUS_CHOICES]
         if value not in valid_choices:
             raise serializers.ValidationError(
                 f"'{value}' ist kein gültiger Wert. Erlaubt: {', '.join(valid_choices)}"

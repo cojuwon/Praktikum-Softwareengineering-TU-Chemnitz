@@ -61,7 +61,7 @@ class FallViewSet(viewsets.ModelViewSet):
         
         Filter-Parameter:
         - search: Fuzzy-Suche
-        - status: Filter nach Status (O, L, A, G)
+        - status: Filter nach Status (O, L, A)
         - mitarbeiterin: Filter nach Mitarbeiter-ID
         - datum_von / datum_bis: Filter nach Startdatum
         """

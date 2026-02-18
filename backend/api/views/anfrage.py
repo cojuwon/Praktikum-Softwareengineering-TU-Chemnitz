@@ -14,6 +14,7 @@ Suche, Filter und Sortierung:
 - GET /api/anfragen/?anfrage_art=B -> Nach Art filtern
 - GET /api/anfragen/?anfrage_ort=LS -> Nach Ort filtern
 - GET /api/anfragen/?anfrage_person=F -> Nach Person filtern
+- GET /api/anfragen/?status=AN,TV -> Nach Status filtern (AN=Anfrage, TV=Termin vereinbart, A=Abgeschlossen)
 - GET /api/anfragen/?datum_von=2024-01-01&datum_bis=2024-12-31 -> Nach Zeitraum filtern
 - GET /api/anfragen/?ordering=-anfrage_datum -> Sortierung
 """
@@ -23,7 +24,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db.models import Q
 
-from api.models import Anfrage, Konto, STANDORT_CHOICES, ANFRAGE_PERSON_CHOICES, ANFRAGE_ART_CHOICES, Eingabefeld
+from api.models import Anfrage, Konto, STANDORT_CHOICES, ANFRAGE_PERSON_CHOICES, ANFRAGE_ART_CHOICES, ANFRAGE_STATUS_CHOICES, Eingabefeld
 from api.serializers import AnfrageSerializer
 from api.permissions import CanManageOwnData, DjangoModelPermissionsWithView
 
@@ -133,6 +134,13 @@ class AnfrageViewSet(viewsets.ModelViewSet):
             personen = [x.strip() for x in anfrage_person.split(',') if x.strip()]
             if personen:
                 qs = qs.filter(anfrage_person__in=personen)
+        
+        # Filter nach Status
+        status_param = params.get('status')
+        if status_param:
+            statuses = [x.strip() for x in status_param.split(',') if x.strip()]
+            if statuses:
+                qs = qs.filter(status__in=statuses)
         
         # Filter nach Datumsbereich
         datum_von = params.get('datum_von')
