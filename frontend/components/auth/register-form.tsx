@@ -51,7 +51,7 @@ export default function RegisterForm() {
         <p className="text-gray-600">
           Ihr Account wurde erstellt und wartet nun auf Freigabe durch einen Administrator.
           <br />
-          Sie werden per E-Mail benachrichtigt, sobald Ihr Account aktiv ist.
+          Anschließend ist der Login möglich.
         </p>
       </div>
     );

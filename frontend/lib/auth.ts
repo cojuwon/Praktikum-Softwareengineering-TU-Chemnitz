@@ -110,14 +110,27 @@ export async function register(payload: {
     let msg = errorData.detail;
     if (!msg && typeof errorData === 'object') {
       const errorMessages: string[] = [];
+
+      const fieldMapping: Record<string, string> = {
+        email: 'E-Mail',
+        password1: 'Passwort',
+        password2: 'Passwort wiederholen',
+        vorname_mb: 'Vorname',
+        nachname_mb: 'Nachname',
+        non_field_errors: 'Allgemein'
+      };
+
       Object.keys(errorData).forEach((key) => {
         const error = errorData[key];
+        const fieldName = fieldMapping[key] || key;
+
         if (Array.isArray(error)) {
-          errorMessages.push(`${key}: ${error.join(' ')}`);
+          error.forEach(e => errorMessages.push(`${fieldName}: ${e}`));
         } else if (typeof error === 'string') {
-          errorMessages.push(`${key}: ${error}`);
+          errorMessages.push(`${fieldName}: ${error}`);
         }
       });
+
       if (errorMessages.length > 0) {
         msg = errorMessages.join('\n');
       }
