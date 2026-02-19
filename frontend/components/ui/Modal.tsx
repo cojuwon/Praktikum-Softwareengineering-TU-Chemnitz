@@ -7,9 +7,10 @@ interface ModalProps {
     title: string;
     children: React.ReactNode;
     footer?: React.ReactNode;
+    maxWidth?: string;
 }
 
-export default function Modal({ isOpen, onClose, title, children, footer }: ModalProps) {
+export default function Modal({ isOpen, onClose, title, children, footer, maxWidth = "max-w-lg" }: ModalProps) {
     const modalRef = useRef<HTMLDivElement>(null);
 
     // Close on Escape key
@@ -43,7 +44,7 @@ export default function Modal({ isOpen, onClose, title, children, footer }: Moda
         >
             <div
                 ref={modalRef}
-                className="bg-white rounded-xl shadow-2xl max-w-lg w-full transform transition-all overflow-hidden flex flex-col max-h-[90vh]"
+                className={`bg-white rounded-xl shadow-2xl w-full transform transition-all overflow-hidden flex flex-col max-h-[90vh] ${maxWidth}`}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="modal-title"
