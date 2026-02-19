@@ -284,6 +284,7 @@ export default function InputFieldsManager() {
                 onClose={() => setIsModalOpen(false)}
                 onSave={handleSaveField}
                 field={editingField}
+                initialContext={activeContext}
             />
 
             {/* Saving Indicator */}

@@ -7,11 +7,12 @@ interface InputFieldModalProps {
     onClose: () => void;
     onSave: (field: Partial<Eingabefeld>) => Promise<void>;
     field?: Eingabefeld;
+    initialContext?: EingabefeldContext;
 }
 
-export default function InputFieldModal({ isOpen, onClose, onSave, field }: InputFieldModalProps) {
+export default function InputFieldModal({ isOpen, onClose, onSave, field, initialContext }: InputFieldModalProps) {
     const [formData, setFormData] = useState<Partial<Eingabefeld>>({
-        context: EingabefeldContext.Anfrage,
+        context: initialContext || EingabefeldContext.Anfrage,
         name: '',
         label: '',
         typ: EingabefeldTyp.Text,
@@ -31,7 +32,7 @@ export default function InputFieldModal({ isOpen, onClose, onSave, field }: Inpu
             setOptions(field.options || []);
         } else {
             setFormData({
-                context: EingabefeldContext.Anfrage,
+                context: initialContext || EingabefeldContext.Anfrage,
                 name: '',
                 label: '',
                 typ: EingabefeldTyp.Text,
@@ -43,8 +44,9 @@ export default function InputFieldModal({ isOpen, onClose, onSave, field }: Inpu
             setOptions([]);
         }
         setError(null);
-    }, [field, isOpen]);
+    }, [field, isOpen, initialContext]);
 
+    // ... handle change functions ...
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
         if (type === 'checkbox') {
@@ -122,20 +124,6 @@ export default function InputFieldModal({ isOpen, onClose, onSave, field }: Inpu
                     <form id="input-field-form" onSubmit={handleSubmit} className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Kontext</label>
-                                <select
-                                    name="context"
-                                    value={formData.context}
-                                    onChange={handleChange}
-                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                >
-                                    {Object.values(EingabefeldContext).map(ctx => (
-                                        <option key={ctx} value={ctx}>{ctx}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Typ</label>
                                 <select
                                     name="typ"
@@ -148,17 +136,28 @@ export default function InputFieldModal({ isOpen, onClose, onSave, field }: Inpu
                                     ))}
                                 </select>
                             </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Label (Anzeige)</label>
+                                <input
+                                    type="text"
+                                    name="label"
+                                    value={formData.label}
+                                    onChange={handleChange}
+                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="z.B. Familienstand"
+                                />
+                            </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Label (Anzeige)</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Standardwert</label>
                             <input
                                 type="text"
-                                name="label"
-                                value={formData.label}
+                                name="default_value"
+                                value={formData.default_value || ''}
                                 onChange={handleChange}
                                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="z.B. Familienstand"
                             />
                         </div>
 
@@ -175,6 +174,19 @@ export default function InputFieldModal({ isOpen, onClose, onSave, field }: Inpu
                             <div className="p-4 pt-0 space-y-4 border-t border-gray-200 mt-2">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Kontext</label>
+                                        <select
+                                            name="context"
+                                            value={formData.context}
+                                            onChange={handleChange}
+                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                                        >
+                                            {Object.values(EingabefeldContext).map(ctx => (
+                                                <option key={ctx} value={ctx}>{ctx}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Name (Technisch)</label>
                                         <input
                                             type="text"
@@ -186,23 +198,14 @@ export default function InputFieldModal({ isOpen, onClose, onSave, field }: Inpu
                                         />
                                         <p className="text-xs text-gray-500 mt-1">Eindeutiger Bezeichner. Leer lassen für automatische Generierung.</p>
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Sortierung</label>
-                                        <input
-                                            type="number"
-                                            name="sort_order"
-                                            value={formData.sort_order}
-                                            onChange={handleChange}
-                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-                                        />
-                                    </div>
                                 </div>
+
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Standardwert</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Sortierung</label>
                                     <input
-                                        type="text"
-                                        name="default_value"
-                                        value={formData.default_value || ''}
+                                        type="number"
+                                        name="sort_order"
+                                        value={formData.sort_order}
                                         onChange={handleChange}
                                         className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
                                     />

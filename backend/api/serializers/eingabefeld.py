@@ -22,6 +22,9 @@ class EingabefeldSerializer(serializers.ModelSerializer):
             # Context for uniqueness check
             context = data.get('context', self.instance.context if self.instance else 'anfrage')
             
+            # Prepend context to base_name
+            base_name = f"{context}_{base_name}"
+            
             # Generate unique name
             name = base_name
             counter = 1
