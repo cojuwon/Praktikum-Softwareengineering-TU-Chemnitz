@@ -107,20 +107,18 @@ export default function StatistikFilterSection({
           <h3 className="text-md font-medium text-gray-900 mb-3 border-b pb-1">Filterkriterien</h3>
           {!filterDefinition && <p className="text-gray-500 text-sm">Lade Filter...</p>}
           {filterDefinition && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-              <DynamicFilterForm
-                definition={filterDefinition}
-                values={filters}
-                onChange={onFilterChange}
-              />
-            </div>
+            <DynamicFilterForm
+              definition={filterDefinition}
+              values={filters}
+              onChange={onFilterChange}
+            />
           )}
         </div>
 
         {/* Spalte 2: Bereiche (Schmaler) */}
         <div className="lg:col-span-3">
           <h3 className="text-md font-medium text-gray-900 mb-3 border-b pb-1">Anzuzeigende Bereiche</h3>
-          <div className="space-y-1.5 max-h-96 overflow-y-auto pr-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
+          <div className="space-y-1.5 pr-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
             <div className="flex items-center pb-2 border-b border-gray-200 mb-2">
               <input
                 id="toggle-all"
