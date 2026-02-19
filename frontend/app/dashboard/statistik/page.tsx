@@ -50,18 +50,18 @@ export default function StatistikPage() {
       .catch(err => console.error("Filter konnten nicht geladen werden:", err));
   }, [user]);
 
+  const loadPresets = async () => {
+    try {
+      const res = await apiFetch("/api/statistik/presets/");
+      const json = await res.json();
+      setPresets(json.presets);
+    } catch (e) {
+      console.error("Presets konnten nicht geladen werden:", e);
+    }
+  };
+
   useEffect(() => {
     if (!user) return;
-
-    async function loadPresets() {
-      try {
-        const res = await apiFetch("/api/statistik/presets/");
-        const json = await res.json();
-        setPresets(json.presets);
-      } catch (e) {
-        console.error("Presets konnten nicht geladen werden:", e);
-      }
-    }
     loadPresets();
   }, [user]);
 
@@ -146,7 +146,9 @@ export default function StatistikPage() {
         onSelectPreset={handleSelectPreset}
         onFilterChange={handleFilterChange}
         onSectionChange={handleSectionChange}
+
         onSubmit={handleSubmit}
+        onPresetsChanged={loadPresets}
       />
 
       {data && (
