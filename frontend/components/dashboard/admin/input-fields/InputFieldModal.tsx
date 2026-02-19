@@ -83,8 +83,8 @@ export default function InputFieldModal({ isOpen, onClose, onSave, field }: Inpu
             const dataToSave = { ...formData, options };
 
             // Basic validation
-            if (!dataToSave.name || !dataToSave.label) {
-                throw new Error('Name und Label sind Pflichtfelder.');
+            if (!dataToSave.label) {
+                throw new Error('Das Label (Anzeige) ist erforderlich.');
             }
 
             if ((dataToSave.typ === EingabefeldTyp.Select || dataToSave.typ === EingabefeldTyp.Multiselect) && options.length === 0) {
@@ -150,55 +150,65 @@ export default function InputFieldModal({ isOpen, onClose, onSave, field }: Inpu
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Name (Technisch)</label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="z.B. familienstand"
-                                />
-                                <p className="text-xs text-gray-500 mt-1">Eindeutiger Bezeichner, keine Leerzeichen.</p>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Label (Anzeige)</label>
-                                <input
-                                    type="text"
-                                    name="label"
-                                    value={formData.label}
-                                    onChange={handleChange}
-                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="z.B. Familienstand"
-                                />
-                            </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Label (Anzeige)</label>
+                            <input
+                                type="text"
+                                name="label"
+                                value={formData.label}
+                                onChange={handleChange}
+                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="z.B. Familienstand"
+                            />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Sortierung</label>
-                                <input
-                                    type="number"
-                                    name="sort_order"
-                                    value={formData.sort_order}
-                                    onChange={handleChange}
-                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                />
+                        <details className="group border border-gray-200 rounded-lg open:bg-gray-50">
+                            <summary className="cursor-pointer p-3 font-medium text-gray-700 flex items-center justify-between select-none list-none">
+                                <span className="flex items-center gap-2">
+                                    Technische Details
+                                    <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full border">Optional</span>
+                                </span>
+                                <span className="transition group-open:rotate-180">
+                                    <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                                </span>
+                            </summary>
+                            <div className="p-4 pt-0 space-y-4 border-t border-gray-200 mt-2">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Name (Technisch)</label>
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleChange}
+                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                                            placeholder="Automatisch generiert..."
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">Eindeutiger Bezeichner. Leer lassen für automatische Generierung.</p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Sortierung</label>
+                                        <input
+                                            type="number"
+                                            name="sort_order"
+                                            value={formData.sort_order}
+                                            onChange={handleChange}
+                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Standardwert</label>
+                                    <input
+                                        type="text"
+                                        name="default_value"
+                                        value={formData.default_value || ''}
+                                        onChange={handleChange}
+                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                                    />
+                                </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Standardwert</label>
-                                <input
-                                    type="text"
-                                    name="default_value"
-                                    value={formData.default_value || ''}
-                                    onChange={handleChange}
-                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                />
-                            </div>
-                        </div>
+                        </details>
 
                         <div className="flex items-center gap-2">
                             <input
