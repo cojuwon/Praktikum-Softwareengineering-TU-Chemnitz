@@ -83,6 +83,11 @@ class CustomRegisterSerializer(RegisterSerializer):
     vorname_mb = serializers.CharField(required=True)
     nachname_mb = serializers.CharField(required=True)
 
+    def validate_email(self, email):
+        if Konto.objects.filter(mail_mb=email).exists():
+            raise serializers.ValidationError("Ein Nutzer mit dieser E-Mail-Adresse existiert bereits.")
+        return email
+
     def get_cleaned_data(self):
         data = super().get_cleaned_data()
         data.update({
