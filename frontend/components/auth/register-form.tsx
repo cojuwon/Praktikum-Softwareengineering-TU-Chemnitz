@@ -87,13 +87,13 @@ export default function RegisterForm() {
         <input name="password2" type="password" required minLength={6} className="block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="••••••••" />
       </div>
 
-      <button
+      <Button
         type="submit"
-        className="w-full rounded-lg bg-[#294D9D] px-5 py-3 text-sm font-medium text-white hover:bg-[#1E40AF] focus:outline-none focus:ring-4 focus:ring-blue-300 transition-colors shadow-md mt-4"
-        disabled={isPending}
+        className="mt-4"
+        aria-disabled={isPending}
       >
         {isPending ? 'Registriere...' : 'Registrieren'}
-      </button>
+      </Button>
 
       {errorMessage && (
         <div className="flex items-center space-x-2 text-red-500 bg-red-50 p-3 rounded-lg mt-4">

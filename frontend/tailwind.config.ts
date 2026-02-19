@@ -13,9 +13,13 @@ const config: Config = {
       },
       colors: {
         blue: {
-          400: '#2589FE',
-          500: '#0070F3',
-          600: '#2F6FEB',
+          400: '#5c7cfa',
+          500: '#294D9D',
+          600: '#1E40AF',
+        },
+        bellis: {
+          DEFAULT: '#294D9D', // Brand Blue
+          hover: '#1E40AF',   // Darker Blue
         },
       },
     },
