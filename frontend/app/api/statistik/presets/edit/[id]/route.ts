@@ -2,15 +2,15 @@ import { NextResponse } from "next/server";
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await req.json();
     const { name, preset_type, filters } = body;
-    
+
     // Get ID from route parameters, not from body
-    const id = params.id;
-    
+    const { id } = await params;
+
     const cookies = req.headers.get("cookie");
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -42,7 +42,7 @@ export async function PUT(
     }
 
     const updatedPreset = await response.json();
-    
+
     // Map backend response back to frontend format
     // Note: preset_type is a frontend concept based on berechtigte relationship
     return NextResponse.json({
