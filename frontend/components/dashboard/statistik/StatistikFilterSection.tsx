@@ -101,13 +101,13 @@ export default function StatistikFilterSection({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Spalte 1: Filter (Mehr Platz) */}
-        <div className="lg:col-span-8">
-          <h3 className="text-md font-medium text-gray-900 mb-2 border-b pb-1">Filterkriterien</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Spalte 1: Filter (Mehr Kontaktfläche) */}
+        <div className="lg:col-span-9">
+          <h3 className="text-md font-medium text-gray-900 mb-3 border-b pb-1">Filterkriterien</h3>
           {!filterDefinition && <p className="text-gray-500 text-sm">Lade Filter...</p>}
           {filterDefinition && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-4">
               <DynamicFilterForm
                 definition={filterDefinition}
                 values={filters}
@@ -117,11 +117,11 @@ export default function StatistikFilterSection({
           )}
         </div>
 
-        {/* Spalte 2: Bereiche (Kompakter) */}
-        <div className="lg:col-span-4">
-          <h3 className="text-md font-medium text-gray-900 mb-2 border-b pb-1">Anzuzeigende Bereiche</h3>
-          <div className="space-y-1.5 max-h-96 overflow-y-auto pr-2">
-            <div className="flex items-center">
+        {/* Spalte 2: Bereiche (Schmaler) */}
+        <div className="lg:col-span-3">
+          <h3 className="text-md font-medium text-gray-900 mb-3 border-b pb-1">Anzuzeigende Bereiche</h3>
+          <div className="space-y-1.5 max-h-96 overflow-y-auto pr-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
+            <div className="flex items-center pb-2 border-b border-gray-200 mb-2">
               <input
                 id="toggle-all"
                 type="checkbox"
@@ -132,13 +132,12 @@ export default function StatistikFilterSection({
                   sections.forEach(s => onSectionChange(s.id, checked));
                 }}
               />
-              <label htmlFor="toggle-all" className="ml-2 text-sm text-gray-900 font-semibold cursor-pointer">
+              <label htmlFor="toggle-all" className="ml-2 text-sm text-gray-900 font-semibold cursor-pointer select-none">
                 Alle auswählen
               </label>
             </div>
-            <hr className="my-1.5" />
             {sections.map(section => (
-              <div key={section.id} className="flex items-center">
+              <div key={section.id} className="flex items-center hover:bg-gray-200 p-1 rounded transition-colors">
                 <input
                   id={`section-${section.id}`}
                   type="checkbox"
@@ -146,7 +145,7 @@ export default function StatistikFilterSection({
                   checked={visibleSections[section.id] !== false} // Default true
                   onChange={(e) => onSectionChange(section.id, e.target.checked)}
                 />
-                <label htmlFor={`section-${section.id}`} className="ml-2 text-sm text-gray-700 cursor-pointer">
+                <label htmlFor={`section-${section.id}`} className="ml-2 text-sm text-gray-700 cursor-pointer select-none flex-1">
                   {section.label}
                 </label>
               </div>

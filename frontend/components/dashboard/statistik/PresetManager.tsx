@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { apiFetch } from "@/lib/api";
 import { useUser } from "@/lib/userContext";
 import Modal from "@/components/ui/Modal";
-import { MagnifyingGlassIcon, FunnelIcon, TrashIcon, PencilIcon, EyeIcon, CheckIcon, ShareIcon, GlobeAltIcon, UserIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, FunnelIcon, TrashIcon, PencilIcon, EyeIcon, CheckIcon, ShareIcon, GlobeAltIcon, UserIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
 interface PresetManagerProps {
     onPresetsChanged: () => void;
@@ -29,8 +29,9 @@ export default function PresetManager({ onPresetsChanged, onApplyPreset, presets
     // Preview State
     const [previewId, setPreviewId] = useState<number | null>(null);
 
-    // Feedback
+    // Feedback & Confirmation
     const [feedback, setFeedback] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+    const [deleteId, setDeleteId] = useState<number | null>(null);
 
     const isAdmin = user?.permissions?.includes("can_manage_users") || user?.rolle_mb === 'AD';
     const currentUserId = user?.id;
@@ -66,10 +67,10 @@ export default function PresetManager({ onPresetsChanged, onApplyPreset, presets
         setIsOpen(false);
     };
 
-    const handleDelete = async (id: number) => {
-        if (!confirm("Möchten Sie dieses Preset wirklich löschen?")) return;
+    const confirmDelete = async () => {
+        if (!deleteId) return;
         try {
-            const res = await apiFetch(`/api/presets/${id}/`, { method: "DELETE" });
+            const res = await apiFetch(`/api/presets/${deleteId}/`, { method: "DELETE" });
             if (res.ok) {
                 onPresetsChanged();
                 setFeedback({ type: 'success', message: 'Preset gelöscht.' });
@@ -80,6 +81,8 @@ export default function PresetManager({ onPresetsChanged, onApplyPreset, presets
         } catch (e) {
             console.error(e);
             setFeedback({ type: 'error', message: 'Serverfehler beim Löschen.' });
+        } finally {
+            setDeleteId(null);
         }
     };
 
@@ -123,7 +126,7 @@ export default function PresetManager({ onPresetsChanged, onApplyPreset, presets
                 isOpen={isOpen}
                 onClose={() => setIsOpen(false)}
                 title="Statistik-Vorlagen verwalten"
-                maxWidth="max-w-5xl"
+                maxWidth="max-w-6xl"
                 footer={
                     <button onClick={() => setIsOpen(false)} className="px-4 py-2 bg-gray-100 rounded text-gray-700 hover:bg-gray-200">
                         Schließen
@@ -175,16 +178,16 @@ export default function PresetManager({ onPresetsChanged, onApplyPreset, presets
                         </div>
                     )}
 
-                    {/* Header Row for List */}
-                    <div className="grid grid-cols-12 gap-4 px-4 py-2 border-b bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        <div className="col-span-4">Name</div>
-                        <div className="col-span-3">Details</div>
-                        <div className="col-span-3">Ersteller</div>
-                        <div className="col-span-2 text-right">Aktionen</div>
+                    {/* Grid Header - Matching FallList style */}
+                    <div className="grid grid-cols-[2fr_1.5fr_1fr_120px] gap-4 px-4 mb-2 font-semibold text-gray-500 text-xs uppercase tracking-wider">
+                        <span>Name</span>
+                        <span>Details</span>
+                        <span>Ersteller</span>
+                        <span className="text-right">Aktionen</span>
                     </div>
 
-                    {/* List */}
-                    <div className="flex-1 overflow-y-auto">
+                    {/* Grid List */}
+                    <div className="flex-1 overflow-y-auto space-y-2">
                         {filteredPresets.length === 0 ? (
                             <div className="p-8 text-center text-gray-500">
                                 Keine Vorlagen gefunden.
@@ -195,9 +198,12 @@ export default function PresetManager({ onPresetsChanged, onApplyPreset, presets
                                 const creatorName = isSystem ? "System" : (preset.ersteller_name || "Unbekannt");
 
                                 return (
-                                    <div key={preset.id} className="grid grid-cols-12 gap-4 p-3 border-b hover:bg-blue-50/50 items-center text-sm group transition-colors">
+                                    <div
+                                        key={preset.id}
+                                        className="grid grid-cols-[2fr_1.5fr_1fr_120px] gap-4 items-center bg-white border border-gray-200 rounded-lg px-4 py-3 hover:border-blue-300 hover:shadow-sm transition-all text-sm group"
+                                    >
                                         {/* Name */}
-                                        <div className="col-span-4 font-medium text-gray-900 truncate flex items-center gap-2">
+                                        <div className="font-medium text-gray-900 truncate flex items-center gap-2">
                                             {editingId === preset.id ? (
                                                 <div className="flex gap-1 items-center w-full">
                                                     <input
@@ -211,30 +217,36 @@ export default function PresetManager({ onPresetsChanged, onApplyPreset, presets
                                                 </div>
                                             ) : (
                                                 <>
-                                                    {preset.is_global ? <GlobeAltIcon className="w-4 h-4 text-blue-500" title="Global" /> :
-                                                        preset.preset_type === 'shared' ? <ShareIcon className="w-4 h-4 text-purple-500" title="Geteilt" /> :
-                                                            <UserIcon className="w-4 h-4 text-gray-400" title="Persönlich" />}
+                                                    {preset.is_global ? <GlobeAltIcon className="w-4 h-4 text-blue-500 flex-shrink-0" title="Global" /> :
+                                                        preset.preset_type === 'shared' ? <ShareIcon className="w-4 h-4 text-purple-500 flex-shrink-0" title="Geteilt" /> :
+                                                            <UserIcon className="w-4 h-4 text-gray-400 flex-shrink-0" title="Persönlich" />}
                                                     <span className="truncate" title={preset.name}>{preset.name}</span>
                                                 </>
                                             )}
                                         </div>
 
                                         {/* Details */}
-                                        <div className="col-span-3 text-xs text-gray-500 flex flex-col gap-0.5">
-                                            <span className="truncate">{Object.keys(preset.filters || {}).length} Filter aktive</span>
-                                            <span className="truncate">{preset.preset_daten?.visible_sections ? 'Layout gespeichert' : 'Standard Layout'}</span>
+                                        <div className="text-xs text-gray-500 flex flex-col gap-0.5">
+                                            <div className="flex items-center gap-1">
+                                                <span className="font-medium">{Object.keys(preset.filters || {}).length}</span> Filter
+                                            </div>
+                                            <div className="text-gray-400">
+                                                {preset.preset_daten?.visible_sections ? 'Layout gespeichert' : 'Standard Layout'}
+                                            </div>
                                         </div>
 
                                         {/* Creator */}
-                                        <div className="col-span-3 text-xs text-gray-600 truncate">
-                                            {creatorName}
+                                        <div className="text-xs text-gray-600 truncate">
+                                            <span className={`px-2 py-0.5 rounded-full ${isSystem ? 'bg-gray-100 text-gray-700 font-medium' : 'bg-blue-50 text-blue-700'}`}>
+                                                {creatorName}
+                                            </span>
                                         </div>
 
                                         {/* Actions */}
-                                        <div className="col-span-2 flex justify-end items-center gap-1 opacity-100">
+                                        <div className="flex justify-end items-center gap-1">
                                             <button
                                                 onClick={() => setPreviewId(previewId === preset.id ? null : preset.id)}
-                                                className={`p-1.5 rounded hover:bg-gray-200 text-gray-400 hover:text-blue-600 ${previewId === preset.id ? 'text-blue-600 bg-blue-50' : ''}`}
+                                                className={`p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-blue-600 ${previewId === preset.id ? 'text-blue-600 bg-blue-50' : ''}`}
                                                 title="Vorschau"
                                             >
                                                 <EyeIcon className="w-4 h-4" />
@@ -242,28 +254,28 @@ export default function PresetManager({ onPresetsChanged, onApplyPreset, presets
 
                                             {(isAdmin || preset.preset_type === 'user' || preset.ersteller === currentUserId) && (
                                                 <>
-                                                    <button onClick={() => startEdit(preset)} className="p-1.5 rounded hover:bg-gray-200 text-gray-400 hover:text-amber-600" title="Umbenennen">
+                                                    <button onClick={() => startEdit(preset)} className="p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-amber-600" title="Umbenennen">
                                                         <PencilIcon className="w-4 h-4" />
                                                     </button>
-                                                    <button onClick={() => handleDelete(preset.id)} className="p-1.5 rounded hover:bg-gray-200 text-gray-400 hover:text-red-600" title="Löschen">
+                                                    <button onClick={() => setDeleteId(preset.id)} className="p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-red-600" title="Löschen">
                                                         <TrashIcon className="w-4 h-4" />
                                                     </button>
                                                 </>
                                             )}
                                             <button
                                                 onClick={() => handleApply(preset.id)}
-                                                className="ml-1 px-2.5 py-1 bg-blue-600 text-white text-xs font-semibold rounded hover:bg-blue-700 shadow-sm"
+                                                className="ml-1 px-3 py-1 bg-[#42446F] text-white text-xs font-medium rounded hover:bg-[#2c2e4f] shadow-sm transition-transform active:scale-95"
                                             >
-                                                Anwenden
+                                                Wählen
                                             </button>
                                         </div>
 
-                                        {/* Preview Row */}
+                                        {/* Preview Expanded Row (Full Width) */}
                                         {previewId === preset.id && (
-                                            <div className="col-span-12 mt-2 bg-gray-50 p-2 rounded border text-xs text-gray-600 grid grid-cols-2 gap-4">
+                                            <div className="col-span-4 mt-2 bg-gray-50 p-3 rounded border border-gray-100 text-xs text-gray-600 grid grid-cols-2 gap-4 animate-in fade-in zoom-in-95 duration-200">
                                                 <div>
                                                     <strong className="block mb-1 text-gray-800">Aktive Filter:</strong>
-                                                    <div className="space-y-0.5 pl-2 border-l-2 border-blue-200">
+                                                    <div className="space-y-1 pl-2 border-l-2 border-blue-200">
                                                         {Object.entries(preset.filters || {}).map(([key, val]) => (
                                                             <div key={key}><span className="font-medium text-gray-700">{key}:</span> {JSON.stringify(val)}</div>
                                                         ))}
@@ -272,9 +284,9 @@ export default function PresetManager({ onPresetsChanged, onApplyPreset, presets
                                                 </div>
                                                 <div>
                                                     <strong className="block mb-1 text-gray-800">Beschreibung:</strong>
-                                                    <p className="mb-2 italic">{preset.preset_beschreibung || "Keine Beschreibung"}</p>
+                                                    <p className="mb-2 italic text-gray-500">{preset.preset_beschreibung || "Keine Beschreibung"}</p>
                                                     <strong className="block mb-1 text-gray-800">Sichtbare Bereiche:</strong>
-                                                    <span className="text-xs font-mono">{JSON.stringify(preset.preset_daten?.visible_sections || "Standard")}</span>
+                                                    <span className="text-xs font-mono bg-white px-1 rounded border">{JSON.stringify(preset.preset_daten?.visible_sections || "Standard")}</span>
                                                 </div>
                                             </div>
                                         )}
@@ -285,6 +297,39 @@ export default function PresetManager({ onPresetsChanged, onApplyPreset, presets
                     </div>
                 </div>
             </Modal>
+
+            {/* Delete Confirmation Modal */}
+            {deleteId && (
+                <Modal
+                    isOpen={!!deleteId}
+                    onClose={() => setDeleteId(null)}
+                    title="Preset löschen?"
+                    footer={
+                        <div className="flex justify-end gap-2">
+                            <button onClick={() => setDeleteId(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">
+                                Abbrechen
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium shadow-sm flex items-center gap-2"
+                            >
+                                <TrashIcon className="w-4 h-4" />
+                                Löschen
+                            </button>
+                        </div>
+                    }
+                >
+                    <div className="flex flex-col items-center text-center p-4">
+                        <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-600">
+                            <ExclamationTriangleIcon className="w-6 h-6" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Sind Sie sicher?</h3>
+                        <p className="text-gray-500">
+                            Möchten Sie das Preset wirklich unwiderruflich löschen? Diese Aktion kann nicht rückgängig gemacht werden.
+                        </p>
+                    </div>
+                </Modal>
+            )}
         </>
     );
 }
