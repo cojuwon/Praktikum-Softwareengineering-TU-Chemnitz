@@ -47,7 +47,11 @@ class PresetSerializer(serializers.ModelSerializer):
         """Validiert die Statistik-Konfiguration."""
         from .statistik_query import DynamicQuerySerializer
         
-        # Validiere Struktur und Felder
+        # Check for static preset data (visible_sections)
+        if 'visible_sections' in value:
+            return value
+
+        # Validiere Struktur und Felder für dynamische Presets
         serializer = DynamicQuerySerializer(data=value)
         if not serializer.is_valid():
             raise serializers.ValidationError(serializer.errors)

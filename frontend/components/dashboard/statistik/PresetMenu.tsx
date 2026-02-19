@@ -32,7 +32,7 @@ export default function PresetMenu({ onPresetsChanged, currentFilters, currentVi
                 is_global: isGlobal
             };
 
-            const res = await apiFetch("/api/statistik/presets/", {
+            const res = await apiFetch("/api/presets/", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
@@ -58,7 +58,7 @@ export default function PresetMenu({ onPresetsChanged, currentFilters, currentVi
     const handleDelete = async (id: number) => {
         if (!confirm("Preset wirklich löschen?")) return;
         try {
-            const res = await apiFetch(`/api/statistik/presets/${id}/`, { method: "DELETE" });
+            const res = await apiFetch(`/api/presets/${id}/`, { method: "DELETE" });
             if (res.ok) {
                 onPresetsChanged();
             }
