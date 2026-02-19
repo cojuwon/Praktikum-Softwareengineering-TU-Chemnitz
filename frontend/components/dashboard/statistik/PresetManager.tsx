@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { apiFetch } from "@/lib/api";
 import { useUser } from "@/lib/userContext";
 import Modal from "@/components/ui/Modal";
+import MultiSelectDropdown from "@/components/ui/MultiSelectDropdown";
 import { MagnifyingGlassIcon, FunnelIcon, TrashIcon, PencilIcon, EyeIcon, CheckIcon, ShareIcon, GlobeAltIcon, UserIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
 interface PresetManagerProps {
@@ -19,8 +20,8 @@ export default function PresetManager({ onPresetsChanged, onApplyPreset, presets
 
     // Filter/Search States
     const [searchTerm, setSearchTerm] = useState("");
-    const [filterOrigin, setFilterOrigin] = useState<'all' | 'mine' | 'other' | 'global'>('all');
-    const [filterContent, setFilterContent] = useState<'all' | 'filters' | 'layout'>('all');
+    const [filterOrigin, setFilterOrigin] = useState<string[]>([]);
+    const [filterContent, setFilterContent] = useState<string[]>([]);
 
     // Edit/Rename State
     const [editingId, setEditingId] = useState<number | null>(null);
@@ -43,23 +44,49 @@ export default function PresetManager({ onPresetsChanged, onApplyPreset, presets
             const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 (p.ersteller_name && p.ersteller_name.toLowerCase().includes(searchTerm.toLowerCase()));
 
-            // 2. Origin Filter
+            // 2. Origin Filter (Multi-Select OR logic)
             let matchesOrigin = true;
-            if (filterOrigin === 'mine') matchesOrigin = (p.ersteller === currentUserId);
-            if (filterOrigin === 'other') matchesOrigin = (p.ersteller !== currentUserId && !p.is_global); // Shared
-            if (filterOrigin === 'global') matchesOrigin = (p.is_global === true);
+            if (filterOrigin.length > 0) {
+                const isMine = (p.ersteller === currentUserId);
+                const isGlobal = (p.is_global === true);
+                const isShared = (p.ersteller !== currentUserId && !p.is_global);
 
-            // 3. Content Filter
+                matchesOrigin = filterOrigin.some(f => {
+                    if (f === 'mine') return isMine;
+                    if (f === 'other') return isShared;
+                    if (f === 'global') return isGlobal;
+                    return false;
+                });
+            }
+
+            // 3. Content Filter (Multi-Select OR logic)
             let matchesContent = true;
-            const hasFilters = p.filters && Object.keys(p.filters).length > 0;
-            const hasLayout = p.preset_daten?.visible_sections;
+            if (filterContent.length > 0) {
+                const hasFilters = p.filters && Object.keys(p.filters).length > 0;
+                const hasLayout = p.preset_daten?.visible_sections;
 
-            if (filterContent === 'filters') matchesContent = hasFilters;
-            if (filterContent === 'layout') matchesContent = !hasFilters && hasLayout;
+                matchesContent = filterContent.some(f => {
+                    if (f === 'filters') return hasFilters;
+                    if (f === 'layout') return !hasFilters && hasLayout;
+                    return false;
+                });
+            }
 
             return matchesSearch && matchesOrigin && matchesContent;
         });
     }, [presets, searchTerm, filterOrigin, filterContent, currentUserId]);
+
+    // Options for Dropdowns
+    const originOptions = [
+        { value: 'mine', label: 'Eigene' },
+        { value: 'other', label: 'Fremde' },
+        { value: 'global', label: 'Global' }
+    ];
+
+    const contentOptions = [
+        { value: 'filters', label: 'Mit Filter' },
+        { value: 'layout', label: 'Nur Layout' }
+    ];
 
     // Actions
     const handleApply = (id: string) => {
@@ -149,24 +176,22 @@ export default function PresetManager({ onPresetsChanged, onApplyPreset, presets
                         </div>
 
                         {/* Filter Row */}
-                        <div className="flex flex-wrap gap-4 items-center text-sm">
-                            {/* Origin Group */}
-                            <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-lg border">
-                                <span className="px-2 text-xs font-semibold text-gray-500 uppercase">Herkunft</span>
-                                <div className="h-4 w-px bg-gray-300 mx-1"></div>
-                                <button onClick={() => setFilterOrigin('all')} className={`px-2 py-1 rounded ${filterOrigin === 'all' ? 'bg-white shadow text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-200'}`}>Alle</button>
-                                <button onClick={() => setFilterOrigin('mine')} className={`px-2 py-1 rounded ${filterOrigin === 'mine' ? 'bg-white shadow text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-200'}`}>Eigene</button>
-                                <button onClick={() => setFilterOrigin('other')} className={`px-2 py-1 rounded ${filterOrigin === 'other' ? 'bg-white shadow text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-200'}`}>Fremde</button>
-                                <button onClick={() => setFilterOrigin('global')} className={`px-2 py-1 rounded ${filterOrigin === 'global' ? 'bg-white shadow text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-200'}`}>Global</button>
+                        <div className="flex flex-wrap gap-4 items-center">
+                            <div className="w-48">
+                                <MultiSelectDropdown
+                                    label="Herkunft"
+                                    options={originOptions}
+                                    selectedValues={filterOrigin}
+                                    onChange={setFilterOrigin}
+                                />
                             </div>
-
-                            {/* Content Group */}
-                            <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-lg border">
-                                <span className="px-2 text-xs font-semibold text-gray-500 uppercase">Inhalt</span>
-                                <div className="h-4 w-px bg-gray-300 mx-1"></div>
-                                <button onClick={() => setFilterContent('all')} className={`px-2 py-1 rounded ${filterContent === 'all' ? 'bg-white shadow text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-200'}`}>Alle</button>
-                                <button onClick={() => setFilterContent('filters')} className={`px-2 py-1 rounded ${filterContent === 'filters' ? 'bg-white shadow text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-200'}`}>Mit Filter</button>
-                                <button onClick={() => setFilterContent('layout')} className={`px-2 py-1 rounded ${filterContent === 'layout' ? 'bg-white shadow text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-200'}`}>Nur Layout</button>
+                            <div className="w-48">
+                                <MultiSelectDropdown
+                                    label="Inhalt"
+                                    options={contentOptions}
+                                    selectedValues={filterContent}
+                                    onChange={setFilterContent}
+                                />
                             </div>
                         </div>
                     </div>
