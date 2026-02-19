@@ -13,10 +13,11 @@ class PresetSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(source='preset_id', read_only=True)
     
     preset_type = serializers.CharField(write_only=True, required=False)
+    ersteller_name = serializers.CharField(source='ersteller.username', read_only=True)
 
     class Meta:
         model = Preset
-        fields = ['id', 'name', 'filters', 'preset_daten', 'preset_type', 'preset_id', 'preset_beschreibung', 'filterKriterien', 'is_global']
+        fields = ['id', 'name', 'filters', 'preset_daten', 'preset_type', 'preset_id', 'preset_beschreibung', 'filterKriterien', 'is_global', 'ersteller', 'ersteller_name']
         read_only_fields = ['ersteller', 'berechtigte', 'preset_id']
         extra_kwargs = {
             'preset_daten': {'required': False},
