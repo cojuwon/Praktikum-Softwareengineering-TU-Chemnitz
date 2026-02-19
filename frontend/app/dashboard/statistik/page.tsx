@@ -82,29 +82,81 @@ export default function StatistikPage() {
     setVisibleSections((prev) => ({ ...prev, [section]: isVisible }));
   };
 
-  const handleSelectPreset = (presetId: string) => {
-    const preset = presets.find((p: any) => p.id.toString() === presetId);
-    if (preset) {
-      // 1. Filter setzen
-      if (preset.filters) {
-        setFilters(preset.filters);
+
+  const validateFilters = (presetFilters: any, definition: FieldDefinition[] | null) => {
+    if (!definition || !presetFilters) return {};
+
+    const validFilters: any = {};
+    const allowedFields = new Set(definition.map(d => d.name));
+
+    Object.entries(presetFilters).forEach(([key, value]) => {
+      // 1. Check if field still exists
+      if (!allowedFields.has(key)) return;
+
+      const fieldDef = definition.find(d => d.name === key);
+      if (!fieldDef) return;
+
+      // 2. Validate Values based on type
+      if (fieldDef.type === 'multiselect' || fieldDef.type === 'select') {
+        const options = fieldDef.options?.map(o => typeof o === 'string' ? o : o.value) || [];
+
+        if (Array.isArray(value)) {
+          // Filter out invalid options
+          const validValues = value.filter(v => options.includes(v));
+          if (validValues.length > 0) validFilters[key] = validValues;
+        } else if (options.includes(value)) {
+          validFilters[key] = value;
+        }
+      } else {
+        // Text/Date: Keep as is (harder to validate without regex)
+        if (value) validFilters[key] = value;
       }
+    });
+
+    return validFilters;
+  };
+
+  const handleSelectPreset = (presetId: string | number) => {
+    // Loose comparison for ID (string/number)
+    const preset = presets.find((p: any) => p.id == presetId);
+
+    if (preset) {
+      // 1. Filter setzen (mit Validierung gegen aktuelle Definition)
+      if (preset.filters) {
+        const cleanedFilters = validateFilters(preset.filters, filterDefinition);
+        setFilters(cleanedFilters);
+      } else {
+        setFilters({});
+      }
+
       // 2. Bereiche setzen (falls im Preset gespeichert)
       if (preset.preset_daten && preset.preset_daten.visible_sections) {
-        // Wenn "all", dann alle auf true
-        if (Array.isArray(preset.preset_daten.visible_sections) && preset.preset_daten.visible_sections.includes('all')) {
-          setVisibleSections(prev => {
-            const next = { ...prev };
+        const presetSections = preset.preset_daten.visible_sections;
+
+        setVisibleSections(prev => {
+          const next = { ...prev };
+
+          // Reset to default (true) or specific value?
+          // Strategy: Merge. Keys present in preset take precedence. 
+          // Keys NOT in preset remain as they were? No, usually presets define the VIEW.
+          // So we should probably respect "all" or specific map.
+
+          if (Array.isArray(presetSections) && presetSections.includes('all')) {
             Object.keys(next).forEach(k => next[k] = true);
-            return next;
-          });
-        } else if (typeof preset.preset_daten.visible_sections === 'object' && !Array.isArray(preset.preset_daten.visible_sections)) {
-          // Wenn es ein Objekt ist (alte/andere Struktur), übernehmen
-          setVisibleSections(prev => ({ ...prev, ...preset.preset_daten.visible_sections }));
-        }
+          } else if (typeof presetSections === 'object' && !Array.isArray(presetSections)) {
+            // Only update keys that actually exist in our current app (Robustness)
+            Object.keys(next).forEach(k => {
+              if (presetSections.hasOwnProperty(k)) {
+                next[k] = presetSections[k];
+              }
+            });
+          }
+          return next;
+        });
       }
     } else {
-      setFilters({}); // Reset
+      console.warn("Preset nicht gefunden:", presetId);
+      setFilters({}); // Reset fallback
     }
   };
 

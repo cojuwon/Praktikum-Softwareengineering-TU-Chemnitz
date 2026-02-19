@@ -11,7 +11,7 @@ interface StatistikFilterSectionProps {
   filterDefinition: FieldDefinition[] | null;
   filters: { [key: string]: any };
   visibleSections: { [key: string]: boolean };
-  onSelectPreset: (presetId: string) => void;
+  onSelectPreset: (presetId: string | number) => void;
   onFilterChange: (name: string, value: any) => void;
   onSectionChange: (section: string, isVisible: boolean) => void;
   onSubmit: () => void;

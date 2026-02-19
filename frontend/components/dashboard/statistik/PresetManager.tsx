@@ -10,7 +10,7 @@ import { MagnifyingGlassIcon, FunnelIcon, TrashIcon, PencilIcon, EyeIcon, CheckI
 interface PresetManagerProps {
     onPresetsChanged: () => void;
     // Callback to apply a preset to the parent
-    onApplyPreset: (presetId: string) => void;
+    onApplyPreset: (presetId: string | number) => void;
     presets: any[];
 }
 
@@ -89,7 +89,7 @@ export default function PresetManager({ onPresetsChanged, onApplyPreset, presets
     ];
 
     // Actions
-    const handleApply = (id: string) => {
+    const handleApply = (id: string | number) => {
         onApplyPreset(id);
         setIsOpen(false);
     };
