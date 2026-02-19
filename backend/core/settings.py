@@ -211,6 +211,7 @@ REST_AUTH = {
     'SESSION_LOGIN': False,
     'USER_DETAILS_SERIALIZER': 'api.serializers.KontoMeSerializer', # Mit Berechtigungen & Gruppen
     'OLD_PASSWORD_FIELD_ENABLED': True,
+    'LOGIN_ON_REGISTER': False,
 }
 
 REST_AUTH_SERIALIZERS = {

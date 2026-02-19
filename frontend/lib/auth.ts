@@ -99,14 +99,30 @@ export async function register(payload: {
   });
 
   if (!res.ok) {
-    let errorData = {};
+    let errorData: any = {};
     try {
       const errorText = await res.text();
       errorData = JSON.parse(errorText);
     } catch (e) {
       // Fallback for non-JSON responses
     }
-    throw new Error((errorData as any)?.detail || 'Registrierung fehlgeschlagen');
+
+    let msg = errorData.detail;
+    if (!msg && typeof errorData === 'object') {
+      const errorMessages: string[] = [];
+      Object.keys(errorData).forEach((key) => {
+        const error = errorData[key];
+        if (Array.isArray(error)) {
+          errorMessages.push(`${key}: ${error.join(' ')}`);
+        } else if (typeof error === 'string') {
+          errorMessages.push(`${key}: ${error}`);
+        }
+      });
+      if (errorMessages.length > 0) {
+        msg = errorMessages.join('\n');
+      }
+    }
+    throw new Error(msg || 'Registrierung fehlgeschlagen');
   }
 
   let data;
@@ -125,7 +141,7 @@ export async function register(payload: {
     localStorage.setItem('refreshToken', data.refresh);
   }
 
-  return data.user;
+  return data.user || data;
 }
 
 
