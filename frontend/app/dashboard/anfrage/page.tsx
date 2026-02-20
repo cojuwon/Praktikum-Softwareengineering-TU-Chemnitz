@@ -31,6 +31,9 @@ export default function AnfrageListPage() {
   // Current filters
   const [currentFilters, setCurrentFilters] = useState<any>({});
 
+  // Sorting state
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+
   // Initial Fetch based on Tab
   useEffect(() => {
     fetchFormDefinition();
@@ -48,7 +51,7 @@ export default function AnfrageListPage() {
       });
   };
 
-  const fetchAnfragen = (filters: any, pageNum: number = 1, tab: Tab = activeTab) => {
+  const fetchAnfragen = (filters: any, pageNum: number = 1, tab: Tab = activeTab, sorting = sortConfig) => {
     setLoading(true);
     setCurrentFilters(filters);
     setPage(pageNum);
@@ -66,6 +69,12 @@ export default function AnfrageListPage() {
     if (filters.ort && filters.ort.length > 0) params.append('anfrage_ort', filters.ort.join(','));
     if (filters.person && filters.person.length > 0) params.append('anfrage_person', filters.person.join(','));
     if (filters.status && filters.status.length > 0) params.append('status', filters.status.join(','));
+
+    // Sorting
+    if (sorting) {
+      const prefix = sorting.direction === 'desc' ? '-' : '';
+      params.append('ordering', `${prefix}${sorting.key}`);
+    }
 
     // Handle Tabs
     let url = "/api/anfragen/";
@@ -112,6 +121,16 @@ export default function AnfrageListPage() {
     fetchAnfragen(currentFilters, newPage, activeTab);
   };
 
+  const handleSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    const newSort = { key, direction };
+    setSortConfig(newSort);
+    fetchAnfragen(currentFilters, page, activeTab, newSort);
+  };
+
   const totalPages = Math.ceil(count / PAGE_SIZE);
 
   return (
@@ -121,30 +140,30 @@ export default function AnfrageListPage() {
       {/* Tabs */}
       <div className="flex gap-4 mb-4 border-b border-gray-200">
         <button
-          onClick={() => setActiveTab('active')}
+          onClick={() => { setActiveTab('active'); setPage(1); }}
           className={`pb-2 px-1 flex items-center gap-2 text-sm font-medium transition-colors ${activeTab === 'active'
-              ? 'border-b-2 border-indigo-600 text-indigo-600'
-              : 'text-gray-500 hover:text-gray-700'
+            ? 'border-b-2 border-indigo-600 text-indigo-600'
+            : 'text-gray-500 hover:text-gray-700'
             }`}
         >
           <FolderOpen size={16} />
           Aktive Anfragen
         </button>
         <button
-          onClick={() => setActiveTab('archived')}
+          onClick={() => { setActiveTab('archived'); setPage(1); }}
           className={`pb-2 px-1 flex items-center gap-2 text-sm font-medium transition-colors ${activeTab === 'archived'
-              ? 'border-b-2 border-indigo-600 text-indigo-600'
-              : 'text-gray-500 hover:text-gray-700'
+            ? 'border-b-2 border-indigo-600 text-indigo-600'
+            : 'text-gray-500 hover:text-gray-700'
             }`}
         >
           <Archive size={16} />
           Archiv
         </button>
         <button
-          onClick={() => setActiveTab('trash')}
+          onClick={() => { setActiveTab('trash'); setPage(1); }}
           className={`pb-2 px-1 flex items-center gap-2 text-sm font-medium transition-colors ${activeTab === 'trash'
-              ? 'border-b-2 border-red-600 text-red-600'
-              : 'text-gray-500 hover:text-gray-700'
+            ? 'border-b-2 border-red-600 text-red-600'
+            : 'text-gray-500 hover:text-gray-700'
             }`}
         >
           <Trash2 size={16} />
@@ -153,10 +172,10 @@ export default function AnfrageListPage() {
       </div>
 
       <div className="bg-white rounded-b-xl overflow-visible shadow-sm">
-        {activeTab === 'active' && (
+        {(activeTab === 'active' || activeTab === 'archived') && (
           <AnfrageFilterSection
             formDefinition={formDefinition}
-            onSearch={(f) => fetchAnfragen(f, 1, 'active')}
+            onSearch={(f) => fetchAnfragen(f, 1, activeTab)}
           />
         )}
 
@@ -167,6 +186,8 @@ export default function AnfrageListPage() {
             onRowClick={(id) => router.push(`/dashboard/anfrage/edit/${id}`)}
             activeTab={activeTab}
             onActionComplete={() => fetchAnfragen(currentFilters, page, activeTab)}
+            sortConfig={sortConfig}
+            onSort={handleSort}
           />
 
           {!loading && count > 0 && (

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MoreVertical, Archive, Trash2, RotateCcw, FolderOpen } from "lucide-react";
+import { MoreVertical, Archive, Trash2, RotateCcw, FolderOpen, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 
 type Tab = 'active' | 'archived' | 'trash';
@@ -23,6 +23,8 @@ interface FallListProps {
   getStatusColor: (code: string) => { bg: string; text: string };
   activeTab: Tab;
   onActionComplete: () => void;
+  sortConfig?: { key: string; direction: 'asc' | 'desc' } | null;
+  onSort?: (key: string) => void;
 }
 
 export default function FallList({
@@ -33,6 +35,8 @@ export default function FallList({
   getStatusColor,
   activeTab,
   onActionComplete,
+  sortConfig,
+  onSort,
 }: FallListProps) {
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
@@ -79,15 +83,34 @@ export default function FallList({
     return <p className="text-center text-gray-500">Keine Fälle gefunden.</p>;
   }
 
+  const renderSortIcon = (key: string) => {
+    if (!sortConfig || sortConfig.key !== key) {
+      return <ArrowUpDown size={14} className="ml-1 text-gray-300" />;
+    }
+    return sortConfig.direction === 'asc'
+      ? <ArrowUp size={14} className="ml-1 text-indigo-500" />
+      : <ArrowDown size={14} className="ml-1 text-indigo-500" />;
+  };
+
+  const SortableHeader = ({ label, sortKey }: { label: string, sortKey: string }) => (
+    <span
+      className="flex items-center cursor-pointer hover:text-indigo-600 transition-colors py-1"
+      onClick={() => onSort && onSort(sortKey)}
+    >
+      {label}
+      {renderSortIcon(sortKey)}
+    </span>
+  );
+
   return (
     <div className="flex flex-col gap-2.5 pb-20">
       {/* Header Row */}
-      <div className="grid grid-cols-[80px_100px_100px_1fr_1fr_40px] gap-4 px-4 mb-1 font-semibold text-gray-500 text-xs">
-        <span>ID</span>
-        <span>Startdatum</span>
-        <span>Status</span>
-        <span>Klient:in</span>
-        <span>Mitarbeiter:in</span>
+      <div className="grid grid-cols-[80px_100px_100px_1fr_1fr_40px] gap-4 px-4 mb-1 font-semibold text-gray-500 text-xs select-none">
+        <SortableHeader label="ID" sortKey="fall_id" />
+        <SortableHeader label="Startdatum" sortKey="startdatum" />
+        <SortableHeader label="Status" sortKey="status" />
+        <SortableHeader label="Klient:in" sortKey="klient__klient_id" />
+        <SortableHeader label="Mitarbeiter:in" sortKey="mitarbeiterin__nachname_mb" />
         <span></span>
       </div>
 

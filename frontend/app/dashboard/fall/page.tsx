@@ -30,6 +30,9 @@ export default function FallListPage() {
   // Current filters
   const [currentFilters, setCurrentFilters] = useState<any>({});
 
+  // Sorting state
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+
   // Initial Fetch based on Tab
   useEffect(() => {
     fetchFormDefinition();
@@ -42,7 +45,7 @@ export default function FallListPage() {
     }
 
     fetchFaelle(initialFilters, 1, activeTab);
-  }, [searchParams, activeTab]);
+  }, [searchParams, activeTab]); // Re-fetch when tab or params change
 
   const fetchFormDefinition = () => {
     apiFetch("/api/faelle/form-fields")
@@ -55,7 +58,7 @@ export default function FallListPage() {
       });
   };
 
-  const fetchFaelle = (filters: any, pageNum: number = 1, tab: Tab = activeTab) => {
+  const fetchFaelle = (filters: any, pageNum: number = 1, tab: Tab = activeTab, sorting = sortConfig) => {
     setLoading(true);
     setCurrentFilters(filters);
     setPage(pageNum);
@@ -72,6 +75,12 @@ export default function FallListPage() {
     // Multi-select arrays -> comma separated string
     if (filters.status && filters.status.length > 0) params.append('status', filters.status.join(','));
     if (filters.mitarbeiterin && filters.mitarbeiterin.length > 0) params.append('mitarbeiterin', filters.mitarbeiterin.join(','));
+
+    // Sorting
+    if (sorting) {
+      const prefix = sorting.direction === 'desc' ? '-' : '';
+      params.append('ordering', `${prefix}${sorting.key}`);
+    }
 
     // Handle Tabs
     let url = "/api/faelle/";
@@ -116,6 +125,16 @@ export default function FallListPage() {
     fetchFaelle(currentFilters, newPage, activeTab);
   };
 
+  const handleSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    const newSort = { key, direction };
+    setSortConfig(newSort);
+    fetchFaelle(currentFilters, page, activeTab, newSort);
+  };
+
   const handleAction = (action: string, id: number) => {
     // Refresh list after action
     fetchFaelle(currentFilters, page, activeTab);
@@ -148,30 +167,30 @@ export default function FallListPage() {
       {/* Tabs */}
       <div className="flex gap-4 mb-4 border-b border-gray-200">
         <button
-          onClick={() => setActiveTab('active')}
+          onClick={() => { setActiveTab('active'); setPage(1); }}
           className={`pb-2 px-1 flex items-center gap-2 text-sm font-medium transition-colors ${activeTab === 'active'
-              ? 'border-b-2 border-indigo-600 text-indigo-600'
-              : 'text-gray-500 hover:text-gray-700'
+            ? 'border-b-2 border-indigo-600 text-indigo-600'
+            : 'text-gray-500 hover:text-gray-700'
             }`}
         >
           <FolderOpen size={16} />
           Aktive Fälle
         </button>
         <button
-          onClick={() => setActiveTab('archived')}
+          onClick={() => { setActiveTab('archived'); setPage(1); }}
           className={`pb-2 px-1 flex items-center gap-2 text-sm font-medium transition-colors ${activeTab === 'archived'
-              ? 'border-b-2 border-indigo-600 text-indigo-600'
-              : 'text-gray-500 hover:text-gray-700'
+            ? 'border-b-2 border-indigo-600 text-indigo-600'
+            : 'text-gray-500 hover:text-gray-700'
             }`}
         >
           <Archive size={16} />
           Archiv
         </button>
         <button
-          onClick={() => setActiveTab('trash')}
+          onClick={() => { setActiveTab('trash'); setPage(1); }}
           className={`pb-2 px-1 flex items-center gap-2 text-sm font-medium transition-colors ${activeTab === 'trash'
-              ? 'border-b-2 border-red-600 text-red-600'
-              : 'text-gray-500 hover:text-gray-700'
+            ? 'border-b-2 border-red-600 text-red-600'
+            : 'text-gray-500 hover:text-gray-700'
             }`}
         >
           <Trash2 size={16} />
@@ -180,10 +199,10 @@ export default function FallListPage() {
       </div>
 
       <div className="bg-white rounded-b-xl overflow-visible shadow-sm">
-        {activeTab === 'active' && (
+        {(activeTab === 'active' || activeTab === 'archived') && (
           <FallFilterSection
             formDefinition={formDefinition}
-            onSearch={(f) => fetchFaelle(f, 1, 'active')}
+            onSearch={(f) => fetchFaelle(f, 1, activeTab)}
           />
         )}
 
@@ -196,6 +215,8 @@ export default function FallListPage() {
             getStatusColor={getStatusColor}
             activeTab={activeTab} // Pass activeTab to render correct actions
             onActionComplete={() => fetchFaelle(currentFilters, page, activeTab)}
+            sortConfig={sortConfig}
+            onSort={handleSort}
           />
 
           {!loading && count > 0 && (
