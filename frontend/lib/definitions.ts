@@ -130,6 +130,7 @@ export type Beratungstermin = {
   beratungsart: Beratungsart;
   beratungsort: Beratungsort;
   notizen_beratung: string;
+  dolmetscher_stunden?: number;
 };
 
 

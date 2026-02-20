@@ -19,6 +19,7 @@ export default function AppointmentDialog({ fallId, appointment, onClose, onSucc
         beratungsart: appointment ? appointment.beratungsart : "P",
         dauer: appointment ? appointment.dauer : 60,
         status: appointment ? appointment.status : "g",
+        dolmetscher_stunden: appointment ? appointment.dolmetscher_stunden : 0,
         notizen_beratung: appointment ? (appointment.notizen_beratung || {}) : {},
         berater: appointment ? appointment.berater : ""
     });
@@ -124,8 +125,8 @@ export default function AppointmentDialog({ fallId, appointment, onClose, onSucc
                             </div>
                         </div>
 
-                        {/* Art & Stelle & Dauer */}
-                        <div className="grid grid-cols-3 gap-4">
+                        {/* Art & Stelle & Dauer & Dolmetscher */}
+                        <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Art</label>
                                 <select
@@ -160,6 +161,17 @@ export default function AppointmentDialog({ fallId, appointment, onClose, onSucc
                                     className="w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                     value={formData.dauer}
                                     onChange={e => setFormData({ ...formData, dauer: parseInt(e.target.value) })}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Dolmetscher (Stunden)</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="0.25"
+                                    className="w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    value={formData.dolmetscher_stunden}
+                                    onChange={e => setFormData({ ...formData, dolmetscher_stunden: parseFloat(e.target.value) || 0 })}
                                 />
                             </div>
                         </div>

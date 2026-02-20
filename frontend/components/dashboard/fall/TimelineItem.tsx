@@ -109,6 +109,12 @@ export default function TimelineItem({ item, onEdit }: TimelineItemProps) {
                                 <span className="font-medium text-slate-600">Dauer:</span>
                                 <span>{item.dauer} Min.</span>
                             </div>
+                            {item.dolmetscher_stunden > 0 && (
+                                <div className="flex gap-2 text-sm">
+                                    <span className="font-medium text-slate-600">Dolmetscher:</span>
+                                    <span>{item.dolmetscher_stunden} Std.</span>
+                                </div>
+                            )}
                             <div className="flex gap-2 text-sm">
                                 <span className="font-medium text-slate-600">Status:</span>
                                 <span className={clsx(
