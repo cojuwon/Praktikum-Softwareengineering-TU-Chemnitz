@@ -222,7 +222,7 @@ export default function CrimeDialog({ fallId, crime, onClose, onSuccess }: Crime
                     {/* Tatart */}
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">
-                            Art der Gewalt (Mehrfachauswahl möglich - Freitext/Kommagetrennt)
+                            Art der Gewalt (Freitext/Kommagetrennt)
                         </label>
                         <textarea
                             className="w-full rounded-md border-slate-300"
