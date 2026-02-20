@@ -25,6 +25,8 @@ CMD sh -c "while ! nc -z db 5432; do echo 'Warte auf DB...'; sleep 1; done; \
            python manage.py setup_groups; \
            echo '2. Erstelle Superuser...'; \
            python manage.py setup_superuser; \
+           echo '3. Initialisiere Eingabefelder...'; \
+           python manage.py init_eingabefelder; \
            echo '--------------------'; \
            \
            echo 'Sammle statische Dateien...'; \
