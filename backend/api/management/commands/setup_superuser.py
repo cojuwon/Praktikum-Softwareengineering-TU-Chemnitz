@@ -16,6 +16,7 @@ class Command(BaseCommand):
         if not User.objects.filter(mail_mb=email).exists():
             self.stdout.write(f'Erstelle Superuser "{email}"...')
             self.stdout.write(self.style.WARNING(f'WICHTIG! Generiertes Passwort: {password} (Bitte sicher aufbewahren!)'))
+            self.stdout.write(self.style.WARNING(f'Bitte ändere das Passwort in den Benutzereinstellungen!'))
             
             # Superuser erstellen
             # Wir setzen auch vorname/nachname, falls diese Pflichtfelder sind
