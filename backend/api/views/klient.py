@@ -155,8 +155,8 @@ class KlientInViewSet(viewsets.ModelViewSet):
                 "typ": "select",
                 "required": False,
                  "options": [
-                    {"value": "JA", "label": "Ja"},
-                    {"value": "NEIN", "label": "Nein"},
+                    {"value": "J", "label": "Ja"},
+                    {"value": "N", "label": "Nein"},
                     {"value": "KA", "label": "keine Angabe"}
                 ],
                 "sort_order": 100
@@ -167,8 +167,8 @@ class KlientInViewSet(viewsets.ModelViewSet):
                 "typ": "select",
                 "required": False,
                  "options": [
-                    {"value": "JA", "label": "Ja"},
-                    {"value": "NEIN", "label": "Nein"},
+                    {"value": "J", "label": "Ja"},
+                    {"value": "N", "label": "Nein"},
                     {"value": "KA", "label": "keine Angabe"}
                 ],
                 "sort_order": 110
