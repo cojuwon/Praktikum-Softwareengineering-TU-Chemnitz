@@ -167,27 +167,37 @@ class StatistikService:
             "04_1_0_b_Beratungen": c_total,
             "04_1_1_a_Anzahl_Klientinnen": count_clients_loc('LS'),
             "04_1_1_b_Beratungen": count_cons_loc('LS'),
-            "04_1_2_a_Anzahl_Klientinnen": 0,  # Dresden - nicht in STANDORT_CHOICES
+            # Dresden (nicht explizit in STANDORT_CHOICES, evtl. 'S' oder 'D'?)
+            "04_1_2_a_Anzahl_Klientinnen": 0,  
             "04_1_2_b_Beratungen": 0,
-            "04_1_3_a_Anzahl_Klientinnen": count_clients_loc('LS'),
+            "04_1_3_a_Anzahl_Klientinnen": count_clients_loc('LS'), # Stadt Leipzig (doppelt?)
             "04_1_3_b_Beratungen": count_cons_loc('LS'),
-            "04_1_4_a_Anzahl_Klientinnen": 0,  # Chemnitz
+            # Chemnitz
+            "04_1_4_a_Anzahl_Klientinnen": 0,  
             "04_1_4_b_Beratungen": 0,
-            "04_1_5_a_Anzahl_Klientinnen": 0,  # Erzgebirgskreis
+            # Erzgebirgskreis
+            "04_1_5_a_Anzahl_Klientinnen": 0,  
             "04_1_5_b_Beratungen": 0,
-            "04_1_6_a_Anzahl_Klientinnen": 0,  # Mittelsachsen
+            # Mittelsachsen
+            "04_1_6_a_Anzahl_Klientinnen": 0,  
             "04_1_6_b_Beratungen": 0,
-            "04_1_7_a_Anzahl_Klientinnen": 0,  # Vogtlandkreis
+            # Vogtlandkreis
+            "04_1_7_a_Anzahl_Klientinnen": 0,  
             "04_1_7_b_Beratungen": 0,
-            "04_1_8_a_Anzahl_Klientinnen": 0,  # Zwickau
+            # Zwickau
+            "04_1_8_a_Anzahl_Klientinnen": 0,  
             "04_1_8_b_Beratungen": 0,
-            "04_1_9_a_Anzahl_Klientinnen": 0,  # Bautzen
+            # Bautzen
+            "04_1_9_a_Anzahl_Klientinnen": 0,  
             "04_1_9_b_Beratungen": 0,
-            "04_1_10_a_Anzahl_Klientinnen": 0,  # Görlitz
+            # Görlitz
+            "04_1_10_a_Anzahl_Klientinnen": 0,  
             "04_1_10_b_Beratungen": 0,
-            "04_1_11_a_Anzahl_Klientinnen": 0,  # Meißen
+            # Meißen
+            "04_1_11_a_Anzahl_Klientinnen": 0,  
             "04_1_11_b_Beratungen": 0,
-            "04_1_12_a_Anzahl_Klientinnen": 0,  # Sächsische Schweiz
+            # Sächsische Schweiz
+            "04_1_12_a_Anzahl_Klientinnen": 0,  
             "04_1_12_b_Beratungen": 0,
             "04_1_13_a_Anzahl_Klientinnen": count_clients_loc('LL'),
             "04_1_13_b_Beratungen": count_cons_loc('LL'),
@@ -207,7 +217,8 @@ class StatistikService:
         # 'deutsch' oder 'deu' wird ausgeschlossen, alles andere zählt als nicht-deutsch
         non_german = active_clients.exclude(
              Q(klient_staatsangehoerigkeit__icontains='deutsch') | 
-             Q(klient_staatsangehoerigkeit__icontains='deu')
+             Q(klient_staatsangehoerigkeit__icontains='deu') |
+             Q(klient_staatsangehoerigkeit__icontains='D')
         )
         berichtsdaten_staatsangehoerigkeit = {
             "04_2_1_a_Anzahl_Klientinnen": non_german.count(),
@@ -289,6 +300,8 @@ class StatistikService:
         # Wir zählen einfach alle, die "Vergewaltigung" enthalten, aber NICHT "versuchte".
         # Das ignoriert Fälle, wo BEIDES drin steht.
         cnt_vergewaltigung = violence.filter(tat_art__icontains="Vergewaltigung").exclude(tat_art__icontains="versuchte").count()
+        # Add backup logic if structured data is used later
+        # cnt_vergewaltigung += violence.filter(tat_art__contains="VG").count()
 
         berichtsdaten_gewaltart = {
             "04_6_1_Anzahl": cnt_vergewaltigung,

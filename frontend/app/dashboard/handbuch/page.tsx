@@ -371,16 +371,25 @@ export default function ManualPage() {
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sm:p-8 space-y-6">
                             <p className="text-gray-700">
                                 Das Statistik-Modul wertet Ihre eingegebenen Daten automatisch aus. Sie müssen keine Strichlisten mehr führen.
-                                Wählen Sie einfach einen Zeitraum (z.B. „01.01.2024“ bis „31.12.2024“), und das System zeigt Ihnen die Summen an.
+                                Wählen Sie einfach einen <strong>Zeitraum</strong> (z.B. „01.01.2024“ bis „31.12.2024“) und weitere Filter oben aus, klicken Sie auf "Anwenden", und das System zeigt Ihnen die aktuellen Summen an.
                             </p>
 
-                            <div className="flex items-start gap-4 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl">
+                            <h3 className="font-semibold text-gray-900 mb-2">Verfügbare Auswertungen:</h3>
+                            <ul className="list-disc ml-5 space-y-1 text-gray-600">
+                                <li><strong>Auslastung & Leistungen:</strong> Anzahl Beratungen, Begleitungen, Kontaktarten.</li>
+                                <li><strong>Berichtsdaten:</strong> Soziodemografische Daten (Wohnsitz, Alter, Staatsangehörigkeit, Behinderung).</li>
+                                <li><strong>Gewaltkontext:</strong> Art der Gewalt, Täter-Opfer-Beziehung, Folgen, Tatnachverfolgung.</li>
+                                <li><strong>Netzwerk:</strong> Woher kommen die Klient:innen (Polizei, Internet, etc.)?</li>
+                                <li><strong>Finanzierung:</strong> Geleistete Dolmetscherstunden.</li>
+                            </ul>
+
+                            <div className="mt-6 flex items-start gap-4 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl">
                                 <Download className="w-6 h-6 text-blue-600 shrink-0 mt-0.5" />
                                 <div>
                                     <h4 className="font-bold text-blue-900">Daten-Export</h4>
                                     <p className="text-blue-800 text-sm mt-1 leading-relaxed">
-                                        Nutzen Sie den Export-Button, um die Ergebnisse herunterzuladen.
-                                        So können Sie die Zahlen einfach weiterverarbeiten, z.B. für <strong>Statistikbögen</strong>.
+                                        Nutzen Sie den Export-Button (PDF, CSV, Excel), um die Ergebnisse herunterzuladen.
+                                        So können Sie die Zahlen einfach weiterverarbeiten oder archivieren.
                                     </p>
                                 </div>
                             </div>
