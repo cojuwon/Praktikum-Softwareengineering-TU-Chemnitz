@@ -1,6 +1,7 @@
-import { PencilSquareIcon } from "@heroicons/react/24/outline";
+import { PencilSquareIcon, ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+import Link from "next/link";
 
 interface FallMetadataProps {
     data: any; // Type should be more specific in real app
@@ -62,10 +63,12 @@ export default function FallMetadata({ data, definition, onEdit }: FallMetadataP
                     <span className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">
                         Klient:in
                     </span>
-                    <div className="font-medium text-slate-900 text-lg">
+                    <div className="font-medium text-slate-900 text-lg flex items-center gap-2 group">
                         {data.klient_detail?.klient_pseudonym || `Klient:in #${data.klient}`}
+                        <Link href={`/dashboard/klienten/${data.klient}`} className="text-slate-400 hover:text-blue-600 transition-colors opacity-0 group-hover:opacity-100">
+                            <ArrowTopRightOnSquareIcon className="w-4 h-4" />
+                        </Link>
                     </div>
-                    {/* Link to Client Details could go here */}
                 </div>
 
                 {visibleFields.map((field) => (
