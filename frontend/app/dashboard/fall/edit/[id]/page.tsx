@@ -12,6 +12,9 @@ import TimelineItem from "@/components/dashboard/fall/TimelineItem";
 import RichTextEditor from "@/components/editor/RichTextEditor";
 import NoteEditDialog from "@/components/dashboard/fall/NoteEditDialog";
 import AppointmentDialog from "@/components/dashboard/fall/AppointmentDialog";
+import CrimeDialog from "@/components/dashboard/fall/CrimeDialog";
+import { getLabel, CONSULTATION_TYPE_CHOICES } from "@/lib/constants";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
 export default function FallEditPage() {
   const { id } = useParams<{ id: string }>();
@@ -23,8 +26,9 @@ export default function FallEditPage() {
   // Edit Modes
   const [isEditingMetadata, setIsEditingMetadata] = useState(false);
   const [showAppointmentDialog, setShowAppointmentDialog] = useState(false);
-  const [editingItem, setEditingItem] = useState<any>(null); // For Note or Appointment
-  const [noteContent, setNoteContent] = useState<any>({});
+  const [showCrimeDialog, setShowCrimeDialog] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null); // For Note, Appointment or Crime
+  const [noteContent, setNoteContent] = useState<any>("");
 
   // ---------------------------------------
   // 1. LADE DATEN
@@ -100,7 +104,7 @@ export default function FallEditPage() {
 
       if (!res.ok) throw new Error("Note creation failed");
 
-      setNoteContent({}); // Reset editor
+      setNoteContent(""); // Reset editor
       setNoteDate(new Date().toISOString().slice(0, 16)); // Reset date
       setLinkedAppointmentId(""); // Reset link
       loadData(); // Refresh timeline
@@ -168,12 +172,21 @@ export default function FallEditPage() {
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
               <h3 className="font-semibold text-slate-700">Neuer Eintrag</h3>
-              <button
-                onClick={() => setShowAppointmentDialog(true)}
-                className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm"
-              >
-                + Termin planen
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowCrimeDialog(true)}
+                  className="bg-red-50 hover:bg-red-100 text-red-700 px-3 py-2 rounded-md text-sm font-medium transition-colors shadow-sm flex items-center gap-1"
+                >
+                  <ExclamationTriangleIcon className="w-4 h-4" />
+                  Gewalttat
+                </button>
+                <button
+                  onClick={() => setShowAppointmentDialog(true)}
+                  className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm"
+                >
+                  + Termin planen
+                </button>
+              </div>
             </div>
 
             <div className="p-5 space-y-4">
@@ -198,7 +211,7 @@ export default function FallEditPage() {
                     <option value="">-- Kein Termin --</option>
                     {appointments.map((apt: any) => (
                       <option key={apt.beratungs_id} value={apt.beratungs_id}>
-                        {new Date(apt.termin_beratung).toLocaleString()} ({apt.beratungsart_display || apt.beratungsart})
+                        {new Date(apt.termin_beratung).toLocaleString()} ({apt.beratungsart_display || getLabel(CONSULTATION_TYPE_CHOICES, apt.beratungsart)})
                       </option>
                     ))}
                   </select>
@@ -228,7 +241,7 @@ export default function FallEditPage() {
               <div className="relative pl-4">
                 {data.timeline.map((item: any, idx: number) => (
                   <TimelineItem
-                    key={`${item.type}-${item.notiz_id || item.beratungs_id}`}
+                    key={`${item.type}-${item.notiz_id || item.beratungs_id || item.tat_id}`}
                     item={item}
                     onEdit={(item) => setEditingItem(item)}
                   />
@@ -255,6 +268,17 @@ export default function FallEditPage() {
         />
       )}
 
+      {showCrimeDialog && (
+        <CrimeDialog
+          fallId={id}
+          onClose={() => setShowCrimeDialog(false)}
+          onSuccess={() => {
+            setShowCrimeDialog(false);
+            loadData();
+          }}
+        />
+      )}
+
       {editingItem && editingItem.type === 'appointment' && (
         <AppointmentDialog
           fallId={id}
@@ -273,6 +297,18 @@ export default function FallEditPage() {
           appointments={appointments}
           onClose={() => setEditingItem(null)}
           onSuccess={() => {
+            loadData();
+          }}
+        />
+      )}
+
+      {editingItem && editingItem.type === 'crime' && (
+        <CrimeDialog
+          fallId={id}
+          crime={editingItem}
+          onClose={() => setEditingItem(null)}
+          onSuccess={() => {
+            setEditingItem(null);
             loadData();
           }}
         />

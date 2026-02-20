@@ -1,53 +1,46 @@
 import os
 import django
-from django.test import RequestFactory
-from api.views.statistik import StatistikViewSet
-from api.services.statistik_service import StatistikService
-import json
+from django.conf import settings
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+import dotenv
+dotenv.load_dotenv()
+# Setup Django environment
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 django.setup()
 
-def debug_query():
-    print("--- Starting Debug ---")
-    payload = {
-        "zeitraum_start": "2024-01-01",
-        "zeitraum_ende": "2024-12-31",
-        "_visible_sections": {
-            "auslastung": True,
-            "wohnsitz": False
-        }
-    }
-    
-    # 1. Test Service directly
-    print("\n1. Testing Service.calculate_stats...")
-    try:
-        result = StatistikService.calculate_stats(payload)
-        print("Service OK. Result keys:", result.keys())
-    except Exception as e:
-        print("Service FAILED:")
-        import traceback
-        traceback.print_exc()
+from api.models import Fall, KlientIn, Beratungstermin, Begleitung, Gewalttat, Anfrage
+from api.services.statistik_service import StatistikService
 
-    # 2. Test ViewSet logic (Serializer stripping)
-    print("\n2. Testing ViewSet logic...")
-    from api.views.statistik import StatistikQuerySerializer
-    serializer = StatistikQuerySerializer(data=payload)
-    if serializer.is_valid():
-        print("Serializer Validated Data:", serializer.validated_data)
-        # Check if _visible_sections is lost
-        if '_visible_sections' not in serializer.validated_data:
-            print("WARNING: _visible_sections stripped by serializer!")
-            
-        # Simulate View call
-        filters = serializer.validated_data
-        try:
-            result = StatistikService.calculate_stats(filters)
-            print("View Simulation OK (but fields missing).")
-        except Exception as e:
-            print("View Simulation FAILED:")
-            import traceback
-            traceback.print_exc()
+def check_data():
+    print("--- Database Counts ---")
+    print(f"Fall: {Fall.objects.count()}")
+    print(f"KlientIn: {KlientIn.objects.count()}")
+    print(f"Beratungstermin: {Beratungstermin.objects.count()}")
+    print(f"Begleitung: {Begleitung.objects.count()}")
+    print(f"Gewalttat: {Gewalttat.objects.count()}")
+    print(f"Anfrage: {Anfrage.objects.count()}")
+
+    print("\n--- Example Data (First 3) ---")
+    for k in KlientIn.objects.all()[:3]:
+        print(f"Klient {k.klient_id}: wohnort={k.klient_wohnort}, geschlecht={k.klient_geschlechtsidentitaet}")
+
+    for f in Fall.objects.all()[:3]:
+        print(f"Fall {f.fall_id}: startdatum={f.startdatum}")
+
+    print("\n--- StatistikService Calculation ---")
+    stats = StatistikService.calculate_stats({})
+    
+    # Print non-zero values from result
+    def print_non_zero(data, prefix=""):
+        for k, v in data.items():
+            if isinstance(v, dict):
+                print_non_zero(v, prefix + k + " -> ")
+            elif isinstance(v, (int, float)) and v > 0:
+                print(f"{prefix}{k}: {v}")
+            elif isinstance(v, str) and v != "-":
+                 print(f"{prefix}{k}: {v}")
+
+    print_non_zero(stats['data'])
 
 if __name__ == "__main__":
-    debug_query()
+    check_data()

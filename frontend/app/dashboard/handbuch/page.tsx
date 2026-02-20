@@ -31,37 +31,37 @@ export default function ManualPage() {
 
     useEffect(() => {
         const handleScroll = () => {
-            if (window.scrollY > 300) {
+            const container = document.getElementById('main-scroll-container');
+            if (container && container.scrollTop > 300) {
                 setShowScrollTop(true);
             } else {
                 setShowScrollTop(false);
             }
         };
 
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        const container = document.getElementById('main-scroll-container');
+        if (container) {
+            container.addEventListener('scroll', handleScroll);
+            return () => container.removeEventListener('scroll', handleScroll);
+        }
     }, []);
 
     const scrollToSection = (id: string) => {
         setActiveTab(id);
         const element = document.getElementById(id);
         if (element) {
-            const headerOffset = 20;
-            const elementPosition = element.getBoundingClientRect().top;
-            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-            window.scrollTo({
-                top: offsetPosition,
-                behavior: "smooth"
-            });
+            element.scrollIntoView({ behavior: "smooth", block: "start" });
         }
     };
 
     const scrollToTop = () => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
+        const container = document.getElementById('main-scroll-container');
+        if (container) {
+            container.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
     };
 
     const sections = [
@@ -95,8 +95,8 @@ export default function ManualPage() {
                                     key={section.id}
                                     onClick={() => scrollToSection(section.id)}
                                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-left ${activeTab === section.id
-                                            ? 'bg-blue-50 text-blue-700 shadow-sm translate-x-1'
-                                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:translate-x-1'
+                                        ? 'bg-blue-50 text-blue-700 shadow-sm translate-x-1'
+                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:translate-x-1'
                                         }`}
                                 >
                                     <section.icon className={`w-4 h-4 ${activeTab === section.id ? 'text-blue-600' : 'text-gray-400'}`} />
@@ -371,16 +371,25 @@ export default function ManualPage() {
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sm:p-8 space-y-6">
                             <p className="text-gray-700">
                                 Das Statistik-Modul wertet Ihre eingegebenen Daten automatisch aus. Sie müssen keine Strichlisten mehr führen.
-                                Wählen Sie einfach einen Zeitraum (z.B. „01.01.2024“ bis „31.12.2024“), und das System zeigt Ihnen die Summen an.
+                                Wählen Sie einfach einen <strong>Zeitraum</strong> (z.B. „01.01.2024“ bis „31.12.2024“) und weitere Filter oben aus, klicken Sie auf "Anwenden", und das System zeigt Ihnen die aktuellen Summen an.
                             </p>
 
-                            <div className="flex items-start gap-4 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl">
+                            <h3 className="font-semibold text-gray-900 mb-2">Verfügbare Auswertungen:</h3>
+                            <ul className="list-disc ml-5 space-y-1 text-gray-600">
+                                <li><strong>Auslastung & Leistungen:</strong> Anzahl Beratungen, Begleitungen, Kontaktarten.</li>
+                                <li><strong>Berichtsdaten:</strong> Soziodemografische Daten (Wohnsitz, Alter, Staatsangehörigkeit, Behinderung).</li>
+                                <li><strong>Gewaltkontext:</strong> Art der Gewalt, Täter-Opfer-Beziehung, Folgen, Tatnachverfolgung.</li>
+                                <li><strong>Netzwerk:</strong> Woher kommen die Klient:innen (Polizei, Internet, etc.)?</li>
+                                <li><strong>Finanzierung:</strong> Geleistete Dolmetscherstunden.</li>
+                            </ul>
+
+                            <div className="mt-6 flex items-start gap-4 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl">
                                 <Download className="w-6 h-6 text-blue-600 shrink-0 mt-0.5" />
                                 <div>
                                     <h4 className="font-bold text-blue-900">Daten-Export</h4>
                                     <p className="text-blue-800 text-sm mt-1 leading-relaxed">
-                                        Nutzen Sie den Export-Button, um die Ergebnisse herunterzuladen.
-                                        So können Sie die Zahlen einfach weiterverarbeiten, z.B. für <strong>Statistikbögen</strong>.
+                                        Nutzen Sie den Export-Button (PDF, CSV, Excel), um die Ergebnisse herunterzuladen.
+                                        So können Sie die Zahlen einfach weiterverarbeiten oder archivieren.
                                     </p>
                                 </div>
                             </div>

@@ -17,13 +17,14 @@ type Props = {
 export function DynamicFilterForm({ definition, values, onChange, onSubmit }: Props) {
   return (
     <form
+      className="grid grid-cols-1 lg:grid-cols-2 gap-4"
       onSubmit={(e) => {
         e.preventDefault();
         onSubmit?.();
       }}
     >
       {definition.map((field) => (
-        <div key={field.name} style={{ marginBottom: "1rem" }}>
+        <div key={field.name}>
           <label style={{ display: "block", marginBottom: "0.25rem", fontWeight: 500 }}>{field.label}</label>
 
           {field.type === "text" && (

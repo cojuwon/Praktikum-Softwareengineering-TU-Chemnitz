@@ -3,11 +3,12 @@ import React from "react";
 
 type Props = {
   title: React.ReactNode;
+  subtitle?: React.ReactNode;
   imageMargin?: string;
   showImage?: boolean;
 };
 
-export default function PageHeader({ title, imageMargin = "60px auto 20px auto", showImage = true }: Props) {
+export default function PageHeader({ title, subtitle, imageMargin = "60px auto 20px auto", showImage = true }: Props) {
   return (
     <>
       {showImage && (
@@ -31,12 +32,28 @@ export default function PageHeader({ title, imageMargin = "60px auto 20px auto",
           fontSize: 28,
           fontWeight: 600,
           color: "#42446F",
-          marginBottom: 30,
+          marginBottom: subtitle ? 10 : 30,
           textAlign: "center",
         }}
       >
         {title}
       </h1>
+
+      {subtitle && (
+        <p
+          style={{
+            fontSize: 16,
+            color: "#6b7280",
+            textAlign: "center",
+            marginBottom: 30,
+            maxWidth: "600px",
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}
+        >
+          {subtitle}
+        </p>
+      )}
     </>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { User, AuthState } from '@/types/auth';
+import { User, AuthState } from '@/src/types/auth';
 
 // API Base URL - sollte in einer .env Datei konfiguriert werden
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
@@ -90,7 +90,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       // Nach erfolgreichem Login User-Daten laden
       const user = await fetchUser();
-      
+
       setState({
         user,
         isAuthenticated: !!user,

@@ -35,12 +35,9 @@ class KontoAdminSerializer(serializers.ModelSerializer):
         return user
 
     def update(self, instance, validated_data):
-        password = validated_data.pop('password', None)
-        user = super().update(instance, validated_data)
-        if password:
-            user.set_password(password)
-            user.save()
-        return user
+        # We no longer allow setting password via standard update to force the use of the new secure endpoint
+        validated_data.pop('password', None)
+        return super().update(instance, validated_data)
 
 
 class KontoMeSerializer(serializers.ModelSerializer):
@@ -82,6 +79,11 @@ class CustomRegisterSerializer(RegisterSerializer):
 
     vorname_mb = serializers.CharField(required=True)
     nachname_mb = serializers.CharField(required=True)
+
+    def validate_email(self, email):
+        if Konto.objects.filter(mail_mb=email).exists():
+            raise serializers.ValidationError("Ein Nutzer mit dieser E-Mail-Adresse existiert bereits.")
+        return email
 
     def get_cleaned_data(self):
         data = super().get_cleaned_data()

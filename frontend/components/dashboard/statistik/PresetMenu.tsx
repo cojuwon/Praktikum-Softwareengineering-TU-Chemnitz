@@ -4,6 +4,8 @@ import { useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { useUser } from "@/lib/userContext";
 
+import Modal from "@/components/ui/Modal";
+
 interface PresetMenuProps {
     onPresetsChanged: () => void;
     currentFilters: any;
@@ -15,6 +17,9 @@ export default function PresetMenu({ onPresetsChanged, currentFilters, currentVi
     const { user } = useUser();
     const [showSaveDialog, setShowSaveDialog] = useState(false);
     const [showManageDialog, setShowManageDialog] = useState(false);
+
+    // Feedback Modal State
+    const [feedbackModal, setFeedbackModal] = useState<{ isOpen: boolean; type: 'success' | 'error'; message: string } | null>(null);
 
     const [presetName, setPresetName] = useState("");
     const [presetDesc, setPresetDesc] = useState("");
@@ -32,7 +37,7 @@ export default function PresetMenu({ onPresetsChanged, currentFilters, currentVi
                 is_global: isGlobal
             };
 
-            const res = await apiFetch("/api/statistik/presets/", {
+            const res = await apiFetch("/api/presets/", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
@@ -44,28 +49,47 @@ export default function PresetMenu({ onPresetsChanged, currentFilters, currentVi
                 setPresetDesc("");
                 setIsGlobal(false);
                 onPresetsChanged();
-                alert("Preset gespeichert!");
+                setFeedbackModal({
+                    isOpen: true,
+                    type: 'success',
+                    message: "Preset erfolgreich gespeichert!"
+                });
             } else {
                 const err = await res.json();
-                alert("Fehler beim Speichern: " + JSON.stringify(err));
+                setFeedbackModal({
+                    isOpen: true,
+                    type: 'error',
+                    message: "Fehler beim Speichern: " + (err.detail || JSON.stringify(err))
+                });
             }
         } catch (e) {
             console.error(e);
-            alert("Fehler beim Speichern.");
+            setFeedbackModal({
+                isOpen: true,
+                type: 'error',
+                message: "Ein unerwarteter Fehler ist aufgetreten."
+            });
         }
     };
 
     const handleDelete = async (id: number) => {
         if (!confirm("Preset wirklich löschen?")) return;
         try {
-            const res = await apiFetch(`/api/statistik/presets/${id}/`, { method: "DELETE" });
+            const res = await apiFetch(`/api/presets/${id}/`, { method: "DELETE" });
             if (res.ok) {
                 onPresetsChanged();
+                // Optional: Feedback for deletion? 
+                // Currently user requested save feedback, but deletion feedback is also good practice.
+            } else {
+                alert("Fehler beim Löschen.");
             }
         } catch (e) {
             console.error(e);
+            alert("Fehler beim Löschen.");
         }
     };
+
+    const closeFeedback = () => setFeedbackModal(null);
 
     return (
         <>
@@ -198,6 +222,43 @@ export default function PresetMenu({ onPresetsChanged, currentFilters, currentVi
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Feedback Modal */}
+            {feedbackModal && (
+                <Modal
+                    isOpen={feedbackModal.isOpen}
+                    onClose={closeFeedback}
+                    title={feedbackModal.type === 'success' ? 'Erfolg' : 'Fehler'}
+                    footer={
+                        <button
+                            onClick={closeFeedback}
+                            className={`px-4 py-2 rounded-md text-white font-medium ${feedbackModal.type === 'success' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
+                                }`}
+                        >
+                            OK
+                        </button>
+                    }
+                >
+                    <div className="flex items-center gap-3">
+                        {feedbackModal.type === 'success' ? (
+                            <div className="h-10 w-10 text-green-500 bg-green-100 rounded-full flex items-flex justify-center items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                </svg>
+                            </div>
+                        ) : (
+                            <div className="h-10 w-10 text-red-500 bg-red-100 rounded-full flex items-flex justify-center items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                                </svg>
+                            </div>
+                        )}
+                        <p className="text-gray-700 text-lg">
+                            {feedbackModal.message}
+                        </p>
+                    </div>
+                </Modal>
             )}
         </>
     );

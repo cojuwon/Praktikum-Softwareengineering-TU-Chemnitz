@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/api";
@@ -8,6 +10,9 @@ import FallHeader from "@/components/dashboard/fall/list/FallHeader";
 import FallFilterSection from "@/components/dashboard/fall/list/FallFilterSection";
 import FallList from "@/components/dashboard/fall/list/FallList";
 import FallPagination from "@/components/dashboard/fall/list/FallPagination";
+import { Archive, Trash2, FolderOpen } from "lucide-react";
+
+type Tab = 'active' | 'archived' | 'trash';
 
 export default function FallListPage() {
   const router = useRouter();
@@ -15,6 +20,9 @@ export default function FallListPage() {
   const [faelle, setFaelle] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [formDefinition, setFormDefinition] = useState<FieldDefinition[] | null>(null);
+
+  // Tabs
+  const [activeTab, setActiveTab] = useState<Tab>('active');
 
   // Pagination State
   const [page, setPage] = useState(1);
@@ -24,7 +32,10 @@ export default function FallListPage() {
   // Current filters
   const [currentFilters, setCurrentFilters] = useState<any>({});
 
-  // Initial Fetch
+  // Sorting state
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+
+  // Initial Fetch based on Tab
   useEffect(() => {
     fetchFormDefinition();
 
@@ -35,8 +46,8 @@ export default function FallListPage() {
       initialFilters.klient = klientId;
     }
 
-    fetchFaelle(initialFilters, 1);
-  }, [searchParams]);
+    fetchFaelle(initialFilters, 1, activeTab);
+  }, [searchParams, activeTab]); // Re-fetch when tab or params change
 
   const fetchFormDefinition = () => {
     apiFetch("/api/faelle/form-fields")
@@ -49,7 +60,7 @@ export default function FallListPage() {
       });
   };
 
-  const fetchFaelle = (filters: any, pageNum: number = 1) => {
+  const fetchFaelle = (filters: any, pageNum: number = 1, tab: Tab = activeTab, sorting = sortConfig) => {
     setLoading(true);
     setCurrentFilters(filters);
     setPage(pageNum);
@@ -67,10 +78,28 @@ export default function FallListPage() {
     if (filters.status && filters.status.length > 0) params.append('status', filters.status.join(','));
     if (filters.mitarbeiterin && filters.mitarbeiterin.length > 0) params.append('mitarbeiterin', filters.mitarbeiterin.join(','));
 
-    const queryString = params.toString();
-    const url = `/api/faelle/?${queryString}`;
+    // Sorting
+    if (sorting) {
+      const prefix = sorting.direction === 'desc' ? '-' : '';
+      params.append('ordering', `${prefix}${sorting.key}`);
+    }
 
-    apiFetch(url)
+    // Handle Tabs
+    let url = "/api/faelle/";
+    if (tab === 'trash') {
+      url = "/api/faelle/trashbin/";
+    } else {
+      if (tab === 'archived') {
+        params.append('archived', 'true');
+      } else {
+        params.append('archived', 'false');
+      }
+    }
+
+    const queryString = params.toString();
+    const finalUrl = `${url}?${queryString}`;
+
+    apiFetch(finalUrl)
       .then((res) => {
         if (res.status === 401) throw new Error("Nicht autorisiert");
         return res.json();
@@ -95,7 +124,22 @@ export default function FallListPage() {
     if (newPage < 1) return;
     const totalPages = Math.ceil(count / PAGE_SIZE);
     if (newPage > totalPages && totalPages > 0) return;
-    fetchFaelle(currentFilters, newPage);
+    fetchFaelle(currentFilters, newPage, activeTab);
+  };
+
+  const handleSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    const newSort = { key, direction };
+    setSortConfig(newSort);
+    fetchFaelle(currentFilters, page, activeTab, newSort);
+  };
+
+  const handleAction = (action: string, id: number) => {
+    // Refresh list after action
+    fetchFaelle(currentFilters, page, activeTab);
   };
 
   const totalPages = Math.ceil(count / PAGE_SIZE);
@@ -120,21 +164,69 @@ export default function FallListPage() {
 
   return (
     <div className="max-w-5xl mx-auto w-full px-6">
-      <FallHeader />
+      <Image
+        src="/bellis-favicon.png"
+        alt="Bellis Logo"
+        width={100}
+        height={100}
+        className="w-[60px] h-auto object-contain block mx-auto mb-5"
+      />
 
-      <div className="bg-white rounded-b-xl overflow-visible shadow-sm">
-        <FallFilterSection
-          formDefinition={formDefinition}
-          onSearch={(f) => fetchFaelle(f, 1)}
-        />
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <FallHeader />
 
-        <div className="px-10 py-8 bg-gray-50 rounded-b-xl">
+        {/* Tabs */}
+        <div className="flex px-10 pt-2 border-b border-gray-200 bg-white gap-6">
+          <button
+            onClick={() => { setActiveTab('active'); setPage(1); }}
+            className={`pb-3 pt-2 flex items-center gap-2 text-sm font-medium transition-colors border-b-2 ${activeTab === 'active'
+              ? 'border-indigo-600 text-indigo-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+          >
+            <FolderOpen size={16} />
+            Aktive Fälle
+          </button>
+          <button
+            onClick={() => { setActiveTab('archived'); setPage(1); }}
+            className={`pb-3 pt-2 flex items-center gap-2 text-sm font-medium transition-colors border-b-2 ${activeTab === 'archived'
+              ? 'border-indigo-600 text-indigo-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+          >
+            <Archive size={16} />
+            Archiv
+          </button>
+          <button
+            onClick={() => { setActiveTab('trash'); setPage(1); }}
+            className={`pb-3 pt-2 flex items-center gap-2 text-sm font-medium transition-colors border-b-2 ${activeTab === 'trash'
+              ? 'border-red-600 text-red-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+          >
+            <Trash2 size={16} />
+            Papierkorb
+          </button>
+        </div>
+
+        {(activeTab === 'active' || activeTab === 'archived') && (
+          <FallFilterSection
+            formDefinition={formDefinition}
+            onSearch={(f) => fetchFaelle(f, 1, activeTab)}
+          />
+        )}
+
+        <div className="px-10 py-8 bg-gray-50">
           <FallList
             faelle={faelle}
             loading={loading}
             onRowClick={(id) => router.push(`/dashboard/fall/edit/${id}`)}
             getStatusLabel={getStatusLabel}
             getStatusColor={getStatusColor}
+            activeTab={activeTab} // Pass activeTab to render correct actions
+            onActionComplete={() => fetchFaelle(currentFilters, page, activeTab)}
+            sortConfig={sortConfig}
+            onSort={handleSort}
           />
 
           {!loading && count > 0 && (

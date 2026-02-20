@@ -149,6 +149,18 @@ class KontoViewSet(viewsets.ModelViewSet):
                 {'detail': f'Gruppe "{group_name}" nicht gefunden.'},
                 status=status.HTTP_404_NOT_FOUND
             )
+    def destroy(self, request, *args, **kwargs):
+        """
+        Verhindert, dass ein Admin sich selbst löscht.
+        """
+        user = self.get_object()
+        if user.pk == request.user.pk:
+            return Response(
+                {'detail': 'Sie können Ihr eigenes Konto nicht löschen.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().destroy(request, *args, **kwargs)
+
     @action(detail=False, methods=['get'], permission_classes=[IsAdminRole])
     def stats(self, request):
         """
@@ -164,6 +176,37 @@ class KontoViewSet(viewsets.ModelViewSet):
             'admins': admins,
             'active': active
         })
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAdminRole])
+    def reset_user_password(self, request, pk=None):
+        """
+        Setzt das Passwort eines Nutzers zurück und überprüft vorher das Admin-Passwort.
+        Endpoint: /api/konten/{id}/reset_user_password/
+        Body: {
+          "admin_password": "...",
+          "new_password": "..."
+        }
+        """
+        user = self.get_object()
+        admin_password = request.data.get('admin_password')
+        new_password = request.data.get('new_password')
+        
+        if not admin_password or not new_password:
+            return Response(
+                {'detail': 'Beide Passwörter (admin_password und new_password) sind erforderlich.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        if not request.user.check_password(admin_password):
+            return Response(
+                {'detail': 'Ungültiges Admin-Passwort.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
+        user.set_password(new_password)
+        user.save()
+        
+        return Response({'status': 'Passwort erfolgreich aktualisiert.'})
 
     @action(detail=False, methods=['get'], permission_classes=[IsAdminRole])
     def roles(self, request):

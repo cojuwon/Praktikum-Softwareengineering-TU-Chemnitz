@@ -1,8 +1,6 @@
 "use client";
 
 import { useStatistik } from "../StatistikContext";
-import Link from 'next/link';
-import { lusitana } from '@/components/ui/fonts';
 import { DynamicKPIs } from "@/components/dashboard/statistik/DynamicKPIs";
 import { formatQuestionLabel } from "@/lib/statistik/labels";
 
@@ -21,7 +19,7 @@ export default function FinanzierungPage() {
   return (
 
     <div className="p-6">
-      
+
       <h1 className="text-xl font-bold mb-6"> {structure.label} </h1>
 
       {/* ABSCHNITTE RENDERN */}

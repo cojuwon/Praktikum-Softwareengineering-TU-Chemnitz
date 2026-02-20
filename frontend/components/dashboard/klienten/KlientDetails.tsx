@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { apiFetch } from '@/lib/api';
 import { User, Briefcase, MapPin, Calendar, Activity, Info, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
+import { getLabel, GENDER_CHOICES, SEXUALITY_CHOICES, LOCATION_CHOICES, YES_NO_KA_CHOICES } from '@/lib/constants';
 
 interface Fall {
     fall_id: number;
@@ -133,11 +134,11 @@ export default function KlientDetails({ id }: KlientDetailsProps) {
                             </div>
                             <div>
                                 <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Wohnort</label>
-                                <p className="text-slate-900">{klient.klient_wohnort}</p>
+                                <p className="text-slate-900">{getLabel(LOCATION_CHOICES, klient.klient_wohnort)}</p>
                             </div>
                             <div>
                                 <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Geschlecht</label>
-                                <p className="text-slate-900">{klient.klient_geschlechtsidentitaet}</p>
+                                <p className="text-slate-900">{getLabel(GENDER_CHOICES, klient.klient_geschlechtsidentitaet)}</p>
                             </div>
                             <div>
                                 <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Alter</label>
@@ -145,7 +146,7 @@ export default function KlientDetails({ id }: KlientDetailsProps) {
                             </div>
                             <div>
                                 <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Sexualität</label>
-                                <p className="text-slate-900">{klient.klient_sexualitaet}</p>
+                                <p className="text-slate-900">{getLabel(SEXUALITY_CHOICES, klient.klient_sexualitaet)}</p>
                             </div>
                             <div>
                                 <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Staatsangehörigkeit</label>
@@ -161,11 +162,11 @@ export default function KlientDetails({ id }: KlientDetailsProps) {
                             </div>
                             <div>
                                 <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Migrationshintergrund</label>
-                                <p className="text-slate-900">{klient.klient_migrationshintergrund === 'J' ? 'Ja' : 'Nein'}</p>
+                                <p className="text-slate-900">{getLabel(YES_NO_KA_CHOICES, klient.klient_migrationshintergrund)}</p>
                             </div>
                             <div>
                                 <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Schwerbehinderung</label>
-                                <p className="text-slate-900">{klient.klient_schwerbehinderung === 'J' ? 'Ja' : 'Nein'}</p>
+                                <p className="text-slate-900">{getLabel(YES_NO_KA_CHOICES, klient.klient_schwerbehinderung)}</p>
                             </div>
                         </div>
 

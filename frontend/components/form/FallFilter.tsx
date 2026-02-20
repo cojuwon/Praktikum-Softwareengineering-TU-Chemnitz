@@ -78,7 +78,7 @@ export function FallFilter({ definition, onSearch }: Props) {
 
             {/* Bottom Row: Date Range & Action */}
             <div className="flex flex-wrap items-end gap-4">
-                <div className="flex gap-2 items-center">
+                <div className="flex gap-2 items-end">
                     <div className="flex flex-col">
                         <label className="text-xs text-gray-500 mb-1">Startdatum Von</label>
                         <input
@@ -88,7 +88,7 @@ export function FallFilter({ definition, onSearch }: Props) {
                             onChange={(e) => update("datumVon", e.target.value)}
                         />
                     </div>
-                    <span className="text-gray-400 pb-2">–</span>
+                    <span className="text-gray-400 mb-2.5 font-medium">–</span>
                     <div className="flex flex-col">
                         <label className="text-xs text-gray-500 mb-1">Bis</label>
                         <input

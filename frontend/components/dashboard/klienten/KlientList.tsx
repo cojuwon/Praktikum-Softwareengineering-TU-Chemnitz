@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { apiFetch } from '@/lib/api';
+import Link from 'next/link';
+import { getLabel, LOCATION_CHOICES } from '@/lib/constants';
 import { Pencil, Trash2, Plus, Search, Filter, User, Briefcase } from 'lucide-react';
 import Pagination from '@/components/ui/pagination';
-import Link from 'next/link';
 import KlientFormDialog from './KlientFormDialog';
 
 interface Klient {
@@ -188,7 +189,7 @@ export default function KlientList({ embedded = false }: KlientListProps) {
                                         <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
                                             <User size={14} />
                                         </div>
-                                        {k.klient_pseudonym || `Klient:in ${k.klient_id}`}
+                                        {k.klient_pseudonym ? `${k.klient_pseudonym} (#${k.klient_id})` : `Klient:in #${k.klient_id}`}
                                     </Link>
                                 </td>
                                 <td className="py-3 px-6">
@@ -201,8 +202,7 @@ export default function KlientList({ embedded = false }: KlientListProps) {
                                     </span>
                                 </td>
                                 <td className="py-3 px-6 text-gray-600">
-                                    {/* Mapping for Wohnort would be better in a helper utility */}
-                                    {k.klient_wohnort}
+                                    {getLabel(LOCATION_CHOICES, k.klient_wohnort)}
                                 </td>
                                 <td className="py-3 px-6 text-gray-600">
                                     {new Date(k.erstellt_am).toLocaleDateString()}

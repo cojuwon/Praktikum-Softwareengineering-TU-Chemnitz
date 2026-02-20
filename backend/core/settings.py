@@ -152,7 +152,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'de-de'
 
 TIME_ZONE = 'UTC'
 
@@ -211,6 +211,7 @@ REST_AUTH = {
     'SESSION_LOGIN': False,
     'USER_DETAILS_SERIALIZER': 'api.serializers.KontoMeSerializer', # Mit Berechtigungen & Gruppen
     'OLD_PASSWORD_FIELD_ENABLED': True,
+    'LOGIN_ON_REGISTER': False,
 }
 
 REST_AUTH_SERIALIZERS = {

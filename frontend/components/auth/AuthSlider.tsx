@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import LoginForm from './login-form';
 import RegisterForm from './register-form';
+import ForgotPasswordForm from './forgot-password-form';
 import Image from 'next/image';
 
 // Helper component for the Overlay Panel
@@ -62,12 +63,25 @@ const OverlayPanel = ({ mode, toggleMode }: { mode: 'login' | 'register'; toggle
     );
 };
 
-export default function AuthSlider({ initialMode = 'login' }: { initialMode?: 'login' | 'register' }) {
+interface AuthSliderProps {
+    initialMode?: 'login' | 'register';
+    initialShowForgotPassword?: boolean;
+}
+
+export default function AuthSlider({ initialMode = 'login', initialShowForgotPassword = false }: AuthSliderProps) {
     const [mode, setMode] = useState<'login' | 'register'>(initialMode);
+    const [showForgotPassword, setShowForgotPassword] = useState(initialShowForgotPassword);
 
     const toggleMode = () => {
         setMode(prev => (prev === 'login' ? 'register' : 'login'));
+        // Reset forgot password view when switching modes
+        if (showForgotPassword) {
+            setShowForgotPassword(false);
+        }
     };
+
+    // If showing forgot password, force 'login' mode visually (Left Side visible)
+    const effectiveMode = showForgotPassword ? 'login' : mode;
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-[#F3EEEE] p-4 font-sans">
@@ -90,8 +104,18 @@ export default function AuthSlider({ initialMode = 'login' }: { initialMode?: 'l
                 <div className="md:hidden w-full p-6 text-center bg-[#294D9D] text-white">
                     <h1 className="text-2xl font-bold mb-2">Bellis e.V.</h1>
                     <div className="flex justify-center gap-4 text-sm font-medium">
-                        <button onClick={() => setMode('login')} className={mode === 'login' ? 'underline decoration-2 underline-offset-4' : 'opacity-70'}>Login</button>
-                        <button onClick={() => setMode('register')} className={mode === 'register' ? 'underline decoration-2 underline-offset-4' : 'opacity-70'}>Registrieren</button>
+                        <button
+                            onClick={() => { setMode('login'); setShowForgotPassword(false); }}
+                            className={effectiveMode === 'login' && !showForgotPassword ? 'underline decoration-2 underline-offset-4' : 'opacity-70'}
+                        >
+                            Login
+                        </button>
+                        <button
+                            onClick={() => setMode('register')}
+                            className={effectiveMode === 'register' ? 'underline decoration-2 underline-offset-4' : 'opacity-70'}
+                        >
+                            Registrieren
+                        </button>
                     </div>
                 </div>
 
@@ -99,18 +123,22 @@ export default function AuthSlider({ initialMode = 'login' }: { initialMode?: 'l
                 <div className="hidden md:block absolute top-0 left-0 w-full h-full pointer-events-none">
                     {/* The actual colored slider is separate to allow content underneath */}
                 </div>
-                <OverlayPanel mode={mode} toggleMode={toggleMode} />
+                <OverlayPanel mode={effectiveMode} toggleMode={toggleMode} />
 
-                {/* Left Side: Login Form */}
-                <div className={`w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center transition-opacity duration-500 ${mode === 'login' ? 'opacity-100 z-10' : 'opacity-0 md:opacity-100 z-0'}`}>
+                {/* Left Side: Login Form OR Forgot Password Form */}
+                <div className={`w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center transition-opacity duration-500 ${effectiveMode === 'login' ? 'opacity-100 z-10' : 'opacity-0 md:opacity-100 z-0'}`}>
                     {/* On Desktop, we hide this side when in register mode via z-index/opacity logic relative to the slider */}
                     <div className="h-full flex flex-col justify-center">
-                        <LoginForm />
+                        {showForgotPassword ? (
+                            <ForgotPasswordForm />
+                        ) : (
+                            <LoginForm />
+                        )}
                     </div>
                 </div>
 
                 {/* Right Side: Register Form */}
-                <div className={`w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center transition-opacity duration-500 ${mode === 'register' ? 'opacity-100 z-10' : 'opacity-0 md:opacity-100 z-0'} absolute md:static top-0 left-0 h-full md:h-auto`}>
+                <div className={`w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center transition-opacity duration-500 ${effectiveMode === 'register' ? 'opacity-100 z-10' : 'opacity-0 md:opacity-100 z-0'} absolute md:static top-0 left-0 h-full md:h-auto`}>
                     {/* Mobile: Absolute positioning helps switch. Desktop: Static side-by-side but hidden by slider */}
                     <div className="h-full flex flex-col justify-center">
                         <RegisterForm />

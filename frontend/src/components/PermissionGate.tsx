@@ -1,8 +1,8 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { usePermissions } from '@/hooks/usePermissions';
-import { Permission } from '@/types/auth';
+import { usePermissions } from '@/src/hooks/usePermissions';
+import { Permission } from '@/src/types/auth';
 
 interface PermissionGateProps {
   /**
@@ -10,33 +10,33 @@ interface PermissionGateProps {
    * Bei einem Array wird standardmäßig "any" Logik verwendet (OR).
    */
   permission?: Permission | string | (Permission | string)[];
-  
+
   /**
    * Bei mehreren Berechtigungen: "any" (mindestens eine) oder "all" (alle erforderlich)
    * @default "any"
    */
   mode?: 'any' | 'all';
-  
+
   /**
    * Gruppenzugehörigkeit prüfen (alternative zu permission)
    */
   group?: string | string[];
-  
+
   /**
    * Rolle prüfen (alternative zu permission)
    */
   role?: 'B' | 'E' | 'AD';
-  
+
   /**
    * Nur für Admins anzeigen
    */
   adminOnly?: boolean;
-  
+
   /**
    * Inhalt der angezeigt wird wenn berechtigt
    */
   children: ReactNode;
-  
+
   /**
    * Optionaler Fallback-Inhalt wenn nicht berechtigt
    */

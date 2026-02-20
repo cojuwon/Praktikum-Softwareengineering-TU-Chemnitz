@@ -96,19 +96,18 @@ export default function LoginForm() {
       </div>
 
       <div className="flex flex-col gap-3 pt-2">
-        <button
+        <Button
           type="submit"
-          className="w-full rounded-lg bg-[#294D9D] px-5 py-3 text-sm font-medium text-white hover:bg-[#1E40AF] focus:outline-none focus:ring-4 focus:ring-blue-300 transition-colors shadow-md"
-          disabled={isPending}
+          className="mt-4"
+          aria-disabled={isPending}
         >
           {isPending ? 'Logging in...' : 'Anmelden'}
-        </button>
+        </Button>
 
         <Link
           href="/forgot-password"
           className="text-center text-sm text-[#294D9D] hover:underline"
         >
-          Passwort vergessen?
         </Link>
       </div>
 

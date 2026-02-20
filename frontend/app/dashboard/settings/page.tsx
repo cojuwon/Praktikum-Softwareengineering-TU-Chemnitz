@@ -1,10 +1,12 @@
-'use client';
+"use client";
 
+import { useState, useEffect } from 'react';
 import { lusitana } from '@/components/ui/fonts';
 import Link from 'next/link';
 import { Shield, User, Bell, ChevronRight, Lock } from 'lucide-react';
-import { useState } from 'react';
 import ChangePasswordModal from '@/components/auth/ChangePasswordModal';
+
+
 
 export default function SettingsPage() {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -49,6 +51,8 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
+
+
 
         {/* Profile Card (Placeholder) */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow opacity-75">

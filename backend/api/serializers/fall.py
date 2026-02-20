@@ -21,29 +21,41 @@ class FallSerializer(serializers.ModelSerializer):
         # Local imports to avoid circular dependency
         from api.serializers.beratungstermin import BeratungsterminSerializer
         from api.serializers.fall_notiz import FallNotizSerializer
+        from api.serializers.gewalttat import GewalttatSerializer
 
         # 1. Termine laden
         termine = obj.beratungstermine.all()
         # 2. Notizen laden
         notizen = obj.timeline_notizen.all()
+        # 3. Gewalttaten laden
+        gewalttaten = obj.gewalttaten.all()
 
-        # 3. Serialisieren
-        # Wir fügen ein "type"-Feld hinzu, damit das Frontend unterscheiden kann
+        # 4. Serialisieren
+        timeline_items = []
+
+        # Beratungstermine
         termine_data = BeratungsterminSerializer(termine, many=True).data
         for t in termine_data:
             t['type'] = 'appointment'
-            # Fallback für Sortierung: nutze termin_beratung
             t['sort_date'] = t.get('termin_beratung')
+            timeline_items.append(t)
 
+        # Notizen
         notizen_data = FallNotizSerializer(notizen, many=True).data
         for n in notizen_data:
             n['type'] = 'note'
-            # Fallback für Sortierung: nutze datum
             n['sort_date'] = n.get('datum')
+            timeline_items.append(n)
 
-        # 4. Zusammenfügen und Sortieren (neueste zuerst)
+        # Gewalttaten
+        gewalttaten_data = GewalttatSerializer(gewalttaten, many=True).data
+        for g in gewalttaten_data:
+            g['type'] = 'crime'
+            g['sort_date'] = g.get('tat_datum')
+            timeline_items.append(g)
+
+        # 5. Sortieren (neueste zuerst)
         # Beachte: sort_date string comparison (ISO format) works generally well
-        combined = termine_data + notizen_data
-        combined.sort(key=lambda x: x.get('sort_date') or '', reverse=True)
+        timeline_items.sort(key=lambda x: str(x.get('sort_date') or ''), reverse=True)
 
-        return combined
+        return timeline_items

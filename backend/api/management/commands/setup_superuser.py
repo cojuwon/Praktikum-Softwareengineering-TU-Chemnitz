@@ -2,18 +2,21 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 import os
+import secrets
 
 class Command(BaseCommand):
-    help = 'Erstellt einen Standard-Superuser (admin@test.de), falls noch nicht vorhanden'
+    help = 'Erstellt einen Standard-Superuser (admin@adminuser.de), falls noch nicht vorhanden'
 
     def handle(self, *args, **options):
         User = get_user_model()
-        email = 'admin@test.de'
-        password = 'admin123'
+        email = 'admin@adminuser.de'
+        password = secrets.token_urlsafe(16)
         
         # Prüfen, ob der User schon existiert (anhand des Email-Feldes 'mail_mb')
         if not User.objects.filter(mail_mb=email).exists():
             self.stdout.write(f'Erstelle Superuser "{email}"...')
+            self.stdout.write(self.style.WARNING(f'WICHTIG! Generiertes Passwort: {password} (Bitte sicher aufbewahren!)'))
+            self.stdout.write(self.style.WARNING(f'Bitte ändere das Passwort in den Benutzereinstellungen!'))
             
             # Superuser erstellen
             # Wir setzen auch vorname/nachname, falls diese Pflichtfelder sind
@@ -23,6 +26,11 @@ class Command(BaseCommand):
                 vorname_mb='Admin',
                 nachname_mb='User'
             )
+            
+            # Admin-User direkt aktivieren (nicht in Registrierungsanfragen landen)
+            user.status_mb = 'A'   # Aktiv
+            user.is_active = True
+            user.save(update_fields=['status_mb', 'is_active'])
             
             # Gruppe "Admin" zuweisen
             try:

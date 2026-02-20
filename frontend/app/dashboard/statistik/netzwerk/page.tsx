@@ -1,8 +1,6 @@
 "use client";
 
 import { useStatistik } from "../StatistikContext";
-import Link from 'next/link';
-import { lusitana } from '@/components/ui/fonts';
 import { DynamicKPIs } from "@/components/dashboard/statistik/DynamicKPIs";
 import { DynamicTable } from "@/components/dashboard/statistik/DynamicTable";
 import { DynamicChart } from "@/components/dashboard/statistik/DynamicChart";
@@ -41,7 +39,7 @@ export default function NetzwerkPage() {
   return (
 
     <div className="p-6">
-      
+
       <h1 className="text-xl font-bold mb-6"> {structure.label} </h1>
 
       {/* ABSCHNITTE RENDERN */}
@@ -59,7 +57,7 @@ export default function NetzwerkPage() {
       {numericKpis.length > 0 && (
         <div className="mt-12 pt-6 border-t">
           <h2 className="text-lg font-semibold mb-6">Übersicht Netzwerk</h2>
-          
+
           <DynamicTable columns={numericKpis} rows={[values]} />
 
           <br />
