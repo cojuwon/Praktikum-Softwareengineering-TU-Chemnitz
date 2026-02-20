@@ -3,108 +3,10 @@
 import { useState, useEffect } from 'react';
 import { lusitana } from '@/components/ui/fonts';
 import Link from 'next/link';
-import { Shield, User, Bell, ChevronRight, Lock, Settings } from 'lucide-react';
+import { Shield, User, Bell, ChevronRight, Lock } from 'lucide-react';
 import ChangePasswordModal from '@/components/auth/ChangePasswordModal';
-import { apiFetch } from "@/lib/api";
 
-function SystemSettingsCard() {
-  const [retentionDays, setRetentionDays] = useState<number | string>(30);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-  useEffect(() => {
-    fetchSettings();
-  }, []);
-
-  const fetchSettings = () => {
-    setLoading(true);
-    apiFetch("/api/system-settings/")
-      .then(res => {
-        if (res.ok) return res.json();
-        throw new Error("Fehler beim Laden");
-      })
-      .then(data => {
-        if (data && data.length > 0) {
-          setRetentionDays(data[0].trash_retention_days);
-        }
-      })
-      .catch(err => console.error(err))
-      .finally(() => setLoading(false));
-  };
-
-  const handleSave = () => {
-    setSaving(true);
-    setMessage(null);
-    apiFetch("/api/system-settings/update_settings/", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ trash_retention_days: Number(retentionDays) })
-    })
-      .then(res => {
-        if (res.ok) {
-          setMessage({ type: 'success', text: 'Einstellungen gespeichert' });
-          return res.json();
-        }
-        throw new Error("Fehler beim Speichern");
-      })
-      .then(data => {
-        setRetentionDays(data.trash_retention_days);
-      })
-      .catch(err => {
-        setMessage({ type: 'error', text: 'Fehler beim Speichern' });
-      })
-      .finally(() => setSaving(false));
-  };
-
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-      <div className="p-6">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="p-3 bg-purple-50 rounded-full text-purple-600">
-            <Settings size={24} />
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">Systemeinstellungen</h2>
-            <p className="text-sm text-gray-500">Globale Konfigurationen</p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Aufbewahrungsfrist Papierkorb (Tage)
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="number"
-                value={retentionDays}
-                onChange={(e) => setRetentionDays(e.target.value)}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                placeholder="30"
-              />
-              <button
-                onClick={handleSave}
-                disabled={saving || loading}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
-              >
-                {saving ? '...' : 'Speichern'}
-              </button>
-            </div>
-            {message && (
-              <p className={`mt-2 text-sm ${message.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
-                {message.text}
-              </p>
-            )}
-            <p className="mt-2 text-xs text-gray-400">
-              Objekte im Papierkorb werden nach dieser Zeit automatisch endgültig gelöscht.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function SettingsPage() {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -150,7 +52,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <SystemSettingsCard />
+
 
         {/* Profile Card (Placeholder) */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow opacity-75">
