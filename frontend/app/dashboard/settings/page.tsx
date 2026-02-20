@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from 'react';
 import { lusitana } from '@/components/ui/fonts';
 import Link from 'next/link';
