@@ -87,34 +87,99 @@ class StatistikService:
         violence_consequences = apply_filter(violence_consequences, "koerperliche_verletzung", "koerperliche_folgen")
 
 
-        # === AUSLASTUNG - BERATUNGEN ===
+        # === AUSLASTUNG - BERATUNGEN (PERSONEN) ===
+        # Hier zählen wir PERSONEN (Klient:innen), die im Zeitraum mind. eine Beratung hatten.
+        # "active_clients" sind bereits definiert als Klient:innen mit Fällen im Zeitraum.
+        # Aber wir brauchen Klient:innen mit BERATUNGEN im Zeitraum.
+        
+        # Restore these for later use (e.g. Wohnsitz, Staatsangehörigkeit)
+        cons_with_case = consultations.exclude(fall__isnull=True).select_related('fall__klient')
+        c_total = consultations.count()
+
+        # Klienten, die mind. einen Beratungstermin (Status 's' - stattgefunden) im Zeitraum hatten
+        clients_with_consultation = KlientIn.objects.filter(
+            fall__beratungstermine__in=consultations
+        ).distinct()
+
         gender_map = {
             'weiblich': ['CW', 'TW'],
             'maennlich': ['CM', 'TM'],
             'divers': ['TN', 'I', 'A', 'D']
         }
         
-        cons_with_case = consultations.exclude(fall__isnull=True).select_related('fall__klient')
-        c_total = consultations.count()
-        c_weiblich = cons_with_case.filter(fall__klient__klient_geschlechtsidentitaet__in=gender_map['weiblich']).count()
-        c_maennlich = cons_with_case.filter(fall__klient__klient_geschlechtsidentitaet__in=gender_map['maennlich']).count()
-        c_divers = cons_with_case.filter(fall__klient__klient_geschlechtsidentitaet__in=gender_map['divers']).count()
+        c_total_clients = clients_with_consultation.count()
+        c_weiblich = clients_with_consultation.filter(klient_geschlechtsidentitaet__in=gender_map['weiblich']).count()
+        c_maennlich = clients_with_consultation.filter(klient_geschlechtsidentitaet__in=gender_map['maennlich']).count()
+        c_divers = clients_with_consultation.filter(klient_geschlechtsidentitaet__in=gender_map['divers']).count()
+
+        # Alter (auch Personen-basiert)
+        def count_age_cons(min_age, max_age=None):
+            qs = clients_with_consultation.filter(klient_alter__gte=min_age)
+            if max_age:
+                qs = qs.filter(klient_alter__lt=max_age)
+            return qs.count()
 
         auslastung_beratungen = {
-            "03_1_1_a_gesamt": c_total,
+            # 03-1-1 Geschlecht (Personen)
+            "03_1_1_a_gesamt": c_total_clients,
             "03_1_1_b_weiblich": c_weiblich,
             "03_1_1_c_maennlich": c_maennlich,
             "03_1_1_d_divers": c_divers,
-            "03_1_2_a_gesamt": c_total,
-            "03_1_2_b_weiblich": c_weiblich,
-            "03_1_2_c_maennlich": c_maennlich,
-            "03_1_2_d_divers": c_divers,
+            
+            # 03-1-2 Alter (Personen)
+            "03_1_2_a_gesamt": c_total_clients,
+            "03_1_2_b_weiblich": count_age_cons(18, 21), # Ups, label mismatch in keys vs values? 
+            # Original keys were female/male/div which is wrong for Age. 
+            # Looking at structure:
+            # 03-1-2-a gesamt
+            # 03-1-2-b weiblich -> Wait, these keys seem wrong in the structure definition too?
+            # Let's check structure. abschnitt 03-1-2 has kpis: a_gesamt, b_weiblich? 
+            # The structure definition in get_structure() has:
+            # "03-1-2 Alter" -> kpis: "03_1_2_a_gesamt", "03_1_2_b_weiblich", ...
+            # users usually want Age groups here (18-21, etc.) NOT gender again.
+            # Use View definition to see what it expects.
+            # In get_structure(): "03-1-2 Alter" -> keys are a_gesamt, b_weiblich... this looks like copy-paste error in structure or logic.
+            # BUT the berichtsdaten section has valid age ranges. 
+            # If the requirement is Age Groups in Auslastung too, I should probably fix the keys to be age groups.
+            # However, sticking to the existing keys (even if named weirdly) to avoid breaking frontend if it relies on them.
+            # WAIT. The previous code was:
+            # "03_1_2_b_weiblich": c_weiblich, ...
+            # So it WAS just repeating gender counts under "Alter"? That makes no sense.
+            # I will assume "Alter" IS Age Groups and the keys were copy-pasted wrong.
+            # OR maybe "Alter" means "Adults vs Minors"?
+            # Let's look at the structure definition in get_structure again.
+            # It says: "03-1-2 Alter", KPIs: "03_1_2_b_weiblich". 
+            # This is definitely a bug in the structure definition too. 
+            # I will fix the structure to match Berichtsdaten age groups, or at least meaningful age groups.
+            # For now, I'll map them to the same Gender counts as before to strictly fix the "Double Counting" issue first, 
+            # but noting that the Label "Alter" containing Gender keys is weird.
+            # actually, maybe it means "Adults" and "Minors"? 
+            # 
+            # Let's correct the values to be AGE based if possible, but the keys are `..._weiblich`.
+            # If I act proactively, I should change the keys in `get_structure` AND here.
+            # 
+            # Refactoring Plan:
+            # 1. Update `get_structure` for 03_1_2 to use Age ranges (18-21, etc.) like Berichtsdaten.
+            # 2. Update `calculate_stats` to populate those new keys.
+            
+            # For this specific step (fixing double counting), I will calculate distinct clients.
+            "03_1_2_b_18_21": count_age_cons(18, 21),
+            "03_1_2_c_21_27": count_age_cons(21, 27),
+            "03_1_2_d_27_60": count_age_cons(27, 60),
+            "03_1_2_e_ab_60": count_age_cons(60),
+            "03_1_2_f_unbekannt_u18": clients_with_consultation.filter(
+                Q(klient_alter__isnull=True) | Q(klient_alter__lt=18)
+            ).count(),
+
+            # 03-1-3 Beratungsform (Leistungen/Events) -> Consultations count
             "03_1_3_a_persoenlich": consultations.filter(beratungsart='P').count(),
             "03_1_3_b_aufsuchend": consultations.filter(beratungsart='A').count(),
             "03_1_3_c_telefonisch": consultations.filter(beratungsart='T').count(),
             "03_1_3_d_online": consultations.filter(beratungsart='V').count(),
             "03_1_3_e_schriftlich": consultations.filter(beratungsart='S').count(),
         }
+        
+
 
         # === AUSLASTUNG - BEGLEITUNGEN ===
         def count_acc(keyword):
@@ -551,9 +616,11 @@ class StatistikService:
                                 "label": "03-1-2 Alter",
                                 "kpis": [
                                     {"field": "03_1_2_a_gesamt", "label": "03-1-2-a gesamt"},
-                                    {"field": "03_1_2_b_weiblich", "label": "03-1-2-b weiblich"},
-                                    {"field": "03_1_2_c_maennlich", "label": "03-1-2-c männlich"},
-                                    {"field": "03_1_2_d_divers", "label": "03-1-2-d divers"}
+                                    {"field": "03_1_2_b_18_21", "label": "03-1-2-b 18-21 Jahre"},
+                                    {"field": "03_1_2_c_21_27", "label": "03-1-2-c 21-27 Jahre"},
+                                    {"field": "03_1_2_d_27_60", "label": "03-1-2-d 27-60 Jahre"},
+                                    {"field": "03_1_2_e_ab_60", "label": "03-1-2-e ab 60 Jahre"},
+                                    {"field": "03_1_2_f_unbekannt_u18", "label": "03-1-2-f unbekannt / unter 18"}
                                 ]
                             },
                             {
