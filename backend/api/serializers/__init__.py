@@ -11,5 +11,5 @@ from .klient import KlientInSerializer
 from .preset import PresetSerializer 
 from .system_settings import SystemSettingsSerializer
 from .statistik import StatistikSerializer
-from .statistik_query import DynamicStatistikSerializer
+from .statistik_query import DynamicQuerySerializer
 from .fall_notiz import FallNotizSerializer
