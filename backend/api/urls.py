@@ -22,6 +22,7 @@ from .views.statistik import StatistikViewSet
 from .views.eingabefeld import EingabefeldViewSet
 from .views.groups import GroupViewSet, PermissionViewSet
 from .views.fall_notiz import FallNotizViewSet
+from .views.system_settings import SystemSettingsViewSet
 
 
 # Router für ViewSets mit automatischer URL-Generierung
@@ -41,6 +42,7 @@ router.register(r'statistiken', StatistikViewSet, basename='statistik')
 router.register(r'statistik', StatistikViewSet, basename='statistik_singular')
 router.register(r'groups', GroupViewSet, basename='group')
 router.register(r'permissions', PermissionViewSet, basename='permission')
+router.register(r'system-settings', SystemSettingsViewSet, basename='system-settings')
 
 
 urlpatterns = [

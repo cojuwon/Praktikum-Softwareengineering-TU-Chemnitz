@@ -62,6 +62,26 @@ export interface Anfrage {
   anfrage_termin: AnfrageTermin;
   beratungs_id: number;          // Optional, wenn Termin vereinbart
   user_id: number;                // Mitarbeiter:in, der die Anfrage zugewiesen bekommen hat
+  // New fields
+  deleted_at?: string | null;
+  deleted_by?: number | null;
+  is_archived?: boolean;
+};
+
+// ... (existing code)
+
+export type Fall = {
+  fall_id: number;
+  klient_id: number;
+  beratungs_id: number;
+  tat_id: number;
+  begleitungs_id: number;
+  user_id: number;
+
+  // New fields
+  deleted_at?: string | null;
+  deleted_by?: number | null;
+  is_archived?: boolean;
 };
 
 export enum RolleMb {
@@ -112,14 +132,7 @@ export type Beratungstermin = {
   notizen_beratung: string;
 };
 
-export type Fall = {
-  fall_id: number;
-  klient_id: number;
-  beratungs_id: number;
-  tat_id: number;
-  begleitungs_id: number;
-  user_id: number;
-};
+
 
 export type Statistik = {
   statistik_id: number;

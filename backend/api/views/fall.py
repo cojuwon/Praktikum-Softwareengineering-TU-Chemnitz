@@ -12,12 +12,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, OpenApiTypes
-from django.db.models import Q
-
-from api.models import Fall, Begleitung, Beratungstermin, Gewalttat, KlientIn
-from api.serializers import FallSerializer, BegleitungSerializer, BeratungsterminSerializer, GewalttatSerializer
-from api.permissions import DjangoModelPermissionsWithView, CanManageOwnData
-
+from django.utils import timezone
 
 @extend_schema_view(
     create=extend_schema(
@@ -33,8 +28,8 @@ from api.permissions import DjangoModelPermissionsWithView, CanManageOwnData
         summary="Fall teilweise bearbeiten"
     ),
     destroy=extend_schema(
-        description="Löscht einen Fall. ACHTUNG: Durch Kaskadierung werden alle zugehörigen Beratungstermine, Gewalttaten und Begleitungen ebenfalls gelöscht!",
-        summary="Fall löschen"
+        description="Verschiebt einen Fall in den Papierkorb (Soft Delete).",
+        summary="Fall löschen (Soft Delete)"
     )
 )
 class FallViewSet(viewsets.ModelViewSet):
@@ -59,16 +54,33 @@ class FallViewSet(viewsets.ModelViewSet):
         - Admin/Erweiterung (view_all_fall) + ?view=all -> Alle
         - Sonst -> Nur zugewiesene Fälle
         
+        Spezielle Ansichten (Actions):
+        - trashbin: Zeigt NUR gelöschte Fälle
+        - restore: Erlaubt Zugriff auf gelöschte Fälle zum Wiederherstellen
+        
         Filter-Parameter:
         - search: Fuzzy-Suche
         - status: Filter nach Status (O, L, A)
         - mitarbeiterin: Filter nach Mitarbeiter-ID
         - datum_von / datum_bis: Filter nach Startdatum
+        - archived: 'true' -> Zeige Archiv, 'false' -> Zeige Aktive (Default)
         """
         user = self.request.user
         queryset = Fall.objects.select_related('klient', 'mitarbeiterin').all()
         
-        # --- Berechtigungs-Filter ---
+        # --- 1. Soft-Delete & Archiv Logik ---
+        if self.action in ['trashbin', 'restore']:
+            # Im Papierkorb oder beim Wiederherstellen: Nur gelöschte anzeigen
+            queryset = queryset.filter(deleted_at__isnull=False)
+        else:
+            # Standard: Nur NICHT gelöschte anzeigen
+            queryset = queryset.filter(deleted_at__isnull=True)
+            
+            # Archiv-Filter (nur für nicht-gelöschte)
+            is_archived = self.request.query_params.get('archived') == 'true'
+            queryset = queryset.filter(is_archived=is_archived)
+
+        # --- 2. Berechtigungs-Filter ---
         can_view_all = user.rolle_mb == 'AD' or user.has_perm('api.view_all_fall') or user.has_perm('api.can_view_all_data')
         
         if not (can_view_all and self.request.query_params.get('view') == 'all'):
@@ -79,7 +91,7 @@ class FallViewSet(viewsets.ModelViewSet):
              if not can_view_all:
                  queryset = queryset.filter(mitarbeiterin=user)
         
-        # --- Query-Parameter Filter ---
+        # --- 3. Query-Parameter Filter ---
         params = self.request.query_params
 
         # Search
@@ -362,3 +374,70 @@ class FallViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(fall)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    # --- DELETE / ARCHIVE / TRASHBIN ACTIONS ---
+
+    def perform_destroy(self, instance):
+        """
+        Überschreibt das Standard-DELETE.
+        Führt Soft-Delete durch, statt DB-Eintrag zu löschen.
+        """
+        instance.deleted_at = timezone.now()
+        instance.deleted_by = self.request.user
+        instance.save()
+
+    @action(detail=True, methods=['post'], url_path='soft-delete')
+    def soft_delete(self, request, pk=None):
+        """
+        Expliziter Endpunkt für Soft-Delete (alternativ zu DELETE).
+        """
+        fall = self.get_object()
+        self.perform_destroy(fall)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['post'], url_path='restore')
+    def restore(self, request, pk=None):
+        """
+        Stellt einen gelöschten Fall aus dem Papierkorb wieder her.
+        """
+        fall = self.get_object() # Findet dank get_queryset auch gelöschte Einträge
+        fall.deleted_at = None
+        fall.deleted_by = None
+        fall.save()
+        return Response({'status': 'Fall wiederhergestellt'}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='trashbin')
+    def trashbin(self, request):
+        """
+        Listet alle gelöschten Fälle auf (Papierkorb).
+        """
+        # get_queryset behandelt 'trashbin' action und filtert deleted_at__isnull=False
+        queryset = self.filter_queryset(self.get_queryset())
+        
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'], url_path='archive')
+    def archive(self, request, pk=None):
+        """
+        Verschiebt einen Fall ins Archiv.
+        """
+        fall = self.get_object()
+        fall.is_archived = True
+        fall.save()
+        return Response({'status': 'Fall archiviert'}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], url_path='unarchive')
+    def unarchive(self, request, pk=None):
+        """
+        Holt einen Fall aus dem Archiv zurück (aktiv).
+        """
+        fall = self.get_object()
+        fall.is_archived = False
+        fall.save()
+        return Response({'status': 'Fall reaktiviert'}, status=status.HTTP_200_OK)

@@ -29,6 +29,8 @@ from api.serializers import AnfrageSerializer
 from api.permissions import CanManageOwnData, DjangoModelPermissionsWithView
 
 
+from django.utils import timezone
+
 class AnfrageViewSet(viewsets.ModelViewSet):
     """
     ViewSet für CRUD-Operationen auf Anfragen.
@@ -37,7 +39,7 @@ class AnfrageViewSet(viewsets.ModelViewSet):
     - anfrageAnlegen() -> POST /api/anfragen/ (create)
     - anfrageBearbeiten() -> PUT/PATCH /api/anfragen/{id}/ (update/partial_update)
     - anfrageSuchen() -> GET /api/anfragen/ oder /api/anfragen/{id}/ (list/retrieve)
-    - anfrageLoeschen() -> DELETE /api/anfragen/{id}/ (destroy)
+    - anfrageLoeschen() -> DELETE /api/anfragen/{id}/ (destroy - Soft Delete)
     - mitarbeiterinZuweisen() -> POST /api/anfragen/{id}/assign/ (custom action)
     
     Berechtigungen für Anfragen-Sichtbarkeit:
@@ -57,6 +59,11 @@ class AnfrageViewSet(viewsets.ModelViewSet):
     - anfrage_person: Filter nach Person-Code
     - datum_von / datum_bis: Filter nach Datumsbereich
     - ordering: Sortierung (anfrage_datum, anfrage_art, anfrage_ort, mitarbeiterin__nachname_mb)
+    - archived: 'true' -> Zeige Archiv, 'false' -> Zeige Aktive (Default)
+    
+    Spezielle Actions:
+    - trashbin: Zeige Papierkorb
+    - restore: Wiederherstellen
     """
     queryset = Anfrage.objects.all()
     serializer_class = AnfrageSerializer
@@ -68,28 +75,27 @@ class AnfrageViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """
         Filtert Anfragen basierend auf User-Berechtigungen und Query-Parametern.
-        
-        Permission-Hierarchie:
-        1. Admins (rolle_mb='AD') oder can_view_all_anfragen -> alle Anfragen
-        2. can_view_own_anfragen -> nur eigene Anfragen (mitarbeiterin=user)
-        3. Keine Permission -> leere Liste
-        
-        Query-Parameter:
-        - search: Fuzzy-Textsuche
-        - mitarbeiterin: Filter nach Mitarbeiter:in ID
-        - anfrage_art: Filter nach Art
-        - anfrage_ort: Filter nach Ort
-        - anfrage_person: Filter nach Person
-        - datum_von / datum_bis: Filter nach Zeitraum
         """
         user = self.request.user
         base_qs = Anfrage.objects.select_related('beratungstermin', 'mitarbeiterin', 'fall')
         
-        # Permission-basierte Filterung
+        # --- 1. Soft-Delete & Archiv Logik ---
+        if self.action in ['trashbin', 'restore']:
+            # Im Papierkorb oder beim Wiederherstellen: Nur gelöschte anzeigen
+            qs = base_qs.filter(deleted_at__isnull=False)
+        else:
+            # Standard: Nur NICHT gelöschte anzeigen
+            qs = base_qs.filter(deleted_at__isnull=True)
+            
+            # Archiv-Filter (nur für nicht-gelöschte)
+            is_archived = self.request.query_params.get('archived') == 'true'
+            qs = qs.filter(is_archived=is_archived)
+
+        # --- 2. Permission-basierte Filterung ---
         if user.rolle_mb == 'AD' or user.has_perm('api.can_view_all_anfragen'):
-            qs = base_qs
+            pass # Behalte qs wie sie ist
         elif user.has_perm('api.can_view_own_anfragen'):
-            qs = base_qs.filter(mitarbeiterin=user)
+            qs = qs.filter(mitarbeiterin=user)
         else:
             return base_qs.none()
         
@@ -313,3 +319,69 @@ class AnfrageViewSet(viewsets.ModelViewSet):
         
         serializer = self.get_serializer(anfrage)
         return Response(serializer.data)
+
+    # --- DELETE / ARCHIVE / TRASHBIN ACTIONS ---
+
+    def perform_destroy(self, instance):
+        """
+        Überschreibt das Standard-DELETE.
+        Führt Soft-Delete durch, statt DB-Eintrag zu löschen.
+        """
+        instance.deleted_at = timezone.now()
+        instance.deleted_by = self.request.user
+        instance.save()
+
+    @action(detail=True, methods=['post'], url_path='soft-delete')
+    def soft_delete(self, request, pk=None):
+        """
+        Expliziter Endpunkt für Soft-Delete (alternativ zu DELETE).
+        """
+        anfrage = self.get_object()
+        self.perform_destroy(anfrage)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['post'], url_path='restore')
+    def restore(self, request, pk=None):
+        """
+        Stellt eine gelöschte Anfrage aus dem Papierkorb wieder her.
+        """
+        anfrage = self.get_object()
+        anfrage.deleted_at = None
+        anfrage.deleted_by = None
+        anfrage.save()
+        return Response({'status': 'Anfrage wiederhergestellt'}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='trashbin')
+    def trashbin(self, request):
+        """
+        Listet alle gelöschten Anfragen auf (Papierkorb).
+        """
+        queryset = self.filter_queryset(self.get_queryset())
+        
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'], url_path='archive')
+    def archive(self, request, pk=None):
+        """
+        Verschiebt eine Anfrage ins Archiv.
+        """
+        anfrage = self.get_object()
+        anfrage.is_archived = True
+        anfrage.save()
+        return Response({'status': 'Anfrage archiviert'}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], url_path='unarchive')
+    def unarchive(self, request, pk=None):
+        """
+        Holt eine Anfrage aus dem Archiv zurück (aktiv).
+        """
+        anfrage = self.get_object()
+        anfrage.is_archived = False
+        anfrage.save()
+        return Response({'status': 'Anfrage reaktiviert'}, status=status.HTTP_200_OK)

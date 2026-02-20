@@ -252,6 +252,11 @@ class Fall(models.Model):
     startdatum = models.DateField(default=timezone.now, verbose_name="Startdatum")
     notizen = models.TextField(blank=True, verbose_name="Notizen")
 
+    # Archiv & Papierkorb
+    is_archived = models.BooleanField(default=False, verbose_name="Archiviert")
+    deleted_at = models.DateTimeField(null=True, blank=True, verbose_name="Gelöscht am")
+    deleted_by = models.ForeignKey(Konto, on_delete=models.SET_NULL, null=True, blank=True, related_name='deleted_faelle', verbose_name="Gelöscht von")
+
     class Meta:
         verbose_name = "Fall"
         verbose_name_plural = "Fälle"
@@ -395,6 +400,11 @@ class Anfrage(models.Model):
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Erstellt am")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Zuletzt geändert")
+
+    # Archiv & Papierkorb
+    is_archived = models.BooleanField(default=False, verbose_name="Archiviert")
+    deleted_at = models.DateTimeField(null=True, blank=True, verbose_name="Gelöscht am")
+    deleted_by = models.ForeignKey(Konto, on_delete=models.SET_NULL, null=True, blank=True, related_name='deleted_anfragen', verbose_name="Gelöscht von")
     
     # Beziehungen:
     beratungstermin = models.OneToOneField(Beratungstermin, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Zugeordneter Beratungstermin")
@@ -497,3 +507,38 @@ class FallNotiz(models.Model):
 
     def __str__(self):
         return f"Notiz {self.notiz_id} zu Fall {self.fall_id}"
+
+
+class SystemSettings(models.Model):
+    """
+    Singleton-Model für systemweite Einstellungen.
+    """
+    trash_retention_days = models.PositiveIntegerField(
+        default=30,
+        verbose_name="Papierkorb Aufbewahrungsfrist (Tage)",
+        help_text="Wie lange sollen gelöschte Elemente im Papierkorb bleiben, bevor sie endgültig gelöscht werden?"
+    )
+
+    class Meta:
+        verbose_name = "Systemeinstellung"
+        verbose_name_plural = "Systemeinstellungen"
+        permissions = [
+            ("manage_system_settings", "Kann Systemeinstellungen verwalten"),
+        ]
+
+    def save(self, *args, **kwargs):
+        # Singleton Pattern: Ensure only one instance exists
+        if not self.pk and SystemSettings.objects.exists():
+            # If trying to create a new instance but one exists, update the existing one instead
+            existing = SystemSettings.objects.first()
+            self.pk = existing.pk
+        return super(SystemSettings, self).save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def __str__(self):
+        return "Systemeinstellungen"
+

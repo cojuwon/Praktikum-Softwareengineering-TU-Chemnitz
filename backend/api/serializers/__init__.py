@@ -9,5 +9,7 @@ from .gewalttat import GewalttatSerializer
 from .groups import GroupSerializer, PermissionSerializer
 from .klient import KlientInSerializer
 from .preset import PresetSerializer 
+from .system_settings import SystemSettingsSerializer
 from .statistik import StatistikSerializer
+from .statistik_query import DynamicStatistikSerializer
 from .fall_notiz import FallNotizSerializer
