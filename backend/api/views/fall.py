@@ -13,6 +13,10 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, OpenApiTypes
 from django.utils import timezone
+from api.models import Fall, Begleitung, Beratungstermin, Gewalttat, KlientIn
+from django.db.models import Q
+from ..permissions import CanManageOwnData, DjangoModelPermissionsWithView
+from ..serializers import FallSerializer, BegleitungSerializer, BeratungsterminSerializer, GewalttatSerializer
 
 @extend_schema_view(
     create=extend_schema(
