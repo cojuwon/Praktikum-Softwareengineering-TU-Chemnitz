@@ -31,37 +31,37 @@ export default function ManualPage() {
 
     useEffect(() => {
         const handleScroll = () => {
-            if (window.scrollY > 300) {
+            const container = document.getElementById('main-scroll-container');
+            if (container && container.scrollTop > 300) {
                 setShowScrollTop(true);
             } else {
                 setShowScrollTop(false);
             }
         };
 
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        const container = document.getElementById('main-scroll-container');
+        if (container) {
+            container.addEventListener('scroll', handleScroll);
+            return () => container.removeEventListener('scroll', handleScroll);
+        }
     }, []);
 
     const scrollToSection = (id: string) => {
         setActiveTab(id);
         const element = document.getElementById(id);
         if (element) {
-            const headerOffset = 20;
-            const elementPosition = element.getBoundingClientRect().top;
-            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-            window.scrollTo({
-                top: offsetPosition,
-                behavior: "smooth"
-            });
+            element.scrollIntoView({ behavior: "smooth", block: "start" });
         }
     };
 
     const scrollToTop = () => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
+        const container = document.getElementById('main-scroll-container');
+        if (container) {
+            container.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
     };
 
     const sections = [
@@ -95,8 +95,8 @@ export default function ManualPage() {
                                     key={section.id}
                                     onClick={() => scrollToSection(section.id)}
                                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-left ${activeTab === section.id
-                                            ? 'bg-blue-50 text-blue-700 shadow-sm translate-x-1'
-                                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:translate-x-1'
+                                        ? 'bg-blue-50 text-blue-700 shadow-sm translate-x-1'
+                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:translate-x-1'
                                         }`}
                                 >
                                     <section.icon className={`w-4 h-4 ${activeTab === section.id ? 'text-blue-600' : 'text-gray-400'}`} />

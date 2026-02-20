@@ -24,7 +24,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="w-full flex-none md:w-64">
                 <SideNav />
             </div>
-            <div className="grow md:overflow-y-auto flex flex-col justify-between">
+            <div id="main-scroll-container" className="grow md:overflow-y-auto flex flex-col justify-between">
                 <div className="flex-1">
                     {children}
                 </div>
