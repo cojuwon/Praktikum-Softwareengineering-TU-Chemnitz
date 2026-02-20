@@ -1,68 +1,162 @@
-# Projekt Setup Guide
+# BelliS – Beratungs-, Erfassungs- und Leitstelleninformationssystem
 
-Dieses Projekt ist so konfiguriert, dass es so einfach wie möglich mithilfe von Docker gestartet werden kann. Alle notwendigen Abhängigkeiten, Datenbank-Initialisierungen und Setup-Schritte werden beim Starten der Container automatisch im Hintergrund ausgeführt.
+Eine webbasierte Fachberatungssoftware zur Dokumentation und statistischen Auswertung von Beratungsfällen im Bereich geschlechtsspezifischer Gewalt.
+
+**Technologie-Stack:** Django (Backend/API) · Next.js (Frontend) · PostgreSQL (Datenbank) · Docker
+
+---
 
 ## Voraussetzungen
-- **Docker** und **Docker Compose** müssen auf deinem System installiert sein.
+
+- [**Docker Desktop**](https://www.docker.com/products/docker-desktop/) (inkl. Docker Compose) muss installiert und gestartet sein.
+
+## 📥 Release herunterladen
+
+1. Navigiere zur [**Releases-Seite**](../../releases) dieses Repositories
+2. Lade den neuesten Release als **Source Code (zip)** herunter
+3. Entpacke das Archiv in einen beliebigen Ordner
 
 ## 🚀 Projekt starten
 
 ### Option A: Automatischer Start (Empfohlen)
-Wir haben Startskripte vorbereitet, die dir jegliche Vorarbeit abnehmen. Sie prüfen automatisch, ob eine `.env`-Datei existiert. Wenn nicht, wird sie aus der `.env.example` kopiert und an relevanten Stellen mit **sicheren, zufallsgenerierten Passwörtern** (z. B. für die Datenbank) befüllt. Danach werden sofort die Docker-Container gebaut und gestartet.
 
-**Auf Windows:**
+Die mitgelieferten Startskripte übernehmen das komplette Setup:
+- Erstellen automatisch die `.env`-Datei mit sicheren, zufallsgenerierten Passwörtern
+- Bauen und starten alle Docker-Container
+
+**Windows (PowerShell):**
 ```powershell
 .\start.ps1
 ```
 
-**Auf Mac / Linux:**
+**Mac / Linux:**
 ```bash
 bash start.sh
 ```
 
 ### Option B: Manueller Start
-Falls du das Skript nicht nutzen möchtest, kannst du das Setup manuell durchführen:
 
-1. Kopiere die Datei `.env.example` und nenne sie `.env`.
-   Falls nötig, kannst du in dieser Datei Passwörter, Datenbank-Credentials (`POSTGRES_PASSWORD`) und den `DJANGO_SECRET_KEY` anpassen. Da die Datenbank in Docker lokal läuft, sind Standardwerte für die rein lokale Entwicklung auch völlig in Ordnung.
-2. Baue und starte die Container im Hintergrund:
+1. `.env.example` kopieren und als `.env` speichern:
+   ```bash
+   cp .env.example .env
+   ```
+2. Optional: Passwörter in `.env` anpassen (für lokale Nutzung sind die Standardwerte ausreichend)
+3. Container bauen und starten:
    ```bash
    docker compose up -d --build
    ```
 
-*Für zukünftige Neustarts ohne Neubau reicht in beiden Fällen ein einfaches:* `docker compose up -d`
+*Für zukünftige Neustarts ohne Neubau:* `docker compose up -d`
 
-## 🔐 Erster Start & Admin-Zugang
+## 🌐 Zugriff auf die Anwendung
 
-Beim **allersten** Start des Backends wird die Datenbank automatisch eingerichtet und ein initialer Superuser (Admin) angelegt. 
+Nach dem Start sind folgende Dienste erreichbar:
 
-Aus Sicherheitsgründen ist das Passwort für diesen Admin **nicht** im Code hardcodiert. Stattdessen wird bei der Erstellung ein zufälliges Setup-Passwort generiert.
+| Dienst | URL |
+|---|---|
+| **Frontend (Weboberfläche)** | [http://localhost:3000](http://localhost:3000) |
+| **Backend (REST-API)** | [http://localhost:8000](http://localhost:8000) |
+| **API-Dokumentation (Swagger)** | [http://localhost:8000/api/docs/](http://localhost:8000/api/docs/) |
 
-Um dein Passwort zu erfahren, musst du in die Logs des API-Containers schauen. Führe dazu folgenden Befehl aus:
+## 🔐 Erster Login & Admin-Zugang
+
+Beim ersten Start wird automatisch ein **Admin-Benutzer** angelegt (sofort aktiv, kein Freigabe-Schritt nötig).
+
+### Login-Daten abrufen
+
+Das Admin-Passwort wird aus Sicherheitsgründen **zufällig generiert** und in den Container-Logs ausgegeben:
 
 ```bash
 docker compose logs api | grep "Generiertes Passwort"
 ```
-*(Hinweis für Windows PowerShell: `docker compose logs api | Select-String "Generiertes Passwort"`)*
 
-In der Ausgabe findest du die Login-Daten:
+*Windows PowerShell:*
+```powershell
+docker compose logs api | Select-String "Generiertes Passwort"
+```
+
+**Login-Daten:**
 - **E-Mail:** `admin@adminuser.de`
-- **Passwort:** *<Das generierte Passwort aus den Logs>*
+- **Passwort:** *(siehe Ausgabe oben)*
 
 > [!WARNING]
-> **Wichtig:** Bitte logge dich sofort nach dem ersten Start mit diesen Daten ein und wechsle das Passwort in den Benutzereinstellungen des Dashboards!
+> Bitte nach dem ersten Login das Passwort in den **Benutzereinstellungen** ändern!
+
+### Weitere Benutzer anlegen
+
+- **Admin-Panel:** Sidebar → Benutzerverwaltung → „Neuer Benutzer"
+- **Selbstregistrierung:** Neue Benutzer können sich über die Login-Seite registrieren. Die Registrierung muss anschließend von einem Admin freigegeben werden.
+
+**Verfügbare Rollen:**
+| Rolle | Beschreibung |
+|---|---|
+| **Basis** | Standardzugriff auf Fälle und Anfragen |
+| **Erweiterung** | Erweiterte Rechte inkl. Statistiken |
+| **Admin** | Vollzugriff inkl. Benutzerverwaltung und Systemeinstellungen |
 
 ## 🛑 Projekt stoppen
-
-Um das Projekt zu stoppen, führe folgenden Befehl aus:
 
 ```bash
 docker compose down
 ```
 
-Wenn du auch die gespeicherten Daten (die Datenbank-Volumes) unwiderruflich löschen möchtest, nutze:
-
+Alle Daten (Datenbank) inklusive löschen:
 ```bash
 docker compose down -v
 ```
-*(Achtung: Dies löscht alle angelegten Fälle, Benutzer und das generierte initial-Passwort. Beim nächsten Start wird wieder ein frisches Passwort generiert).*
+
+> [!CAUTION]
+> `docker compose down -v` löscht alle Fälle, Benutzer und das Admin-Passwort unwiderruflich. Beim nächsten Start wird ein neues Setup durchgeführt.
+
+---
+
+## 🔧 Technische Details
+
+### Architektur
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  Frontend   │────▶│   Backend   │────▶│  PostgreSQL  │
+│  (Next.js)  │     │  (Django)   │     │     (DB)     │
+│  Port 3000  │     │  Port 8000  │     │  Port 5432   │
+└─────────────┘     └─────────────┘     └─────────────┘
+```
+
+Alle drei Services laufen als Docker-Container und kommunizieren über ein internes Docker-Netzwerk (`webnet`).
+
+### Was passiert beim ersten Start?
+
+Der Backend-Container führt folgende Schritte automatisch aus (siehe `backend/dockerfile`):
+
+1. **Warten auf Datenbank** – wartet, bis PostgreSQL erreichbar ist
+2. **Migrationen anwenden** – `python manage.py migrate`
+3. **Gruppen einrichten** – `python manage.py setup_groups` (erstellt Berechtigungsgruppen: Admin, Erweiterung, Basis)
+4. **Superuser erstellen** – `python manage.py setup_superuser` (erstellt `admin@adminuser.de` mit generiertem Passwort, direkt aktiv)
+5. **Statische Dateien sammeln** – `python manage.py collectstatic`
+6. **Gunicorn starten** – Production-WSGI-Server auf Port 8000
+
+> **Hinweis:** Eingabefelder (Formular-Konfiguration) für Anfragen und Fälle werden automatisch beim ersten Zugriff auf die jeweilige Seite initialisiert.
+
+### Custom Management Commands
+
+| Command | Beschreibung |
+|---|---|
+| `setup_groups` | Erstellt die Berechtigungsgruppen (Admin, Erweiterung, Basis) mit den zugehörigen Django-Permissions |
+| `setup_superuser` | Erstellt den initialen Admin-User mit zufälligem Passwort (idempotent, überspringt wenn bereits vorhanden) |
+| `init_eingabefelder` | Initialisiert manuell die Formularfelder für Anfragen und Fälle (geschieht auch automatisch beim ersten Zugriff) |
+| `cleanup_trash` | Löscht Elemente im Papierkorb, die älter als die konfigurierte Aufbewahrungsfrist sind |
+| `create_test_data` | Erstellt Testdaten für die Entwicklungsumgebung |
+| `seed_presets` | Erstellt vordefinierte Statistik-Presets |
+
+### Umgebungsvariablen (`.env`)
+
+| Variable | Beschreibung | Standardwert |
+|---|---|---|
+| `POSTGRES_DB` | Name der Datenbank | `bellis_db` |
+| `POSTGRES_USER` | Datenbank-Benutzer | `bellis_user` |
+| `POSTGRES_PASSWORD` | Datenbank-Passwort | *(wird automatisch generiert)* |
+| `SECRET_KEY` | Django Secret Key | *(wird automatisch generiert)* |
+| `DEBUG` | Django Debug-Modus | `True` |
+| `DB_HOST` | Datenbank-Host (intern) | `db` |
+| `DB_PORT` | Datenbank-Port | `5432` |
+| `DJANGO_INTERNAL_HOST` | Interne Django-URL für Next.js SSR | `http://api:8000` |
