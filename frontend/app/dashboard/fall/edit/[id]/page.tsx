@@ -28,7 +28,7 @@ export default function FallEditPage() {
   const [showAppointmentDialog, setShowAppointmentDialog] = useState(false);
   const [showCrimeDialog, setShowCrimeDialog] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null); // For Note, Appointment or Crime
-  const [noteContent, setNoteContent] = useState<any>({});
+  const [noteContent, setNoteContent] = useState<any>("");
 
   // ---------------------------------------
   // 1. LADE DATEN
@@ -104,7 +104,7 @@ export default function FallEditPage() {
 
       if (!res.ok) throw new Error("Note creation failed");
 
-      setNoteContent({}); // Reset editor
+      setNoteContent(""); // Reset editor
       setNoteDate(new Date().toISOString().slice(0, 16)); // Reset date
       setLinkedAppointmentId(""); // Reset link
       loadData(); // Refresh timeline

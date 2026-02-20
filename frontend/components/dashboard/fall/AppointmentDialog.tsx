@@ -14,14 +14,14 @@ export default function AppointmentDialog({ fallId, appointment, onClose, onSucc
     const [loading, setLoading] = useState(false);
     const [counselors, setCounselors] = useState<any[]>([]);
     const [formData, setFormData] = useState({
-        termin_beratung: appointment ? appointment.termin_beratung : "",
-        beratungsstelle: appointment ? appointment.beratungsstelle : "LS",
-        beratungsart: appointment ? appointment.beratungsart : "P",
-        dauer: appointment ? appointment.dauer : 60,
-        status: appointment ? appointment.status : "g",
-        dolmetscher_stunden: appointment ? appointment.dolmetscher_stunden : 0,
-        notizen_beratung: appointment ? (appointment.notizen_beratung || {}) : {},
-        berater: appointment ? appointment.berater : ""
+        termin_beratung: appointment?.termin_beratung || "",
+        beratungsstelle: appointment?.beratungsstelle || "LS",
+        beratungsart: appointment?.beratungsart || "P",
+        dauer: appointment?.dauer ?? 60,
+        status: appointment?.status || "g",
+        dolmetscher_stunden: appointment?.dolmetscher_stunden || 0,
+        notizen_beratung: appointment?.notizen_beratung || "",
+        berater: appointment?.berater || ""
     });
 
     useEffect(() => {

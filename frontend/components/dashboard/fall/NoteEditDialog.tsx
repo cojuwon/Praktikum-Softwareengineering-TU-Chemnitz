@@ -14,7 +14,7 @@ interface NoteEditDialogProps {
 
 export default function NoteEditDialog({ fallId, note, appointments, onClose, onSuccess }: NoteEditDialogProps) {
     const [loading, setLoading] = useState(false);
-    const [content, setContent] = useState(note.content || {});
+    const [content, setContent] = useState(note.content || "");
     const [datum, setDatum] = useState(note.datum ? new Date(note.datum).toISOString().slice(0, 16) : "");
     const [linkedAppointmentId, setLinkedAppointmentId] = useState<string>(note.beratungstermin || "");
 
