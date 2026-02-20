@@ -38,7 +38,11 @@ export default function UserList({ embedded = false }: { embedded?: boolean }) {
 
     // Form State
     const [formData, setFormData] = useState<Partial<User>>({});
-    const [password, setPassword] = useState(''); // Only for creation
+    const [password, setPassword] = useState('');
+
+    // Verification State
+    const [showVerificationModal, setShowVerificationModal] = useState(false);
+    const [adminPassword, setAdminPassword] = useState('');
 
     const { user: currentUser } = useUser();
     const router = useRouter();
@@ -113,6 +117,8 @@ export default function UserList({ embedded = false }: { embedded?: boolean }) {
         setFormData({});
         setPassword('');
         setError(null);
+        setShowVerificationModal(false);
+        setAdminPassword('');
     };
 
     const handleDelete = async (userId: number) => {
@@ -129,10 +135,8 @@ export default function UserList({ embedded = false }: { embedded?: boolean }) {
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const executeSave = async () => {
         setError(null);
-
         try {
             if (isCreating) {
                 const payload = {
@@ -153,9 +157,10 @@ export default function UserList({ embedded = false }: { embedded?: boolean }) {
 
                 await fetchUsers(1); // Refresh list
                 setIsCreating(false);
+                setPassword('');
 
             } else if (editingUser) {
-                const payload = {
+                const payload: any = {
                     vorname_mb: formData.vorname_mb,
                     nachname_mb: formData.nachname_mb,
                     mail_mb: formData.mail_mb,
@@ -163,6 +168,12 @@ export default function UserList({ embedded = false }: { embedded?: boolean }) {
                     status_mb: formData.status_mb, // Include status_mb
                     is_active: formData.is_active
                 };
+
+                // We no longer send password in the PATCH request
+                // The password is changed via a separate endpoint in handleVerifyAndSave
+                // if (password) {
+                //     payload.password = password;
+                // }
 
                 const res = await apiFetch(`/api/konten/${editingUser.id}/`, {
                     method: 'PATCH', // or PUT
@@ -174,10 +185,60 @@ export default function UserList({ embedded = false }: { embedded?: boolean }) {
 
                 await fetchUsers(page); // Stay on current page
                 setEditingUser(null);
+                setPassword('');
             }
         } catch (err) {
             console.error(err);
             setError(err instanceof Error ? err.message : 'Operation failed');
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        // Passwörter erfordern beim Ändern eine Bestätigung
+        if (editingUser && password) {
+            setShowVerificationModal(true);
+        } else {
+            await executeSave();
+        }
+    };
+
+    const handleVerifyAndSave = async () => {
+        if (!editingUser) return;
+
+        try {
+            // Use direct fetch (NOT apiFetch) to avoid the automatic 401-interception
+            // which would trigger token refresh/rotation and destroy the admin session
+            const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+            const token = typeof localStorage !== 'undefined' ? localStorage.getItem('accessToken') : null;
+
+            const res = await fetch(`${backendUrl}/api/konten/${editingUser.id}/reset_user_password/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    admin_password: adminPassword,
+                    new_password: password
+                }),
+            });
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.detail || 'Falsches Admin-Passwort oder Fehler beim Zurücksetzen.');
+            }
+
+            // Password verified and reset successfully
+            setShowVerificationModal(false);
+            setAdminPassword('');
+
+            // Now save the rest of the user data (name, email, role, status)
+            await executeSave();
+        } catch (err) {
+            alert(err instanceof Error ? err.message : 'Fehler bei der Verifizierung/Passwortänderung');
         }
     };
 
@@ -332,19 +393,19 @@ export default function UserList({ embedded = false }: { embedded?: boolean }) {
                             </select>
                         </div>
 
-                        {isCreating && (
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Passwort</label>
-                                <input
-                                    name="password"
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full p-2 border rounded-md"
-                                    required
-                                />
-                            </div>
-                        )}
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Passwort {editingUser && <span className="text-gray-400 font-normal">(nur ausfüllen, um das Passwort zu ändern)</span>}
+                            </label>
+                            <input
+                                name="password"
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full p-2 border rounded-md"
+                                required={isCreating}
+                            />
+                        </div>
 
                         <div className="md:col-span-2 mt-4">
                             {formData.status_mb === 'P' ? (
@@ -471,6 +532,40 @@ export default function UserList({ embedded = false }: { embedded?: boolean }) {
                 totalPages={totalPages}
                 onPageChange={handlePageChange}
             />
+
+            {showVerificationModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-sm shadow-xl">
+                        <h3 className="text-lg font-semibold mb-4 text-[#294D9D]">Sicherheitsüberprüfung</h3>
+                        <p className="text-sm text-gray-600 mb-4">
+                            Bitte bestätige mit deinem eigenen Admin-Passwort, dass du das Passwort des Nutzers überschreiben möchtest.
+                        </p>
+                        <input
+                            type="password"
+                            value={adminPassword}
+                            onChange={(e) => setAdminPassword(e.target.value)}
+                            placeholder="Dein Admin-Passwort"
+                            className="w-full p-2 border border-gray-300 rounded-md mb-4 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            autoFocus
+                        />
+                        <div className="flex justify-end gap-2">
+                            <button
+                                onClick={() => { setShowVerificationModal(false); setAdminPassword(''); }}
+                                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 font-medium text-sm"
+                            >
+                                Abbrechen
+                            </button>
+                            <button
+                                onClick={handleVerifyAndSave}
+                                className="px-4 py-2 bg-[#294D9D] text-white rounded-md hover:bg-blue-800 disabled:opacity-50 font-medium text-sm"
+                                disabled={!adminPassword}
+                            >
+                                Bestätigen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

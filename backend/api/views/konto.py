@@ -165,6 +165,37 @@ class KontoViewSet(viewsets.ModelViewSet):
             'active': active
         })
 
+    @action(detail=True, methods=['post'], permission_classes=[IsAdminRole])
+    def reset_user_password(self, request, pk=None):
+        """
+        Setzt das Passwort eines Nutzers zurück und überprüft vorher das Admin-Passwort.
+        Endpoint: /api/konten/{id}/reset_user_password/
+        Body: {
+          "admin_password": "...",
+          "new_password": "..."
+        }
+        """
+        user = self.get_object()
+        admin_password = request.data.get('admin_password')
+        new_password = request.data.get('new_password')
+        
+        if not admin_password or not new_password:
+            return Response(
+                {'detail': 'Beide Passwörter (admin_password und new_password) sind erforderlich.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        if not request.user.check_password(admin_password):
+            return Response(
+                {'detail': 'Ungültiges Admin-Passwort.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
+        user.set_password(new_password)
+        user.save()
+        
+        return Response({'status': 'Passwort erfolgreich aktualisiert.'})
+
     @action(detail=False, methods=['get'], permission_classes=[IsAdminRole])
     def roles(self, request):
         """
