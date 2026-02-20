@@ -80,16 +80,23 @@ class AnfrageViewSet(viewsets.ModelViewSet):
         base_qs = Anfrage.objects.select_related('beratungstermin', 'mitarbeiterin', 'fall')
         
         # --- 1. Soft-Delete & Archiv Logik ---
+        # --- 1. Soft-Delete & Archiv Logik ---
+        # --- 1. Soft-Delete & Archiv Logik ---
         if self.action in ['trashbin', 'restore']:
-            # Im Papierkorb oder beim Wiederherstellen: Nur gelöschte anzeigen
+            # Im Papierkorb oder Wiederherstellen: Nur gelöschte Elemente
             qs = base_qs.filter(deleted_at__isnull=False)
         else:
-            # Standard: Nur NICHT gelöschte anzeigen
+            # Standard: Nur aktive (nicht gelöschte) Elemente
             qs = base_qs.filter(deleted_at__isnull=True)
-            
-            # Archiv-Filter (nur für nicht-gelöschte)
-            is_archived = self.request.query_params.get('archived') == 'true'
-            qs = qs.filter(is_archived=is_archived)
+
+            # Archiv-Logik:
+            # Filtern nach 'is_archived' nur in Listen-Ansichten (detail=False).
+            if not self.detail:
+                archived_param = self.request.query_params.get('archived')
+                if archived_param == 'true':
+                    qs = qs.filter(is_archived=True)
+                else:
+                    qs = qs.filter(is_archived=False)
 
         # --- 2. Permission-basierte Filterung ---
         if user.rolle_mb == 'AD' or user.has_perm('api.can_view_all_anfragen'):

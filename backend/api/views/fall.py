@@ -7,7 +7,7 @@ Verwendet Custom Permissions (CanManageOwnData) für Zugriffskontrolle:
 - PUT/PATCH/DELETE -> CanManageOwnData (nur eigene/zugewiesene Fälle)
 """
 
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -51,6 +51,9 @@ class FallViewSet(viewsets.ModelViewSet):
     queryset = Fall.objects.all()
     serializer_class = FallSerializer
     permission_classes = [permissions.IsAuthenticated, DjangoModelPermissionsWithView, CanManageOwnData]
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['startdatum', 'fall_id', 'klient__klient_id', 'mitarbeiterin__nachname_mb', 'mitarbeiterin__vorname_mb', 'status']
+    ordering = ['-startdatum']
 
     def get_queryset(self):
         """
@@ -73,16 +76,29 @@ class FallViewSet(viewsets.ModelViewSet):
         queryset = Fall.objects.select_related('klient', 'mitarbeiterin').all()
         
         # --- 1. Soft-Delete & Archiv Logik ---
+        # --- 1. Soft-Delete & Archiv Logik ---
+        # --- 1. Soft-Delete & Archiv Logik ---
         if self.action in ['trashbin', 'restore']:
-            # Im Papierkorb oder beim Wiederherstellen: Nur gelöschte anzeigen
+            # Im Papierkorb oder Wiederherstellen: Nur gelöschte Elemente
             queryset = queryset.filter(deleted_at__isnull=False)
         else:
-            # Standard: Nur NICHT gelöschte anzeigen
+            # Standard: Nur aktive (nicht gelöschte) Elemente
             queryset = queryset.filter(deleted_at__isnull=True)
+
+            # Archiv-Logik:
+            # Filtern nach 'is_archived' nur in Listen-Ansichten (detail=False).
+            # Detail-Ansichten (retrieve, update, etc.) sollen das Objekt immer finden,
+            # unabhängig vom Archiv-Status.
+            if not self.detail:
+                archived_param = self.request.query_params.get('archived')
+                if archived_param == 'true':
+                    queryset = queryset.filter(is_archived=True)
+                else:
+                    queryset = queryset.filter(is_archived=False)
             
-            # Archiv-Filter (nur für nicht-gelöschte)
-            is_archived = self.request.query_params.get('archived') == 'true'
-            queryset = queryset.filter(is_archived=is_archived)
+            # Hinweis: 'trashbin' ist eine Listen-Ansicht (detail=False), aber oben bereits behandelt
+            # (im if-Zweig), daher erreichen wir diesen Block für 'trashbin' nicht.
+            # 'restore' ist detail=True, landet ebenfalls oben.
 
         # --- 2. Berechtigungs-Filter ---
         can_view_all = user.rolle_mb == 'AD' or user.has_perm('api.view_all_fall') or user.has_perm('api.can_view_all_data')
