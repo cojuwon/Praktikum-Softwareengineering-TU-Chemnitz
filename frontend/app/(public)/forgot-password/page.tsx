@@ -1,7 +1,7 @@
 'use client';
 
-import AuthSlider from '@/components/auth/AuthSlider';
+import EasterEggSlider from '@/components/auth/EasterEggSlider';
 
 export default function ForgotPasswordPage() {
-    return <AuthSlider initialMode="login" initialShowForgotPassword={true} />;
+    return <EasterEggSlider />;
 }
