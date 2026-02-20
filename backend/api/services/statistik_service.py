@@ -323,8 +323,7 @@ class StatistikService:
         }
 
         # === BERICHTSDATEN - TÄTER-OPFER-BEZIEHUNG ===
-        # Die Fake-API hat die Daten nach Tätergeschlecht aufgeteilt.
-        # Das Modell hat kein Feld für Tätergeschlecht. Placeholder mit 0.
+        # Initial values
         berichtsdaten_taeterOpferBeziehung = {
             "04_5_1_a_Anzahl_weiblich": 0, "04_5_1_b_Anzahl_maennlich": 0, "04_5_1_c_Anzahl_divers": 0,
             "04_5_2_a_Anzahl_weiblich": 0, "04_5_2_b_Anzahl_maennlich": 0, "04_5_2_c_Anzahl_divers": 0,
@@ -334,13 +333,51 @@ class StatistikService:
             "04_5_6_a_Anzahl_weiblich": 0, "04_5_6_b_Anzahl_maennlich": 0, "04_5_6_c_Anzahl_divers": 0, "04_5_6_d_unbekannt": 0,
             "04_5_7_a_Anzahl_weiblich": 0, "04_5_7_b_Anzahl_maennlich": 0, "04_5_7_c_Anzahl_divers": 0, "04_5_7_d_unbekannt": 0,
             "04_5_8_a_Anzahl_weiblich": 0, "04_5_8_b_Anzahl_maennlich": 0, "04_5_8_c_Anzahl_divers": 0, "04_5_8_d_unbekannt": 0,
-            "04_5_9_a_Anzahl_mitbetroffene_Kinder": violence.aggregate(
-                total=Sum('tat_mitbetroffene_kinder')
-            )['total'] or 0,
-            "04_5_9_b_davon_direkt_betroffen": violence.aggregate(
-                total=Sum('tat_direktbetroffene_kinder')
-            )['total'] or 0,
+            "04_5_9_a_Anzahl_mitbetroffene_Kinder": 0,
+            "04_5_9_b_davon_direkt_betroffen": 0,
         }
+        
+        # Mapping definition based on models.py choices
+        bez_map = {
+            'P': "04_5_1", 'EF': "04_5_1",    # Partner:in / Ehepartner:in
+            'EXP': "04_5_2", 'EFX': "04_5_2", # Ex-Partner:in
+            'FAM': "04_5_3",                  # Eltern / Stiefeltern
+            'VER': "04_5_4", 'SON': "04_5_4", # Andere Verwandte / Sonstige
+            'NAH': "04_5_5",                  # Soziales Nahfeld
+            'UNB': "04_5_6",                  # Unbekannt / Flüchtig
+            'PRO': "04_5_7",                  # Professionelle Beziehung
+            'HGM': "04_5_8",                  # Häusliche Gemeinschaft
+        }
+
+        # Populate data
+        for g in violence:
+            prefix = bez_map.get(g.tat_taeter_beziehung)
+            if not prefix: 
+                continue 
+            
+            geschlecht = g.tat_taeter_geschlecht
+            suffix = ""
+            if geschlecht == 'W': suffix = "_a_Anzahl_weiblich"
+            elif geschlecht == 'M': suffix = "_b_Anzahl_maennlich"
+            elif geschlecht == 'D': suffix = "_c_Anzahl_divers"
+            elif geschlecht in ['U', 'K']: suffix = "_d_unbekannt"
+            
+            # Some sections don't have 'unbekannt' field
+            if suffix == "_d_unbekannt" and prefix in ["04_5_1", "04_5_2", "04_5_3"]:
+                continue
+
+            if suffix:
+                key = f"{prefix}{suffix}"
+                if key in berichtsdaten_taeterOpferBeziehung:
+                    berichtsdaten_taeterOpferBeziehung[key] += 1
+
+        # Aggregations for Children
+        berichtsdaten_taeterOpferBeziehung["04_5_9_a_Anzahl_mitbetroffene_Kinder"] = violence.aggregate(
+            total=Sum('tat_mitbetroffene_kinder')
+        )['total'] or 0
+        berichtsdaten_taeterOpferBeziehung["04_5_9_b_davon_direkt_betroffen"] = violence.aggregate(
+            total=Sum('tat_direktbetroffene_kinder')
+        )['total'] or 0
 
         # === BERICHTSDATEN - GEWALTART ===
         def count_violence_type(keyword):

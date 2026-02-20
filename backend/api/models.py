@@ -60,6 +60,29 @@ TATORT_CHOICES = [
 ]
 ANZEIGE_CHOICES = [('J', 'Ja'), ('N', 'Nein'), ('E', 'noch nicht entschieden'), ('K', 'keine Angabe')]
 
+TAETER_BEZIEHUNG_CHOICES = [
+    ('P', 'Partner:in'),
+    ('EXP', 'Partner:in ehemalig'),
+    ('EF', 'Ehepartner:in / eingetragene:r Lebenspartner:in'),
+    ('EFX', 'Ehepartner:in / eingetragene:r Lebenspartner:in ehemalig'),
+    ('FAM', 'Familienangehörige (Eltern/Stiefeltern)'),
+    ('VER', 'andere Verwandte'),
+    ('NAH', 'soziales Nahfeld (Bekannte, Nachbarn, Kollegen)'),
+    ('PRO', 'professionelle Beziehung (Lehrer, Arzt, Trainer etc.)'),
+    ('HGM', 'häusliche Gemeinschaft (WG, Heim etc.)'),
+    ('SON', 'sonstige Personen'),
+    ('UNB', 'Unbekannte:r'),
+    ('K', 'keine Angabe'),
+]
+
+TAETER_GESCHLECHT_CHOICES = [
+    ('W', 'weiblich'),
+    ('M', 'männlich'),
+    ('D', 'divers'),
+    ('U', 'unbekannt'),
+    ('K', 'keine Angabe'),
+]
+
 # 8. GEWALTFOLGE
 PSYCH_FOLGEN_CHOICES = [
     ('D', 'Depression'), ('A', 'Angststörung'), ('PT', 'PTBS'), 
@@ -339,6 +362,11 @@ class Gewalttat(models.Model):
     
     # Details zur Tat
     tat_art = models.TextField(verbose_name="Art der Gewalt (Mehrfachauswahl)", blank=True)
+    
+    # NEU: Täter-Daten für Statistik
+    tat_taeter_beziehung = models.CharField(max_length=3, choices=TAETER_BEZIEHUNG_CHOICES, default='K', verbose_name="Beziehung zum Opfer")
+    tat_taeter_geschlecht = models.CharField(max_length=1, choices=TAETER_GESCHLECHT_CHOICES, default='K', verbose_name="Täter-Geschlecht")
+
     tat_anzeige = models.CharField(max_length=3, choices=ANZEIGE_CHOICES, null=True, verbose_name="Wurde Anzeige erstattet?")
     tat_spurensicherung = models.CharField(max_length=3, choices=JA_NEIN_KA_CHOICES, null=True, verbose_name="Vertrauliche Spurensicherung?")
     
