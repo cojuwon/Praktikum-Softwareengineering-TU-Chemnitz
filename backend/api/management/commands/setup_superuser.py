@@ -27,6 +27,11 @@ class Command(BaseCommand):
                 nachname_mb='User'
             )
             
+            # Admin-User direkt aktivieren (nicht in Registrierungsanfragen landen)
+            user.status_mb = 'A'   # Aktiv
+            user.is_active = True
+            user.save(update_fields=['status_mb', 'is_active'])
+            
             # Gruppe "Admin" zuweisen
             try:
                 admin_group = Group.objects.get(name='Admin')
