@@ -60,3 +60,33 @@ export function getLabel(mapping: Record<string, string>, key: string | null | u
     if (!key) return '-';
     return mapping[key] || key;
 }
+
+export const TAETER_BEZIEHUNG_CHOICES: Record<string, string> = {
+    'P': 'Partner:in',
+    'EXP': 'Partner:in ehemalig',
+    'EF': 'Ehepartner:in / eingetragene:r Lebenspartner:in',
+    'EFX': 'Ehepartner:in / eingetragene:r Lebenspartner:in ehemalig',
+    'FAM': 'Familienangehörige (Eltern/Stiefeltern)',
+    'VER': 'andere Verwandte',
+    'NAH': 'soziales Nahfeld (Bekannte, Nachbarn, Kollegen)',
+    'PRO': 'professionelle Beziehung (Lehrer, Arzt, Trainer etc.)',
+    'HGM': 'häusliche Gemeinschaft (WG, Heim etc.)',
+    'SON': 'sonstige Personen',
+    'UNB': 'Unbekannte:r',
+    'K': 'keine Angabe',
+};
+
+export const TAETER_GESCHLECHT_CHOICES: Record<string, string> = {
+    'W': 'weiblich',
+    'M': 'männlich',
+    'D': 'divers',
+    'U': 'unbekannt',
+    'K': 'keine Angabe',
+};
+
+export const ANZEIGE_CHOICES: Record<string, string> = {
+    'J': 'Ja',
+    'N': 'Nein',
+    'E': 'noch nicht entschieden',
+    'K': 'keine Angabe',
+};
