@@ -4,11 +4,11 @@ from django.contrib.auth.models import Group
 import os
 
 class Command(BaseCommand):
-    help = 'Erstellt einen Standard-Superuser (admin@test.de), falls noch nicht vorhanden'
+    help = 'Erstellt einen Standard-Superuser (admin@adminuser.de), falls noch nicht vorhanden'
 
     def handle(self, *args, **options):
         User = get_user_model()
-        email = 'admin@test.de'
+        email = 'admin@adminuser.de'
         password = 'admin123'
         
         # Prüfen, ob der User schon existiert (anhand des Email-Feldes 'mail_mb')
