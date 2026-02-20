@@ -7,6 +7,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Viewer from "@/components/editor/Viewer";
 import clsx from "clsx";
+import { getLabel, CONSULTATION_TYPE_CHOICES, CONSULTATION_STATUS_CHOICES } from "@/lib/constants";
 
 interface TimelineItemProps {
     item: any;
@@ -84,7 +85,7 @@ export default function TimelineItem({ item, onEdit }: TimelineItemProps) {
                         <div className="cursor-pointer space-y-2">
                             <div className="flex gap-2 text-sm">
                                 <span className="font-medium text-slate-600">Art:</span>
-                                <span>{item.beratungsart_display || item.beratungsart}</span>
+                                <span>{item.beratungsart_display || getLabel(CONSULTATION_TYPE_CHOICES, item.beratungsart)}</span>
                             </div>
                             <div className="flex gap-2 text-sm">
                                 <span className="font-medium text-slate-600">Dauer:</span>
@@ -98,7 +99,7 @@ export default function TimelineItem({ item, onEdit }: TimelineItemProps) {
                                         item.status === 's' ? "bg-green-100 text-green-800" :
                                             "bg-red-100 text-red-800"
                                 )}>
-                                    {item.status_display || item.status}
+                                    {item.status_display || getLabel(CONSULTATION_STATUS_CHOICES, item.status)}
                                 </span>
                             </div>
                             {item.notizen_beratung && (

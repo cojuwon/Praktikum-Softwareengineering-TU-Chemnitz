@@ -2,6 +2,7 @@ import { useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { XMarkIcon, TrashIcon } from "@heroicons/react/24/outline";
 import RichTextEditor from "@/components/editor/RichTextEditor";
+import { getLabel, CONSULTATION_TYPE_CHOICES } from "@/lib/constants";
 
 interface NoteEditDialogProps {
     fallId: string;
@@ -98,7 +99,7 @@ export default function NoteEditDialog({ fallId, note, appointments, onClose, on
                                 <option value="">-- Kein Termin --</option>
                                 {appointments.map((apt: any) => (
                                     <option key={apt.beratungs_id} value={apt.beratungs_id}>
-                                        {new Date(apt.termin_beratung).toLocaleString()} ({apt.beratungsart_display || apt.beratungsart})
+                                        {new Date(apt.termin_beratung).toLocaleString()} ({apt.beratungsart_display || getLabel(CONSULTATION_TYPE_CHOICES, apt.beratungsart)})
                                     </option>
                                 ))}
                             </select>

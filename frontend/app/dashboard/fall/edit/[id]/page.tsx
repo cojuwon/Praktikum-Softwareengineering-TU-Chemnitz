@@ -12,6 +12,7 @@ import TimelineItem from "@/components/dashboard/fall/TimelineItem";
 import RichTextEditor from "@/components/editor/RichTextEditor";
 import NoteEditDialog from "@/components/dashboard/fall/NoteEditDialog";
 import AppointmentDialog from "@/components/dashboard/fall/AppointmentDialog";
+import { getLabel, CONSULTATION_TYPE_CHOICES } from "@/lib/constants";
 
 export default function FallEditPage() {
   const { id } = useParams<{ id: string }>();
@@ -198,7 +199,7 @@ export default function FallEditPage() {
                     <option value="">-- Kein Termin --</option>
                     {appointments.map((apt: any) => (
                       <option key={apt.beratungs_id} value={apt.beratungs_id}>
-                        {new Date(apt.termin_beratung).toLocaleString()} ({apt.beratungsart_display || apt.beratungsart})
+                        {new Date(apt.termin_beratung).toLocaleString()} ({apt.beratungsart_display || getLabel(CONSULTATION_TYPE_CHOICES, apt.beratungsart)})
                       </option>
                     ))}
                   </select>
