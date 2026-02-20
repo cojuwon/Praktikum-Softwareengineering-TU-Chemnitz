@@ -104,7 +104,7 @@ export default function StatistikPage() {
           // Filter out invalid options
           const validValues = value.filter(v => options.includes(v));
           if (validValues.length > 0) validFilters[key] = validValues;
-        } else if (options.includes(value)) {
+        } else if (typeof value === 'string' && options.includes(value)) {
           validFilters[key] = value;
         }
       } else {
