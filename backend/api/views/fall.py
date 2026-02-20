@@ -204,6 +204,11 @@ class FallViewSet(viewsets.ModelViewSet):
         dynamisch konfigurierten Eingabefeldern aus der Datenbank.
         """
         from api.models import KlientIn, Konto, Eingabefeld
+        from api.services.eingabefeld_init_service import init_fall_fields
+        
+        # Auto-initialize fallback logic:
+        # Check and efficiently create any missing default fields.
+        init_fall_fields()
         
         # 1. Klienten-Optionen laden
         klienten = KlientIn.objects.all()

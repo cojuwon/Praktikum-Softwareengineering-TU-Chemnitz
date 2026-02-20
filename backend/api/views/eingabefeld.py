@@ -25,6 +25,22 @@ class EingabefeldViewSet(viewsets.ModelViewSet):
     ordering_fields = ['sort_order', 'label']
     pagination_class = None
 
+    def list(self, request, *args, **kwargs):
+        """
+        Auto-initializes fields if requested context has no fields in the DB yet, or if required fields are missing.
+        """
+        context_param = request.query_params.get('context')
+        from api.services.eingabefeld_init_service import init_fall_fields, init_anfrage_fields
+        if context_param == 'fall':
+            init_fall_fields()
+        elif context_param == 'anfrage':
+            init_anfrage_fields()
+        else:
+            init_fall_fields()
+            init_anfrage_fields()
+            
+        return super().list(request, *args, **kwargs)
+
     @extend_schema(
         request=OpenApiTypes.OBJECT,
         responses={200: EingabefeldSerializer},

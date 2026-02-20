@@ -172,6 +172,12 @@ class AnfrageViewSet(viewsets.ModelViewSet):
         Liefert die Definition der Eingabefelder für eine neue Anfrage.
         Die Felder werden dynamisch aus der Tabelle 'Eingabefeld' geladen.
         """
+        from api.services.eingabefeld_init_service import init_anfrage_fields
+
+        # Auto-initialize fallback logic:
+        # Check and efficiently create any missing default fields.
+        init_anfrage_fields()
+            
         fields_qs = Eingabefeld.objects.filter(context='anfrage').order_by('sort_order')
         
         fields = []
