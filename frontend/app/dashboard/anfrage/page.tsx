@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
@@ -135,43 +137,51 @@ export default function AnfrageListPage() {
 
   return (
     <div className="max-w-5xl mx-auto w-full px-6">
-      <AnfrageHeader />
+      <Image
+        src="/bellis-favicon.png"
+        alt="Bellis Logo"
+        width={100}
+        height={100}
+        className="w-[60px] h-auto object-contain block mx-auto mb-5"
+      />
 
-      {/* Tabs */}
-      <div className="flex gap-4 mb-4 border-b border-gray-200">
-        <button
-          onClick={() => { setActiveTab('active'); setPage(1); }}
-          className={`pb-2 px-1 flex items-center gap-2 text-sm font-medium transition-colors ${activeTab === 'active'
-            ? 'border-b-2 border-indigo-600 text-indigo-600'
-            : 'text-gray-500 hover:text-gray-700'
-            }`}
-        >
-          <FolderOpen size={16} />
-          Aktive Anfragen
-        </button>
-        <button
-          onClick={() => { setActiveTab('archived'); setPage(1); }}
-          className={`pb-2 px-1 flex items-center gap-2 text-sm font-medium transition-colors ${activeTab === 'archived'
-            ? 'border-b-2 border-indigo-600 text-indigo-600'
-            : 'text-gray-500 hover:text-gray-700'
-            }`}
-        >
-          <Archive size={16} />
-          Archiv
-        </button>
-        <button
-          onClick={() => { setActiveTab('trash'); setPage(1); }}
-          className={`pb-2 px-1 flex items-center gap-2 text-sm font-medium transition-colors ${activeTab === 'trash'
-            ? 'border-b-2 border-red-600 text-red-600'
-            : 'text-gray-500 hover:text-gray-700'
-            }`}
-        >
-          <Trash2 size={16} />
-          Papierkorb
-        </button>
-      </div>
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <AnfrageHeader />
 
-      <div className="bg-white rounded-b-xl overflow-visible shadow-sm">
+        {/* Tabs */}
+        <div className="flex px-10 pt-2 border-b border-gray-200 bg-white gap-6">
+          <button
+            onClick={() => { setActiveTab('active'); setPage(1); }}
+            className={`pb-3 pt-2 flex items-center gap-2 text-sm font-medium transition-colors border-b-2 ${activeTab === 'active'
+              ? 'border-indigo-600 text-indigo-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+          >
+            <FolderOpen size={16} />
+            Aktive Anfragen
+          </button>
+          <button
+            onClick={() => { setActiveTab('archived'); setPage(1); }}
+            className={`pb-3 pt-2 flex items-center gap-2 text-sm font-medium transition-colors border-b-2 ${activeTab === 'archived'
+              ? 'border-indigo-600 text-indigo-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+          >
+            <Archive size={16} />
+            Archiv
+          </button>
+          <button
+            onClick={() => { setActiveTab('trash'); setPage(1); }}
+            className={`pb-3 pt-2 flex items-center gap-2 text-sm font-medium transition-colors border-b-2 ${activeTab === 'trash'
+              ? 'border-red-600 text-red-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+          >
+            <Trash2 size={16} />
+            Papierkorb
+          </button>
+        </div>
+
         {(activeTab === 'active' || activeTab === 'archived') && (
           <AnfrageFilterSection
             formDefinition={formDefinition}
@@ -179,7 +189,7 @@ export default function AnfrageListPage() {
           />
         )}
 
-        <div className="px-10 py-8 bg-gray-50 rounded-b-xl">
+        <div className="px-10 py-8 bg-gray-50">
           <AnfrageList
             anfragen={anfragen}
             loading={loading}
