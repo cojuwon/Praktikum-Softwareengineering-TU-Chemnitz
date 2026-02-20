@@ -8,12 +8,18 @@ import AnfrageHeader from "@/components/dashboard/anfrage/list/AnfrageHeader";
 import AnfrageFilterSection from "@/components/dashboard/anfrage/list/AnfrageFilterSection";
 import AnfrageList from "@/components/dashboard/anfrage/list/AnfrageList";
 import Pagination from "@/components/ui/pagination";
+import { Archive, Trash2, FolderOpen } from "lucide-react";
+
+type Tab = 'active' | 'archived' | 'trash';
 
 export default function AnfrageListPage() {
   const router = useRouter();
   const [anfragen, setAnfragen] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [formDefinition, setFormDefinition] = useState<FieldDefinition[] | null>(null);
+
+  // Tabs
+  const [activeTab, setActiveTab] = useState<Tab>('active');
 
   // Pagination State
   const [page, setPage] = useState(1);
@@ -25,11 +31,11 @@ export default function AnfrageListPage() {
   // Current filters
   const [currentFilters, setCurrentFilters] = useState<any>({});
 
-  // Initial Fetch
+  // Initial Fetch based on Tab
   useEffect(() => {
     fetchFormDefinition();
-    fetchAnfragen({}, 1);
-  }, []);
+    fetchAnfragen({}, 1, activeTab);
+  }, [activeTab]);
 
   const fetchFormDefinition = () => {
     apiFetch("/api/anfragen/form-fields")
@@ -42,7 +48,7 @@ export default function AnfrageListPage() {
       });
   };
 
-  const fetchAnfragen = (filters: any, pageNum: number = 1) => {
+  const fetchAnfragen = (filters: any, pageNum: number = 1, tab: Tab = activeTab) => {
     setLoading(true);
     setCurrentFilters(filters);
     setPage(pageNum);
@@ -61,10 +67,22 @@ export default function AnfrageListPage() {
     if (filters.person && filters.person.length > 0) params.append('anfrage_person', filters.person.join(','));
     if (filters.status && filters.status.length > 0) params.append('status', filters.status.join(','));
 
-    const queryString = params.toString();
-    const url = `/api/anfragen/?${queryString}`;
+    // Handle Tabs
+    let url = "/api/anfragen/";
+    if (tab === 'trash') {
+      url = "/api/anfragen/trashbin/";
+    } else {
+      if (tab === 'archived') {
+        params.append('archived', 'true');
+      } else {
+        params.append('archived', 'false');
+      }
+    }
 
-    apiFetch(url)
+    const queryString = params.toString();
+    const finalUrl = `${url}?${queryString}`;
+
+    apiFetch(finalUrl)
       .then((res) => {
         if (res.status === 401) throw new Error("Nicht autorisiert");
         return res.json();
@@ -91,7 +109,7 @@ export default function AnfrageListPage() {
     if (newPage < 1) return;
     const totalPages = Math.ceil(count / PAGE_SIZE);
     if (newPage > totalPages && totalPages > 0) return;
-    fetchAnfragen(currentFilters, newPage);
+    fetchAnfragen(currentFilters, newPage, activeTab);
   };
 
   const totalPages = Math.ceil(count / PAGE_SIZE);
@@ -100,17 +118,55 @@ export default function AnfrageListPage() {
     <div className="max-w-5xl mx-auto w-full px-6">
       <AnfrageHeader />
 
+      {/* Tabs */}
+      <div className="flex gap-4 mb-4 border-b border-gray-200">
+        <button
+          onClick={() => setActiveTab('active')}
+          className={`pb-2 px-1 flex items-center gap-2 text-sm font-medium transition-colors ${activeTab === 'active'
+              ? 'border-b-2 border-indigo-600 text-indigo-600'
+              : 'text-gray-500 hover:text-gray-700'
+            }`}
+        >
+          <FolderOpen size={16} />
+          Aktive Anfragen
+        </button>
+        <button
+          onClick={() => setActiveTab('archived')}
+          className={`pb-2 px-1 flex items-center gap-2 text-sm font-medium transition-colors ${activeTab === 'archived'
+              ? 'border-b-2 border-indigo-600 text-indigo-600'
+              : 'text-gray-500 hover:text-gray-700'
+            }`}
+        >
+          <Archive size={16} />
+          Archiv
+        </button>
+        <button
+          onClick={() => setActiveTab('trash')}
+          className={`pb-2 px-1 flex items-center gap-2 text-sm font-medium transition-colors ${activeTab === 'trash'
+              ? 'border-b-2 border-red-600 text-red-600'
+              : 'text-gray-500 hover:text-gray-700'
+            }`}
+        >
+          <Trash2 size={16} />
+          Papierkorb
+        </button>
+      </div>
+
       <div className="bg-white rounded-b-xl overflow-visible shadow-sm">
-        <AnfrageFilterSection
-          formDefinition={formDefinition}
-          onSearch={(f) => fetchAnfragen(f, 1)}
-        />
+        {activeTab === 'active' && (
+          <AnfrageFilterSection
+            formDefinition={formDefinition}
+            onSearch={(f) => fetchAnfragen(f, 1, 'active')}
+          />
+        )}
 
         <div className="px-10 py-8 bg-gray-50 rounded-b-xl">
           <AnfrageList
             anfragen={anfragen}
             loading={loading}
             onRowClick={(id) => router.push(`/dashboard/anfrage/edit/${id}`)}
+            activeTab={activeTab}
+            onActionComplete={() => fetchAnfragen(currentFilters, page, activeTab)}
           />
 
           {!loading && count > 0 && (

@@ -1,3 +1,9 @@
+import { useState } from "react";
+import { MoreVertical, Archive, Trash2, RotateCcw, FolderOpen } from "lucide-react";
+import { apiFetch } from "@/lib/api";
+
+type Tab = 'active' | 'archived' | 'trash';
+
 interface AnfrageRow {
   anfrage_id: number;
   anfrage_datum: string;
@@ -8,12 +14,16 @@ interface AnfrageRow {
   anfrage_person: string;
   status: string;
   status_display?: string;
+  deleted_at?: string;
+  is_archived?: boolean;
 }
 
 interface AnfrageListProps {
   anfragen: AnfrageRow[];
   loading: boolean;
   onRowClick: (id: number) => void;
+  activeTab: Tab;
+  onActionComplete: () => void;
 }
 
 const getStatusLabel = (code: string) => {
@@ -34,8 +44,45 @@ const getStatusColor = (code: string) => {
   }
 };
 
-export default function AnfrageList({ anfragen, loading, onRowClick }: AnfrageListProps) {
-  if (loading) {
+export default function AnfrageList({ anfragen, loading, onRowClick, activeTab, onActionComplete }: AnfrageListProps) {
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const handleMenuClick = (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    setOpenMenuId(openMenuId === id ? null : id);
+  };
+
+  const executeAction = async (e: React.MouseEvent, action: string, id: number) => {
+    e.stopPropagation();
+    setOpenMenuId(null);
+    setActionLoading(true);
+
+    let url = "";
+    let method = "POST";
+
+    switch (action) {
+      case 'archive': url = `/api/anfragen/${id}/archive/`; break;
+      case 'unarchive': url = `/api/anfragen/${id}/unarchive/`; break;
+      case 'delete': url = `/api/anfragen/${id}/soft-delete/`; break;
+      case 'restore': url = `/api/anfragen/${id}/restore/`; break;
+    }
+
+    try {
+      const res = await apiFetch(url, { method });
+      if (res.ok) {
+        onActionComplete();
+      } else {
+        console.error("Action failed", res.statusText);
+      }
+    } catch (err) {
+      console.error("Action error", err);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  if (loading || actionLoading) {
     return <p className="text-center text-gray-500">Lade Anfragen...</p>;
   }
 
@@ -44,15 +91,16 @@ export default function AnfrageList({ anfragen, loading, onRowClick }: AnfrageLi
   }
 
   return (
-    <div className="flex flex-col gap-2.5">
+    <div className="flex flex-col gap-2.5 pb-20">
       {/* Header Row */}
-      <div className="grid grid-cols-[80px_120px_1fr_1fr_1fr_1fr] gap-4 px-4 mb-1 font-semibold text-gray-500 text-xs">
+      <div className="grid grid-cols-[80px_120px_1fr_1fr_1fr_1fr_40px] gap-4 px-4 mb-1 font-semibold text-gray-500 text-xs">
         <span>ID</span>
         <span>Datum</span>
         <span>Status</span>
         <span>Art</span>
         <span>Ort</span>
         <span>Person</span>
+        <span></span>
       </div>
 
       {/* Data Rows */}
@@ -60,7 +108,7 @@ export default function AnfrageList({ anfragen, loading, onRowClick }: AnfrageLi
         <div
           key={a.anfrage_id}
           onClick={() => onRowClick(a.anfrage_id)}
-          className="grid grid-cols-[80px_120px_1fr_1fr_1fr_1fr] gap-4 items-center bg-white border-2 border-gray-200 rounded-lg px-4 py-4 cursor-pointer transition-all hover:border-[#A0A8CD] hover:bg-[#fefeff]"
+          className="relative grid grid-cols-[80px_120px_1fr_1fr_1fr_1fr_40px] gap-4 items-center bg-white border-2 border-gray-200 rounded-lg px-4 py-4 cursor-pointer transition-all hover:border-[#A0A8CD] hover:bg-[#fefeff]"
         >
           {/* ID */}
           <span className="font-semibold text-[#42446F]">
@@ -91,6 +139,62 @@ export default function AnfrageList({ anfragen, loading, onRowClick }: AnfrageLi
           <span className="text-gray-600 text-sm">
             {a.anfrage_person}
           </span>
+
+          {/* Actions Menu Trigger */}
+          <div className="relative">
+            <button
+              onClick={(e) => handleMenuClick(e, a.anfrage_id)}
+              className="p-1 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600"
+            >
+              <MoreVertical size={18} />
+            </button>
+
+            {/* Dropdown Menu */}
+            {openMenuId === a.anfrage_id && (
+              <div className="absolute right-0 top-8 w-48 bg-white rounded-lg shadow-xl border border-gray-100 z-50 overflow-hidden text-sm">
+                {activeTab === 'active' && (
+                  <>
+                    <button
+                      onClick={(e) => executeAction(e, 'archive', a.anfrage_id)}
+                      className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                    >
+                      <Archive size={14} /> Archivieren
+                    </button>
+                    <button
+                      onClick={(e) => executeAction(e, 'delete', a.anfrage_id)}
+                      className="w-full text-left px-4 py-2.5 hover:bg-red-50 flex items-center gap-2 text-red-600"
+                    >
+                      <Trash2 size={14} /> Löschen
+                    </button>
+                  </>
+                )}
+                {activeTab === 'archived' && (
+                  <>
+                    <button
+                      onClick={(e) => executeAction(e, 'unarchive', a.anfrage_id)}
+                      className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                    >
+                      <FolderOpen size={14} /> Reaktivieren
+                    </button>
+                    <button
+                      onClick={(e) => executeAction(e, 'delete', a.anfrage_id)}
+                      className="w-full text-left px-4 py-2.5 hover:bg-red-50 flex items-center gap-2 text-red-600"
+                    >
+                      <Trash2 size={14} /> Löschen
+                    </button>
+                  </>
+                )}
+                {activeTab === 'trash' && (
+                  <button
+                    onClick={(e) => executeAction(e, 'restore', a.anfrage_id)}
+                    className="w-full text-left px-4 py-2.5 hover:bg-green-50 flex items-center gap-2 text-green-600"
+                  >
+                    <RotateCcw size={14} /> Wiederherstellen
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       ))}
     </div>
