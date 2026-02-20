@@ -149,6 +149,18 @@ class KontoViewSet(viewsets.ModelViewSet):
                 {'detail': f'Gruppe "{group_name}" nicht gefunden.'},
                 status=status.HTTP_404_NOT_FOUND
             )
+    def destroy(self, request, *args, **kwargs):
+        """
+        Verhindert, dass ein Admin sich selbst löscht.
+        """
+        user = self.get_object()
+        if user.pk == request.user.pk:
+            return Response(
+                {'detail': 'Sie können Ihr eigenes Konto nicht löschen.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().destroy(request, *args, **kwargs)
+
     @action(detail=False, methods=['get'], permission_classes=[IsAdminRole])
     def stats(self, request):
         """

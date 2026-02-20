@@ -122,11 +122,19 @@ export default function UserList({ embedded = false }: { embedded?: boolean }) {
     };
 
     const handleDelete = async (userId: number) => {
+        // Eigenes Konto darf nicht gelöscht werden
+        if (currentUser && userId === currentUser.id) {
+            alert('Sie können Ihr eigenes Konto nicht löschen.');
+            return;
+        }
         if (!confirm('Sind Sie sicher, dass Sie diesen Benutzer löschen möchten?')) return;
 
         try {
             const res = await apiFetch(`/api/konten/${userId}/`, { method: 'DELETE' });
-            if (!res.ok) throw new Error('Löschen fehlgeschlagen');
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.detail || 'Löschen fehlgeschlagen');
+            }
             setUsers(users.filter(u => u.id !== userId));
             // Ideally refetch to update count
             setCount(prev => prev - 1);
@@ -511,13 +519,15 @@ export default function UserList({ embedded = false }: { embedded?: boolean }) {
                                     >
                                         <Pencil size={16} />
                                     </button>
-                                    <button
-                                        onClick={() => handleDelete(u.id)}
-                                        className="p-1.5 text-gray-500 hover:text-red-600 rounded-md hover:bg-red-50 transition-colors"
-                                        title="Löschen"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
+                                    {(!currentUser || u.id !== currentUser.id) && (
+                                        <button
+                                            onClick={() => handleDelete(u.id)}
+                                            className="p-1.5 text-gray-500 hover:text-red-600 rounded-md hover:bg-red-50 transition-colors"
+                                            title="Löschen"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    )}
                                 </td>
                             </tr>
                         ))}
