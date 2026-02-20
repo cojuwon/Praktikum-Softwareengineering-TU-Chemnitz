@@ -135,6 +135,11 @@ export default function CrimeDialog({ fallId, crime, onClose, onSuccess }: Crime
                 }
             }
 
+            // PATCH/PUT: Ensure klient is always sent for editing
+            if (isEditing && crime && crime.klient) {
+                payload.klient = crime.klient;
+            }
+
             const res = await apiFetch(url, {
                 method,
                 headers: { "Content-Type": "application/json" },
